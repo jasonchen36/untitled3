@@ -193,7 +193,7 @@ exports.list = function(req, res) {
  */
 exports.user = function(req, res, next, id) {
     User.findById(id).then(function(user) {
-        if (!user) return next({ msg: 'Failed to load User ' + id });
+        if (!user) return next({ message: 'Failed to load User ' + id, status: 404 })
         req.user = user;
         next();
     });
@@ -202,11 +202,13 @@ exports.user = function(req, res, next, id) {
 exports.find = function(req, res, err) {
     // TODO figure out how to get errors from next
     var userId = req.params.userId;
-    if (req.user._id === userId) {
+    if (req.user.id === userId) {
         res.send(req.user);
     } else {
         // TODO need service for this
         User.findById(userId).then(function(user) {
+            delete user.hashed_password;
+            delete user.salt;
             res.send(user);
         });
     }

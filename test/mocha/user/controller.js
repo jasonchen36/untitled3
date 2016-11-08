@@ -452,7 +452,7 @@ describe('<Integration Test>', function () {
                     });
                 });
 
-                it.skip('should delete user and accounts', function(done) {
+                it('should delete user and accounts', function(done) {
                     request(app).del('/users/' + userToDelete.id)
                         .set('authorization', 'Bearer ' + token)
                         .end(function(err, res) {
@@ -541,7 +541,11 @@ describe('<Integration Test>', function () {
     });
 
     after(function(done) {
-        User.deleteByEmail(credentials.email);
-        done();
+        // cleanup DB by deleting users we created
+        User.deleteByEmail('fake@email.com').then(function() {
+            User.deleteByEmail('anotherfake@email.com').then(function() {
+                done();
+              });
+        });
     });
 });

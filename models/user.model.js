@@ -36,7 +36,7 @@ var User = {
         if ((!email) || (email.length === 0)) {
           return Promise.reject('deleteByEmail() No email specified!');
         }
-        var userSql = 'DELETE users WHERE email = ? LIMIT 1';
+        var userSql = 'DELETE FROM users WHERE email = ?';
         return db.knex.raw(userSql, [email]);
     },
 
