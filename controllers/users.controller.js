@@ -113,7 +113,7 @@ exports.create = function(req, res, next) {
     req.checkBody('password', 'Password not provided').notEmpty();
     req.checkBody('first_name', 'First Name not provided').notEmpty();
     req.checkBody('last_name', 'Last Name not provided').notEmpty();
-    req.checkBody('email', 'Email is invalid').optional().isEmail();
+    req.checkBody('email', 'Email is invalid').isEmail();
 
     var errors = req.validationErrors();
     if (errors) {
@@ -133,31 +133,31 @@ exports.create = function(req, res, next) {
                 userObj.provider = 'local';
                 userObj.role = 'Customer';
                 User.create(userObj).then(function() {
-                // TODO link user to account
+                    // TODO link user to account
 
-                // TODO email may not exist
-                var sendWelcomeEmailTo = function(user) {
-                    var variables = {
-                        name: user.name
+                    // TODO email may not exist
+                    var sendWelcomeEmailTo = function(user) {
+                        var variables = {
+                            name: user.name
+                        };
+                        mail.send(config.email.templates.welcome, user.email, variables);
                     };
-                    mail.send(config.email.templates.welcome, user.email, variables);
-                };
 
-                var notifyAdminAbout = function(user) {
-                    var variables = {
-                        name: user.name,
-                        email: user.email
+                    var notifyAdminAbout = function(user) {
+                        var variables = {
+                            name: user.name,
+                            email: user.email
+                        };
+                        mail.send(config.email.templates.profile_created, config.email.admin, variables);
                     };
-                    mail.send(config.email.templates.profile_created, config.email.admin, variables);
-                };
 
-                User.findByEmail(userObj.email).then(function(user) {
-//                  sendWelcomeEmailTo(user);
-//                  notifyAdminAbout(user);
+                    User.findByEmail(userObj.email).then(function(user) {
+    //                  sendWelcomeEmailTo(user);
+    //                  notifyAdminAbout(user);
 
-                    var token = createToken(user);
-                    res.json({ token : token });
-                });
+                        var token = createToken(user);
+                        res.json({ token : token });
+                    });
             });
             }
         });
@@ -168,6 +168,8 @@ exports.create = function(req, res, next) {
  * Send User
  */
 exports.me = function(req, res) {
+    delete req.user.hashed_password;
+    delete req.user.salt;
     res.jsonp(req.user || null);
 };
 
@@ -175,6 +177,10 @@ exports.list = function(req, res) {
     // TODO look into passport and roles
     if (req.user.role === 'Admin') {
         User.findAllCustomers().then(function(users) {
+            _.forEach(users, function(user) {
+                delete user.hashed_password;
+                delete user.salt;
+            });
             res.send(users);
         });
     } else {
@@ -208,9 +214,9 @@ exports.find = function(req, res, err) {
 
 // delete is ADMIN ONLY and should only delete other users
 exports.delete = function(req, res, next) {
-    if (req.user.isAdmin()) {
+    if (User.isAdmin(req.user)) {
         var userId = req.params.userId;
-        if (req.user.id === userId) {
+        if (req.user.id == userId) {
             res.status(400).send({ msg: 'Unable to remove yourself' });
         } else {
             User.deleteById(userId).then(function() {
@@ -223,17 +229,21 @@ exports.delete = function(req, res, next) {
 };
 
 exports.update_password = function(req, res) {
-    req.checkBody('id', 'Please provide a user id').notEmpty();
+    req.checkParams('userId', 'Please provide a userId').notEmpty();
     req.checkBody('password', 'Please provide a password').notEmpty();
 
-    var id = req.body.id;
+    var userId = req.params.userId;
     var password = req.body.password;
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        User.updatePasswordById(id, password);
+        var new_salt = User.makeSalt();
+        var hashed_password = User.encryptPassword(new_salt, password);
+        User.updatePassword(userId, hashed_password, new_salt).then(function() {
+            res.status(200).send();
+        });
     }
 };
 
@@ -243,9 +253,12 @@ exports.update = function(req, res, next) {
     if (req.user.id == userId || req.user.role == 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
         var keys = ['first_name', 'last_name', 'email', 'phone']; //v2
-//        if (req.user.isAdmin()) {
-//            keys.push('role');
-//        }
+        if (User.isAdmin(req.user)) {
+            keys.push('role');
+        }
+        if ((user.role) && ((user.role1=== 'Admin') || (user.role !== 'Customer'))) {
+            return res.status(409).json(new Error('Invalid role'));
+        }
         var params = _.pick(user, keys);
 
         User.findById(userId).then(function(user) {
@@ -253,6 +266,8 @@ exports.update = function(req, res, next) {
                 user[key] = value;
             });
             db.knex('users').update(user).where('id', userId).then(function(userResult) {
+                delete user.hashed_password;
+                delete user.salt;
                 return res.json(user);
               });
         });

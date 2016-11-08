@@ -9,6 +9,10 @@ var _ = require('underscore');
 module.exports = function(router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session:false });
 
+    router.route('/users/reset')
+        .put(users.createResetKey);
+    router.route('/users/reset/:reset_key')
+        .put(users.resetPassword);
     router.route('/login')
         .post(users.logUserIn);
     router.route('/users/me')
@@ -22,10 +26,7 @@ module.exports = function(router) {
         .post(users.create);
     router.route('/users/:userId/password')
         .put(PassportAuthMiddleware, users.update_password);
-    router.route('/users/reset')
-        .put(users.createResetKey);
-    router.route('/users/reset/:reset_key')
-        .put(users.resetPassword);
+
 
 
     // Setting up the userId param

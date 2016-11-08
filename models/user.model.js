@@ -1,5 +1,7 @@
 /*jslint node: true */
 
+'use strict';
+
 var db = require('../services/db');
 var crypto = require('crypto');
 
@@ -38,16 +40,6 @@ var User = {
         return db.knex.raw(userSql, [email]);
     },
 
-    updatePasswordById: function(id, password) {
-        if ((!id) || (id.length === 0)) {
-          return Promise.reject('updatePasswordById() No id specified!');
-        }
-        if ((!password) || (id.password === 0)) {
-          return Promise.reject('updatePasswordById() No password specified!');
-        }
-        var userSql = 'UPDATE users SET password = ? WHERE id = ?';
-        return db.knex.raw(userSql, [password, id]);
-    },
 
 
     findByEmail: function(email) {
