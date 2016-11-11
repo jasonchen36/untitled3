@@ -83,7 +83,7 @@ var createToken = function (user) {
     payloadObj.email = user.email;
     payloadObj.id = user.id;
 
-    return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: '1h' });
+    return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: config.JWTExpires });
 };
 
 exports.logUserIn = function(req, res, next) {
