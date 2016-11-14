@@ -22,4 +22,5 @@ router.route('/')
 
 require('./user.routes')(router);
 require('./healthcheck.routes')(router);
+require('./message.routes')(router);
 exports.router = router;

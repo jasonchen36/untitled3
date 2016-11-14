@@ -241,11 +241,15 @@ exports.update_password = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var new_salt = User.makeSalt();
-        var hashed_password = User.encryptPassword(new_salt, password);
-        User.updatePassword(userId, hashed_password, new_salt).then(function() {
-            res.status(200).send();
-        });
+        if (User.isAdmin(req.user)) {
+            var new_salt = User.makeSalt();
+            var hashed_password = User.encryptPassword(new_salt, password);
+            User.updatePassword(userId, hashed_password, new_salt).then(function() {
+                res.status(200).send();
+            });
+        } else {
+            res.status(400).send({ msg: 'Admin privilages required' });
+        }
     }
 };
 

@@ -14,6 +14,7 @@ describe('<Integration Test>', function () {
     var token;
     var async = require('async');
     var _ = require('underscore');
+    var util = require('util');
 
     beforeEach(function (done) {
         User.deleteByEmail(credentials.email);
@@ -152,6 +153,7 @@ describe('<Integration Test>', function () {
             done();
         });
     });
+
 
     describe('Users:', function() {
         var verifyUserFields = function(user) {

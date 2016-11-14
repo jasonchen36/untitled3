@@ -12,9 +12,9 @@ var knex = require('knex')({
 if (config.database.debugSQL === true) {
   knex.on( 'query', function( queryData ) {
     if ((queryData.bindings) && ((queryData.bindings).length > 0)) {
-      logger.debug('%s:\n%s\n%s', queryData.sql, JSON.stringify(queryData.bindings, null, 2) );
+      logger.debug('%s:\n%s\n', queryData.sql, JSON.stringify(queryData.bindings, null, 2) );
     } else {
-      logger.debug('%s:\n%s', queryData.sql );
+      logger.debug('%s:\n', queryData.sql );
     }
   });
 }
