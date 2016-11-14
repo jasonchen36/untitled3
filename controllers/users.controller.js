@@ -193,7 +193,7 @@ exports.list = function(req, res) {
  */
 exports.user = function(req, res, next, id) {
     User.findById(id).then(function(user) {
-        if (!user) return next({ message: 'Failed to load User ' + id, status: 404 })
+        if (!user) return next({ message: 'Failed to load User ' + id, status: 404 });
         req.user = user;
         next();
     });
@@ -201,7 +201,7 @@ exports.user = function(req, res, next, id) {
 
 exports.find = function(req, res, err) {
     // TODO figure out how to get errors from next
-    var userId = req.params.userId;
+    var userId = parseInt(req.params.userId);
     if (req.user.id === userId) {
         res.send(req.user);
     } else {
@@ -217,8 +217,8 @@ exports.find = function(req, res, err) {
 // delete is ADMIN ONLY and should only delete other users
 exports.delete = function(req, res, next) {
     if (User.isAdmin(req.user)) {
-        var userId = req.params.userId;
-        if (req.user.id == userId) {
+        var userId = parseInt(req.params.userId);
+        if (req.user.id === userId) {
             res.status(400).send({ msg: 'Unable to remove yourself' });
         } else {
             User.deleteById(userId).then(function() {
@@ -234,14 +234,14 @@ exports.update_password = function(req, res) {
     req.checkParams('userId', 'Please provide a userId').notEmpty();
     req.checkBody('password', 'Please provide a password').notEmpty();
 
-    var userId = req.params.userId;
+    var userId = parseInt(req.params.userId);
     var password = req.body.password;
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        if (req.user.id == userId || req.user.role == 'Admin') {
+        if (req.user.id === userId || req.user.role === 'Admin') {
             var new_salt = User.makeSalt();
             var hashed_password = User.encryptPassword(new_salt, password);
             User.updatePassword(userId, hashed_password, new_salt).then(function() {
@@ -254,9 +254,9 @@ exports.update_password = function(req, res) {
 };
 
 exports.update = function(req, res, next) {
-    var userId = req.params.userId;
+    var userId = parseInt(req.params.userId);
     var user = req.body;
-    if (req.user.id == userId || req.user.role == 'Admin') {
+    if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
         var keys = ['first_name', 'last_name', 'email', 'phone']; //v2
         if (User.isAdmin(req.user)) {
