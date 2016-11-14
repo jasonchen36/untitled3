@@ -111,5 +111,3 @@ exports.emailtest = function (req, res) {
     var whatsit = mailclient.emailTest();
     res.status(200).send('emailtest done');
 };
-
-
