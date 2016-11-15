@@ -17,7 +17,7 @@ var config = require('../config/config');
 
 /*******************************************************************************
 ENDPOINT
-POST /account
+POST /quote
 
 INPUT BODY:
 {
@@ -34,7 +34,7 @@ exports.create = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-GET /account/:id
+GET /quote/:id
 
 INPUT BODY:
 None. req.params.id is the only input (no body)
