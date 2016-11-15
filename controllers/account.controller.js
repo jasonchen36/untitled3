@@ -41,8 +41,8 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  userId: 913
-  name: "Frank"
+  userId: 913,
+  name: "Frank",
   email: "test@email.com"
 }
 *******************************************************************************/
