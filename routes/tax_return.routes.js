@@ -39,5 +39,5 @@ module.exports = function (router) {
     router.route('/tax_return/:id/address')
         .post.(address.create);
     router.route('tax_return/:id/address/:id')
-        .get(document.findById)    
+        .get(document.findById);    
 };
