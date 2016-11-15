@@ -168,7 +168,7 @@ CREATE TABLE `tax_returns` (
   `status_id` int(11) NOT NULL,
   `first_name` varchar(255) DEFAULT NULL,
   `last_name` varchar(255) DEFAULT NULL,
-  `province_of_redidence` varchar(2) DEFAULT NULL,
+  `province_of_residence` varchar(2) DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
   `canadian_citizen` int(1) DEFAULT NULL,
   `authorize_cra` int(1) DEFAULT NULL,
