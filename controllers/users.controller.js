@@ -24,7 +24,18 @@ exports.authCallback = function(req, res) {
     res.redirect('/');
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /users/reset
 
+INPUT BODY:
+{
+  "email": "mike@email.com"
+}
+
+RESPONSE:
+200 OK/404/400
+*******************************************************************************/
 exports.createResetKey = function(req, res) {
     var userToReset = req.body;
 
@@ -55,6 +66,18 @@ exports.createResetKey = function(req, res) {
     }
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /users/reset/:reset_key
+
+INPUT BODY:
+{
+  "password": "new-password"
+}
+
+RESPONSE:
+200 OK/400/404
+*******************************************************************************/
 exports.resetPassword = function(req, res) {
     var password = req.body.password;
 
@@ -78,14 +101,25 @@ exports.resetPassword = function(req, res) {
     }
 };
 
-var createToken = function (user) {
-    var payloadObj = {};
-    payloadObj.email = user.email;
-    payloadObj.id = user.id;
+/*******************************************************************************
+ENDPOINT
+POST /login
 
-    return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: config.JWTExpires });
-};
+INPUT BODY:
+{
+  "email": "test_user@gmail.com",
+  "password": "123"
+}
 
+RESPONSE:
+200 OK
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MjQwMDc4LCJleHAiOjE0NzkyNDM2Nzh9.mmwzcpeJAmWHAYmob2iycVxfqEhwjBF9VuhrlZQK2tQ"
+}
+
+The token is valid for 1 hour (default from config) and can be attached to
+the headers of further requests so endpoints may be called as the validated user
+*******************************************************************************/
 exports.logUserIn = function(req, res, next) {
     passport.authenticate('local-login', function(err, user, info) {
         if (err) {
@@ -104,9 +138,27 @@ exports.logUserIn = function(req, res, next) {
     })(req, res, next);
 };
 
-/**
- * Create user
- */
+/*******************************************************************************
+ENDPOINT
+POST /users
+
+INPUT BODY:
+{
+  "password": "123",
+  "first_name": "test_user",
+  "last_name": "test_user",
+  "email": "test_user@gmail.com"
+}
+
+RESPONSE:
+200 OK
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MjQwMDc4LCJleHAiOjE0NzkyNDM2Nzh9.mmwzcpeJAmWHAYmob2iycVxfqEhwjBF9VuhrlZQK2tQ"
+}
+
+The token is valid for 1 hour (default from config) and can be attached to
+the headers of further requests so endpoints may be called as the validated user
+*******************************************************************************/
 exports.create = function(req, res, next) {
 //    req.checkBody('username', 'Username not provided').notEmpty();
 //    req.checkBody('username', 'Username can only contain letters, numbers, periods, and underscores').optional().matches('^[a-zA-Z0-9._]+$');
@@ -164,15 +216,62 @@ exports.create = function(req, res, next) {
     }
 };
 
-/**
- * Send User
- */
+/*******************************************************************************
+ENDPOINT
+GET /users/me
+
+INPUT BODY:
+None.
+
+RESPONSE:
+200 OK
+{
+  "id": 4,
+  "role": "Customer",
+  "provider": "local",
+  "name": null,
+  "email": "test_user@gmail.com",
+  "phone": "1234567890",
+  "username": "test_user",
+  "first_name": "test_user",
+  "last_name": "test_user",
+  "accounts": null,
+  "birthday": null,
+  "reset_key": null
+}
+*******************************************************************************/
 exports.me = function(req, res) {
     delete req.user.hashed_password;
     delete req.user.salt;
     res.jsonp(req.user || null);
 };
 
+/*******************************************************************************
+ENDPOINT (ADMIN ONLY requires valid admin token in header)
+GET /users
+
+INPUT BODY:
+None.
+
+RESPONSE:
+200 OK
+[
+  {
+    "id": 1,
+    "role": "Admin",
+    "provider": "local",
+    "name": "Admin",
+    "email": "4tcsv0+39eb34sja3uyg@sharklasers.com",
+    "phone": null,
+    "username": "test_admin",
+    "first_name": "test_admin",
+    "last_name": "test_admin",
+    "accounts": null,
+    "birthday": null,
+    "reset_key": "202bb88282e64298916a0963fcb3143d0c21cb5257856b18632014eedefd0134"
+  }
+]
+*******************************************************************************/
 exports.list = function(req, res) {
     // TODO look into passport and roles
     if (req.user.role === 'Admin') {
@@ -188,17 +287,36 @@ exports.list = function(req, res) {
     }
 };
 
-/**
- * Find user by id
- */
-exports.user = function(req, res, next, id) {
-    User.findById(id).then(function(user) {
-        if (!user) return next({ message: 'Failed to load User ' + id, status: 404 });
-        req.user = user;
-        next();
-    });
-};
 
+/*******************************************************************************
+ENDPOINT (ADMIN ONLY requires valid admin token in header)
+GET /users/:id
+
+INPUT BODY:
+{
+  firstname:  "Michael",
+  product:    "2016"
+}
+
+RESPONSE:
+200 OK
+{
+  "id": 1,
+  "role": "Admin",
+  "provider": "local",
+  "name": "Admin",
+  "email": "4tcsv0+39eb34sja3uyg@sharklasers.com",
+  "hashed_password": "Akay7w5Z2sC5h1qGh9DxAUgXXvNBbPZaAensbOB9Jr9+vsZ4DOUAEVT8ZvKMoxl7pzI1AH4qEMjyiyNfIaAVzw==",
+  "salt": "i5vtb97x5aMjQPv/NH29iw==",
+  "phone": null,
+  "username": "test_admin",
+  "first_name": "test_admin",
+  "last_name": "test_admin",
+  "accounts": null,
+  "birthday": null,
+  "reset_key": "202bb88282e64298916a0963fcb3143d0c21cb5257856b18632014eedefd0134"
+}
+*******************************************************************************/
 exports.find = function(req, res, err) {
     // TODO figure out how to get errors from next
     var userId = parseInt(req.params.userId);
@@ -214,7 +332,18 @@ exports.find = function(req, res, err) {
     }
 };
 
-// delete is ADMIN ONLY and should only delete other users
+/*******************************************************************************
+ENDPOINT (ADMIN ONLY requires valid admin token in header)
+DELETE /users/:id
+
+INPUT BODY:
+None
+
+RESPONSE:
+204 No Content or 404
+
+delete is ADMIN ONLY and should only delete other users (not self)
+*******************************************************************************/
 exports.delete = function(req, res, next) {
     if (User.isAdmin(req.user)) {
         var userId = parseInt(req.params.userId);
@@ -230,6 +359,20 @@ exports.delete = function(req, res, next) {
     }
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /users/:id/password
+
+INPUT BODY:
+{
+  "password": "12345"
+}
+
+RESPONSE:
+200 OK/404 if user id does not exist
+
+Users can reset their own password. Admins can reset any users password.
+*******************************************************************************/
 exports.update_password = function(req, res) {
     req.checkParams('userId', 'Please provide a userId').notEmpty();
     req.checkBody('password', 'Please provide a password').notEmpty();
@@ -253,6 +396,23 @@ exports.update_password = function(req, res) {
     }
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /users/:id
+
+INPUT BODY: (need at least one field present, multiple optional fields)
+{
+  "first_name": "firstname",
+  "last_name": "lastname",
+  "email": "fake@email.com",
+  "phone": "1234567890"
+}
+RESPONSE:
+200 OK/404 if user id does not exist
+
+Users can update their own first_name, last_name, email and phone.
+Admins can update role for other users.
+*******************************************************************************/
 exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var user = req.body;
@@ -280,4 +440,28 @@ exports.update = function(req, res, next) {
     } else {
         res.status(404).send();
     }
+};
+
+/******************************************************************************
+ *                                                                            *
+ *                    HELPER FUNCTIONS                                        *
+ *                                                                            *
+ ******************************************************************************/
+
+// router.param  user
+exports.user = function(req, res, next, id) {
+    User.findById(id).then(function(user) {
+        if (!user) return next({ message: 'Failed to load User ' + id, status: 404 });
+        req.user = user;
+        next();
+    });
+};
+
+// create a JWT token from payload
+var createToken = function (user) {
+    var payloadObj = {};
+    payloadObj.email = user.email;
+    payloadObj.id = user.id;
+
+    return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: config.JWTExpires });
 };
