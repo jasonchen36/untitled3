@@ -22,7 +22,6 @@ POST /tax_return
 INPUT BODY:
 {
   account_id:  "33",
-  status_id:    "44",
   first_name: "Jason",
   last_name: "Chen",
   province_of_residence: "Ontario",
