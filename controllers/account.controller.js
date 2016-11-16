@@ -22,7 +22,7 @@ POST /account
 INPUT BODY:
 {
   firstname:  "Michael",
-  product:    "2016"
+  productId:  12345
 }
 
 RESPONSE:
@@ -42,16 +42,14 @@ None. req.params.id is the only input (no body)
 RESPONSE:
 {
   userId: 913,
-  name: "Frank",
-  email: "test@email.com"
+  name: "Frank"
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
     var id = req.params.id;
     var jsonData = {
       userId: 913,
-      name: 'test',
-      email: 'test@email.com'
+      name: 'test'
     };
 
     res.status(200).send(jsonData);
