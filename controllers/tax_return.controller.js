@@ -150,6 +150,32 @@ exports.createAddress = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
+POST /tax_return/:id/address
+
+INPUT BODY:
+{
+  {addressLine1:  "34 Wellington Street",
+  addressLine2: "Suite 504",
+  city: "Toronto",
+  province: "Ontario",
+  postalCode: "L4D 5D7"},
+  {addressLine1:  "35 Wellington Street",
+  addressLine2: "Suite 505",
+  city: "Toronto",
+  province: "Ontario",
+  postalCode: "L4D 6D7"},
+
+}
+
+RESPONSE:
+200 OK
+*******************************************************************************/
+exports.createAddresses = function (req, res) {
+    res.status(200).send('OK');
+};
+
+/*******************************************************************************
+ENDPOINT
 PUT /tax_return/:id/address/:id
 
 INPUT BODY:

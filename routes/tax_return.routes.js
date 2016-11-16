@@ -39,5 +39,5 @@ module.exports = function (router) {
     router.route('/tax_return/:id/address')
         .put(address.updateAddress);
     router.route('tax_return/:id/address/:id')
-        .post(document.findById);
+        .post(address.createaddresses);
 };
