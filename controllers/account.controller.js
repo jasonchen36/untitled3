@@ -2,14 +2,14 @@
 
 'use strict';
 
-// message controller
+// account controller
 
 /**
  * Module dependencies.
  */
 //var db = require('../services/db');
 var logger = require('../services/logger.service');
-//var account = require('../models/account.model');
+var account = require('../models/account.model');
 
 // boilerplate
 var _ = require('underscore');
@@ -29,7 +29,27 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.create = function (req, res) {
-    res.status(200).send('OK');
+    req.checkBody('name', 'Please provide a name').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var accountObj = {};
+        accountObj.name = req.body.name;
+        account.create(accountObj).then(function(insertId) {
+            account.findById(insertId).then(function(account) {
+                if ((!account) || (account.length === 0)) {
+                    res.status(500).send("Internal Error");
+                } else {
+                    var jsonData = {
+                        accountId: account.id,
+                        name: account.name
+                    };
+                    res.status(200).send(jsonData);
+                }
+            });
+        });
+    }
 };
 
 /*******************************************************************************
@@ -46,11 +66,23 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
-    var id = req.params.id;
-    var jsonData = {
-      userId: 913,
-      name: 'test'
-    };
+    req.checkParam('id', 'Please provide an Account Id').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
 
-    res.status(200).send(jsonData);
+        account.findById(id).then(function(account) {
+            if ((!account) || (account.length === 0)) {
+                res.status(404).send();
+            } else {
+                var jsonData = {
+                  accountId: account.id,
+                  name: account.name
+                };
+                res.status(200).send(jsonData);
+            }
+        });
+    }
 };
