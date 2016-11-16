@@ -25,7 +25,7 @@ INPUT BODY:
   first_name: "Jason",
   last_name: "Chen",
   province_of_residence: "Ontario",
-  date_of_birth: "08-23-1988",
+  date_of_birth: "08/23/1988",
   canadian_citizen: "Y",
   authorize_cra: "Y"
 }
