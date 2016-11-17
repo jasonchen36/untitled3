@@ -17,27 +17,27 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/tax_return/:id')
-        .get(tax_return.findById);
+        .get(tax_return.findTaxReturnById);
     router.route('/tax_return')
-        .post(tax_return.create);
+        .post(tax_return.createTaxReturn);
     router.route('/tax_return/:id/answer')
-        .post(answers.create);
+        .post(answers.createAnswer);
     router.route('/tax_return/:id/answer/:id')
-        .get(answers.findById);
+        .get(answers.findAnswerById);
     router.route('/tax_return/:id/answers')
-        .get(answers.find);
+        .get(answers.listAnswers);
     router.route('/tax_return/:id/address')
-        .post(address.create);
+        .post(address.createAddress);
     router.route('/tax_return/:id/address/:id')
-        .get(address.findById);
+        .get(address.findAddressById);
     router.route('/tax_return/:id/checklist')
-        .get(checklist.find);
+        .get(checklist.findChecklist);
     router.route('/tax_return/:id/document')
-        .post(document.create);
+        .post(document.createDocument);
     router.route('/tax_return/:id/document/:id')
-        .get(document.findById);
+        .get(document.findDocumentById);
     router.route('/tax_return/:id/address')
-        .post.(address.create);
+        .put(address.updateAddress);
     router.route('tax_return/:id/address/:id')
-        .get(document.findById);    
+        .post(address.createaddresses);
 };
