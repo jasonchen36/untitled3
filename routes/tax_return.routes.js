@@ -36,7 +36,7 @@ module.exports = function (router) {
     router.route('/tax_return/:id/document')
         .post(document.createDocument);
     router.route('/tax_return/:id/document/:id')
-        .get(document.findDocumentById);
+        .get(document.deleteDocumentById);
     router.route('/tax_return/:id/address')
         .put(address.updateAddress);
     router.route('tax_return/:id/address/:id')

@@ -441,19 +441,19 @@ exports.createDocument = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-GET /tax_return/:id/document/:id
+DELETE /tax_return/:id/document/:id
 
 INPUT BODY:
-None. req.params.id is the only input (no body)
-
-RESPONSE:
 {
   name: "file.doc",
   url: "taxplan.com/file.doc",
   thumbnail_url: "taxplan.com/filename.jpg"
 }
+
+RESPONSE:
+200 OK
 *******************************************************************************/
-exports.findDocumentById = function (req, res) {
+exports.deleteDocumentById = function (req, res) {
     var id = req.params.id;
     var jsonData = {
       name: "file.doc",
