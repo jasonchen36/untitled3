@@ -8,7 +8,7 @@
  * Module dependencies.
  */
 var logger = require('../services/logger.service');
-var account = require('../models/account.model');
+var TaxReturn = require('../models/tax_return.model');
 var validator = require('express-validator');
 
 // boilerplate
@@ -64,14 +64,32 @@ RESPONSE:
 }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
-    req.checkBody('accountId', 'Please provide a accountId').notEmpty();
-    req.checkBody('productId', 'Please provide a productId').notEmpty();
+    req.checkBody('accountId', 'Please provide a accountId').isInt();
+    req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('filers', 'Please provide an array of filers').notEmpty();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-      res.status(200).send('OK');
+        var accountId = req.body.accountId;
+        var productId = req.body.productId;
+        var filers = req.body.filers;
+
+        // TODO:
+        // check that accountId exists
+        // check that productId exists
+
+        var taxReturnPromises = [];
+        _.forEach(filers, function(filer) {
+            var taxReturnObj = {};
+            taxReturnObj.accountId = accountId;
+            taxReturnObj.productId = productId;
+            taxReturnObj.firstName = filer.firstName;
+            taxReturnPromises.push(TaxReturn.create(taxReturnObj));
+        });
+        return Promise.all([taxReturnPromises]).then(function() {
+            res.status(200).send('OK');
+        });
     }
 };
 
@@ -99,7 +117,7 @@ At least one optional field must be present or there would be nothing to update
  ******************************************************************************/
 exports.updateTaxReturnById = function (req, res) {
     res.status(200).send('OK');
-}
+};
 /*******************************************************************************
 ENDPOINT
 GET /tax_return/:id
@@ -109,18 +127,26 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  accountId: "33",
-  statusId: "44"
+  accountId: 33,
+  statusId: 44
 }
 *******************************************************************************/
 exports.findTaxReturnById = function (req, res) {
-    var id = req.params.id;
-    var jsonData = {
-      accountId: "33",
-      statusId: "44"
-    };
+    req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send(jsonData);
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
+        TaxReturn.findById(id).then(function(taxReturn) {
+            if (taxReturn) {
+                res.status(200).send(taxReturn);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
 };
 
 /*******************************************************************************

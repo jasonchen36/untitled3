@@ -17,11 +17,11 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/tax_return/:id')
-        .get(tax_return.findTaxReturnById);
+        .get(tax_return.findTaxReturnById)
         .put(tax_return.updateTaxReturnById);
     router.route('/tax_return')
         .post(tax_return.createTaxReturn);
-    router.route('/tax_return/:id/answer')
+/*    router.route('/tax_return/:id/answer')
         .post(answers.createAnswer);
     router.route('/tax_return/:id/answer/:id')
         .get(answers.findAnswerById);
@@ -40,5 +40,5 @@ module.exports = function (router) {
     router.route('/tax_return/:id/address')
         .put(address.updateAddress);
     router.route('tax_return/:id/address/:id')
-        .post(address.createaddresses);
+        .post(address.createaddresses);*/
 };

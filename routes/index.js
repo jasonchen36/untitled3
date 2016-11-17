@@ -24,4 +24,5 @@ require('./user.routes')(router);
 require('./healthcheck.routes')(router);
 require('./message.routes')(router);
 require('./account.routes')(router);
+require('./tax_return.routes')(router);
 exports.router = router;
