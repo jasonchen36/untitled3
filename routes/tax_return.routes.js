@@ -18,6 +18,7 @@ module.exports = function (router) {
 
     router.route('/tax_return/:id')
         .get(tax_return.findTaxReturnById);
+        .put(tax_return.updateTaxReturnById);
     router.route('/tax_return')
         .post(tax_return.createTaxReturn);
     router.route('/tax_return/:id/answer')

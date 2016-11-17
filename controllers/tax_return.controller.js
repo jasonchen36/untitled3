@@ -7,9 +7,9 @@
 /**
  * Module dependencies.
  */
-//var db = require('../services/db');
 var logger = require('../services/logger.service');
-//var account = require('../models/account.model');
+var account = require('../models/account.model');
+var validator = require('express-validator');
 
 // boilerplate
 var _ = require('underscore');
@@ -21,22 +21,85 @@ POST /tax_return
 
 INPUT BODY:
 {
-  accountID:  "33",
-  firstName: "Jason",
-  lastName: "Chen",
-  provinceOfResidence: "Ontario",
-  dateOfBirth: "08/23/1988",
-  canadianCitizen: "Y",
-  authorizeCra: "Y"
+  accountId: 1,
+  productId: 70,
+  filers: [
+    {
+      firstName: 'Carmela'
+    },
+    {
+      firstName: 'Doug'
+    },
+    {
+      firstName: 'Tim'
+    },
+    {
+      firstName: 'Michael'
+    }
+  ]
 }
 
 RESPONSE:
 200 OK
+{
+  filerCount: 4,
+  taxReturns: [
+    {
+      firstName: 'Carmela',
+      taxReturnId: 55
+    },
+    {
+      firstName: 'Doug',
+      taxReturnId: 56
+    },
+    {
+      firstName: 'Tim',
+      taxReturnId: 57
+    },
+    {
+      firstName: 'Michael',
+      taxReturnId: 58
+    }
+  ]
+}
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
-    res.status(200).send('OK');
+    req.checkBody('accountId', 'Please provide a accountId').notEmpty();
+    req.checkBody('productId', 'Please provide a productId').notEmpty();
+    req.checkBody('filers', 'Please provide an array of filers').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+      res.status(200).send('OK');
+    }
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /tax_return
+
+INPUT BODY:
+{
+  accountId:  1,                            Mandatory
+  productId:  70,                           Mandatory
+  firstName: "Jason",                       Optional
+  lastName: "Chen",                         Optional
+  provinceOfResidence: "Ontario",           Optional
+  dateOfBirth: "08/23/1988",                Optional
+  canadianCitizen: "Y",                     Optional
+  authorizeCra: "Y"                         Optional
+}
+
+RESPONSE:
+200 OK
+
+NOTE:
+At least one optional field must be present or there would be nothing to update
+ ******************************************************************************/
+exports.updateTaxReturnById = function (req, res) {
+    res.status(200).send('OK');
+}
 /*******************************************************************************
 ENDPOINT
 GET /tax_return/:id
@@ -118,12 +181,16 @@ RESPONSE:
 *******************************************************************************/
 exports.listAnswers = function (req, res) {
     var id = req.params.id;
-    var jsonData = {
-      { questionId: "33",
-       text: "Y" },
-      { questionId: "34",
-       text: "N" }
-    };
+    var jsonData = [
+        {
+            questionId: "33",
+            text: "Y"
+        },
+        {
+            questionId: "34",
+            text: "N"
+        }
+    ];
 
     res.status(200).send(jsonData);
 };

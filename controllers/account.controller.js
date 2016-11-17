@@ -9,6 +9,7 @@
  */
 var logger = require('../services/logger.service');
 var account = require('../models/account.model');
+var validator = require('express-validator');
 
 // boilerplate
 var _ = require('underscore');
