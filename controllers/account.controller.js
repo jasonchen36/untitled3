@@ -66,7 +66,7 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
-    req.checkParam('id', 'Please provide an Account Id').notEmpty();
+    req.checkParam('id', 'Please provide an Account Id').isInt();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);

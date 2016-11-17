@@ -168,7 +168,7 @@ exports.create = function(req, res, next) {
     req.checkBody('first_name', 'First Name not provided').notEmpty();
     req.checkBody('last_name', 'Last Name not provided').notEmpty();
     req.checkBody('email', 'Email is invalid').isEmail();
-    req.checkBody('accountId', 'Account ID is invalid').optional().notEmpty();
+    req.checkBody('accountId', 'Account ID is invalid').optional().isInt();
 
     var errors = req.validationErrors();
     if (errors) {
@@ -301,7 +301,7 @@ exports.list = function(req, res) {
                 delete user.hashed_password;
                 delete user.salt;
             });
-            res.send(users);
+            res.status(200).send(users);
         });
     } else {
         res.status(404).send();
@@ -342,13 +342,17 @@ exports.find = function(req, res, err) {
     // TODO figure out how to get errors from next
     var userId = parseInt(req.params.userId);
     if (req.user.id === userId) {
-        res.send(req.user);
+        res.status(200).send(req.user);
     } else {
         // TODO need service for this
         User.findById(userId).then(function(user) {
-            delete user.hashed_password;
-            delete user.salt;
-            res.send(user);
+            if (user) {
+                delete user.hashed_password;
+                delete user.salt;
+                res.status(200).send(user);
+            } else {
+                res.status(404).send;
+            }
         });
     }
 };
@@ -395,16 +399,16 @@ RESPONSE:
 Users can reset their own password. Admins can reset any users password.
 *******************************************************************************/
 exports.update_password = function(req, res) {
-    req.checkParams('userId', 'Please provide a userId').notEmpty();
+    req.checkParams('userId', 'Please provide a userId').isInt();
     req.checkBody('password', 'Please provide a password').notEmpty();
-
-    var userId = parseInt(req.params.userId);
-    var password = req.body.password;
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
+        var userId = parseInt(req.params.userId);
+        var password = req.body.password;
+
         if (req.user.id === userId || req.user.role === 'Admin') {
             var new_salt = User.makeSalt();
             var hashed_password = User.encryptPassword(new_salt, password);
