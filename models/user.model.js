@@ -7,7 +7,7 @@ var crypto = require('crypto');
 
 var User = {
     findAllCustomers: function() {
-        var userSql = 'SELECT * FROM users WHERE NOT role = "Customer"';
+        var userSql = 'SELECT * FROM users WHERE role = "Customer"';
         return db.knex.raw(userSql, []).then(function(usersSqlResults) {
             return(usersSqlResults[0]);
         });
@@ -15,7 +15,7 @@ var User = {
 
     findById: function(id) {
         if ((!id) || (id.length === 0)) {
-          return Promise.reject('findById() No id specified!');
+          return Promise.reject(new Error('findById() No id specified!'));
         }
         var userSql = 'SELECT * FROM users WHERE id = ?';
         return db.knex.raw(userSql, [id]).then(function(userSqlResults) {
@@ -25,7 +25,7 @@ var User = {
 
     deleteById: function(id) {
         if ((!id) || (id.length === 0)) {
-          return Promise.reject('deleteById() No id specified!');
+          return Promise.reject(new Error('deleteById() No id specified!'));
         }
         var userDeleteSql = 'DELETE FROM users WHERE id = ?';
         return db.knex.raw(userDeleteSql, [id]);
@@ -34,7 +34,7 @@ var User = {
 
     deleteByEmail: function(email) {
         if ((!email) || (email.length === 0)) {
-          return Promise.reject('deleteByEmail() No email specified!');
+          return Promise.reject(new Error('deleteByEmail() No email specified!'));
         }
         var userSql = 'DELETE FROM users WHERE email = ?';
         return db.knex.raw(userSql, [email]);
@@ -44,7 +44,7 @@ var User = {
 
     findByEmail: function(email) {
         if ((!email) || (email.length === 0)) {
-          return Promise.reject('findUserByEmail() No email specified!');
+          return Promise.reject(new Error('findUserByEmail() No email specified!'));
         }
         var userSql = 'SELECT * FROM users WHERE email = ? LIMIT 1';
         return db.knex.raw(userSql, [email]).then(function(userSqlResults) {
@@ -55,10 +55,10 @@ var User = {
 
     create: function(userObj) {
         if ((!userObj.provider) || (userObj.provider.length === 0)) {
-          return Promise.reject('No provider specified!');
+          return Promise.reject(new Error('No provider specified!'));
         }
         if ((!userObj.role) || (userObj.role.length === 0)) {
-          return Promise.reject('No role specified!');
+          return Promise.reject(new Error('No role specified!'));
         }
         // ... other fields are validated by users.controller from req.body
 
@@ -145,10 +145,10 @@ var User = {
 
     updateResetKey: function(userId, reset_key) {
         if ((!userId) || (userId.length === 0)) {
-          return Promise.reject('updateResetKey() No userId specified!');
+          return Promise.reject(new Error('updateResetKey() No userId specified!'));
         }
         if ((!reset_key) || (reset_key.length === 0)) {
-          return Promise.reject('updateResetKey() No reset_key specified!');
+          return Promise.reject(new Error('updateResetKey() No reset_key specified!'));
         }
         var updateUserSql = 'UPDATE users SET reset_key = ? WHERE id = ?';
         var updateUserSqlParams = [reset_key, userId];
@@ -157,13 +157,13 @@ var User = {
 
     updatePassword: function(userId, hashed_password, new_salt) {
         if ((!userId) || (userId.length === 0)) {
-          return Promise.reject('updatePassword() No userId specified!');
+          return Promise.reject(new Error('updatePassword() No userId specified!'));
         }
         if ((!hashed_password) || (hashed_password.length === 0)) {
-          return Promise.reject('updatePassword() No hashed_password specified!');
+          return Promise.reject(new Error('updatePassword() No hashed_password specified!'));
         }
         if ((!new_salt) || (new_salt.length === 0)) {
-          return Promise.reject('updatePassword() No new_salt specified!');
+          return Promise.reject(new Error('updatePassword() No new_salt specified!'));
         }
         var updateUserSql = 'UPDATE users SET reset_key = null, hashed_password = ?, salt = ? WHERE id = ?';
         var updateUserSqlParams = [hashed_password, new_salt, userId];
@@ -172,7 +172,7 @@ var User = {
 
     findByResetKey: function(reset_key) {
         if ((!reset_key) || (reset_key.length === 0)) {
-          return Promise.reject('findByResetKey() No reset_key specified!');
+          return Promise.reject(new Error('findByResetKey() No reset_key specified!'));
         }
         var userSql = 'SELECT * FROM users WHERE reset_key = ? LIMIT 1';
         return db.knex.raw(userSql, [reset_key]).then(function(userSqlResults) {

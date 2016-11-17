@@ -7,7 +7,7 @@ var db = require('../services/db');
 var Account = {
     findById: function(id) {
         if ((!id) || (id.length === 0)) {
-            return Promise.reject('No id specified!');
+            return Promise.reject(new Error('No id specified!'));
         }
 
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
@@ -18,7 +18,7 @@ var Account = {
 
     create: function(accountObj) {
         if ((!accountObj.name) || (accountObj.name.length === 0)) {
-            return Promise.reject('No name specified!');
+            return Promise.reject(new Error('No name specified!'));
         }
 
         var accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
