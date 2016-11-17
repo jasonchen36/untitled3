@@ -247,23 +247,17 @@ POST /tax_return/:id/address
 
 INPUT BODY:
 {
-  {addressLine1:  "34 Wellington Street",
+  addressLine1:  "34 Wellington Street",
   addressLine2: "Suite 504",
   city: "Toronto",
   province: "Ontario",
-  postalCode: "L4D 5D7"},
-  {addressLine1:  "35 Wellington Street",
-  addressLine2: "Suite 505",
-  city: "Toronto",
-  province: "Ontario",
-  postalCode: "L4D 6D7"},
-
+  postalCode: "L4D 5D7"
 }
 
 RESPONSE:
 200 OK
 *******************************************************************************/
-exports.createAddresses = function (req, res) {
+exports.linkExistingAddress = function (req, res) {
     res.status(200).send('OK');
 };
 
@@ -315,6 +309,96 @@ exports.findAddressById = function (req, res) {
 
     res.status(200).send(jsonData);
 };
+
+/*******************************************************************************
+ENDPOINT
+POST /tax_return/:id/dependent
+
+INPUT BODY:
+{
+  taxReturnId:  "44",
+  firstName: "Jason",
+  lastName: "Chen",
+  dateOfBirth: "08/07/1988",
+  relationship: "son"
+}
+
+RESPONSE:
+200 OK
+*******************************************************************************/
+exports.createAddress = function (req, res) {
+    res.status(200).send('OK');
+};
+
+/*******************************************************************************
+ENDPOINT
+POST /tax_return/:id/dependent
+
+INPUT BODY:
+{
+  taxReturnId:  "44",
+  firstName: "Jason",
+  lastName: "Chen",
+  dateOfBirth: "08/07/1988",
+  relationship: "son"
+}
+
+RESPONSE:
+200 OK
+*******************************************************************************/
+exports.linkExistingDependent = function (req, res) {
+    res.status(200).send('OK');
+};
+
+/*******************************************************************************
+ENDPOINT
+PUT /tax_return/:id/dependent/:id
+
+INPUT BODY:
+{
+  taxReturnId:  "44",
+  firstName: "Jason",
+  lastName: "Chen",
+  dateOfBirth: "08/07/1988",
+  relationship: "son"
+}
+
+RESPONSE:
+200 OK
+*******************************************************************************/
+exports.updateDependent = function (req, res) {
+    res.status(200).send('OK');
+};
+
+/*******************************************************************************
+ENDPOINT
+GET /tax_return/:id/dependent/:id
+
+INPUT BODY:
+None. req.params.id is the only input (no body)
+
+RESPONSE:
+{
+  taxReturnId:  "44",
+  firstName: "Jason",
+  lastName: "Chen",
+  dateOfBirth: "08/07/1988",
+  relationship: "son"
+}
+*******************************************************************************/
+exports.findAddressById = function (req, res) {
+    var id = req.params.id;
+    var jsonData = {
+      taxReturnId:  "44",
+      firstName: "Jason",
+      lastName: "Chen",
+      dateOfBirth: "08/07/1988",
+      relationship: "son"
+    };
+
+    res.status(200).send(jsonData);
+};
+
 
 /*******************************************************************************
 ENDPOINT
