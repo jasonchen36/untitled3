@@ -64,9 +64,9 @@ app.use(multer({ dest: config.uploadDir}).single('uploadFileName'));
 
 if (process.env.NODE_ENV === 'development') {
     app.set('json spaces', 4);
-    app.use(morgan(':api_timestamp :remote-addr - :method :url HTTP/:http-version :status :res[content-length] - :response-time ms'));
+    app.use(morgan(':api_timestamp :remote-addr - :method :url HTTP/:http-version :status :res[content-length] bytes - :response-time ms'));
 } else {
-    app.use(morgan(':api_timestamp :req[x-forwarded-for] - :method :url HTTP/:http-version :status :res[content-length] - :response-time ms'));
+    app.use(morgan(':api_timestamp :req[x-forwarded-for] - :method :url HTTP/:http-version :status :res[content-length] bytes - :response-time ms'));
 }
 
 app.use(passport.initialize());
