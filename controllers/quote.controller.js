@@ -34,6 +34,24 @@ exports.create = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
+POST /quote/:id/submit
+
+INPUT BODY:
+{
+  account_id:  "33",
+  product_id:    "44"
+}
+
+RESPONSE:
+200 OK
+ ******************************************************************************/
+exports.submit = function (req, res) {
+    res.status(200).send('OK');
+};
+
+
+/*******************************************************************************
+ENDPOINT
 GET /quote/:id
 
 INPUT BODY:
