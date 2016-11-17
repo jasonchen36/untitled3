@@ -9,6 +9,8 @@
  */
 var logger = require('../services/logger.service');
 var TaxReturn = require('../models/tax_return.model');
+var Account = require('../models/account.model');
+var Product = require('../models/product.model');
 var validator = require('express-validator');
 
 // boilerplate
@@ -42,6 +44,8 @@ INPUT BODY:
 RESPONSE:
 200 OK
 {
+  accountId: 1,
+  productId: 70,
   filerCount: 4,
   taxReturns: [
     {
@@ -75,20 +79,36 @@ exports.createTaxReturn = function (req, res) {
         var productId = req.body.productId;
         var filers = req.body.filers;
 
-        // TODO:
         // check that accountId exists
-        // check that productId exists
+        Account.findById(accountId).then(function(account) {
+            if ((!account) || (account.length === 0)) {
+                res.status(404).send({ msg: 'Invalid accountID' });
+            } else {
+                // check that productId exists
+                Product.findById(productId).then(function(product) {
+                    if ((!product) || (product.length === 0)) {
+                        res.status(404).send({ msg: 'Invalid productID' });
+                    } else {
+                        var taxReturnPromises = [];
+                        _.forEach(filers, function(filer) {
+                            var taxReturnObj = {};
+                            taxReturnObj.accountId = accountId;
+                            taxReturnObj.productId = productId;
+                            taxReturnObj.firstName = filer.firstName;
+                            taxReturnPromises.push(TaxReturn.create(taxReturnObj));
+                        });
+                        return Promise.all(taxReturnPromises).then(function(promiseResults) {
+                            var resultObj = {};
+                            resultObj.accountId = accountId;
+                            resultObj.productId = productId;
+                            resultObj.filerCount = filers.length;
+                            resultObj.taxReturns = promiseResults;
 
-        var taxReturnPromises = [];
-        _.forEach(filers, function(filer) {
-            var taxReturnObj = {};
-            taxReturnObj.accountId = accountId;
-            taxReturnObj.productId = productId;
-            taxReturnObj.firstName = filer.firstName;
-            taxReturnPromises.push(TaxReturn.create(taxReturnObj));
-        });
-        return Promise.all([taxReturnPromises]).then(function() {
-            res.status(200).send('OK');
+                            res.status(200).json(resultObj);
+                        });
+                    }
+                });
+            }
         });
     }
 };
