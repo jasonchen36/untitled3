@@ -62,17 +62,25 @@ var User = {
         }
         // ... other fields are validated by users.controller from req.body
 
-        var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email) VALUES(?, ?, ?, ?, ?, ?, ?)';
+        if (userObj.accountId) {
+            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, account_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
+        } else {
+            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email) VALUES(?, ?, ?, ?, ?, ?, ?)';
+        }
         var userInsertSqlParams = [
           userObj.provider,
           userObj.role,
-//          userObj.username,
+//            userObj.username,
           userObj.hashed_password,
           userObj.salt,
           userObj.first_name,
           userObj.last_name,
           userObj.email
         ];
+        if (userObj.accountId) {
+            userInsertSqlParams.push(userObj.accountId);
+        }
+
         return db.knex.raw(userInsertSql, userInsertSqlParams).then(function(userInsertSqlResults) {
           return userInsertSqlResults[0][0];
         });

@@ -7,7 +7,6 @@
 /**
  * Module dependencies.
  */
-//var db = require('../services/db');
 var logger = require('../services/logger.service');
 var account = require('../models/account.model');
 

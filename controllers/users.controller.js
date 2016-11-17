@@ -5,7 +5,6 @@
 /**
  * Module dependencies.
  */
-//var Account = mongoose.model('Account');
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var _ = require('underscore');
@@ -15,6 +14,7 @@ var async = require("async");
 var db = require('../services/db');
 var validator = require('express-validator');
 var User = require('../models/user.model');
+var Account = require('../models/account.model');
 var logger = require('../services/logger.service');
 
 /**
@@ -147,7 +147,11 @@ INPUT BODY:
   "password": "123",
   "first_name": "test_user",
   "last_name": "test_user",
-  "email": "test_user@gmail.com"
+  "email": "test_user@gmail.com",
+  "accountId": 2345              // optional
+                                    - if accountId is passed do not create an account.
+                                      Instead link the account to the new user.
+                                    - if not passed create an account and link to user
 }
 
 RESPONSE:
@@ -160,12 +164,11 @@ The token is valid for 1 hour (default from config) and can be attached to
 the headers of further requests so endpoints may be called as the validated user
 *******************************************************************************/
 exports.create = function(req, res, next) {
-//    req.checkBody('username', 'Username not provided').notEmpty();
-//    req.checkBody('username', 'Username can only contain letters, numbers, periods, and underscores').optional().matches('^[a-zA-Z0-9._]+$');
     req.checkBody('password', 'Password not provided').notEmpty();
     req.checkBody('first_name', 'First Name not provided').notEmpty();
     req.checkBody('last_name', 'Last Name not provided').notEmpty();
     req.checkBody('email', 'Email is invalid').isEmail();
+    req.checkBody('accountId', 'Account ID is invalid').optional().notEmpty();
 
     var errors = req.validationErrors();
     if (errors) {
@@ -178,43 +181,61 @@ exports.create = function(req, res, next) {
         userObj.first_name = req.body.first_name;
         userObj.last_name = req.body.last_name;
         userObj.email = req.body.email;
+        if (req.body.accountId) {
+            userObj.accountId = req.body.accountId; // link account to user
+        }
         User.findByEmail(userObj.email).then(function(existingUser) {
             if (existingUser) {
                 res.status(400).send({ 'message': 'User exists!' });
             } else {
                 userObj.provider = 'local';
                 userObj.role = 'Customer';
-                User.create(userObj).then(function() {
-                    // TODO link user to account
-
-                    // TODO email may not exist
-                    var sendWelcomeEmailTo = function(user) {
-                        var variables = {
-                            name: user.name
-                        };
-                        mail.send(config.email.templates.welcome, user.email, variables);
-                    };
-
-                    var notifyAdminAbout = function(user) {
-                        var variables = {
-                            name: user.name,
-                            email: user.email
-                        };
-                        mail.send(config.email.templates.profile_created, config.email.admin, variables);
-                    };
-
-                    User.findByEmail(userObj.email).then(function(user) {
-    //                  sendWelcomeEmailTo(user);
-    //                  notifyAdminAbout(user);
-
-                        var token = createToken(user);
+                if (!userObj.accountId) {
+                    // create a new account for this user
+                    var accountObj = {};
+                    accountObj.name = userObj.first_name;
+                    Account.create(accountObj).then(function(accountResult) {
+                        userObj.accountId = accountResult.insertId;
+                        createUserAndSendEmail(userObj).then(function(token) {
+                            res.json({ token : token });
+                        });
+                    });
+                } else {
+                    createUserAndSendEmail(userObj).then(function(token) {
                         res.json({ token : token });
                     });
-            });
+                }
             }
         });
     }
 };
+
+function createUserAndSendEmail(userObj) {
+    return User.create(userObj).then(function() {
+        var sendWelcomeEmailTo = function(user) {
+            var variables = {
+                name: user.name
+            };
+            mail.send(config.email.templates.welcome, user.email, variables);
+        };
+
+        var notifyAdminAbout = function(user) {
+            var variables = {
+                name: user.name,
+                email: user.email
+            };
+            mail.send(config.email.templates.profile_created, config.email.admin, variables);
+        };
+
+        return User.findByEmail(userObj.email).then(function(user) {
+//                  sendWelcomeEmailTo(user);
+//                  notifyAdminAbout(user);
+
+            var token = createToken(user);
+            return token;
+        });
+    });
+}
 
 /*******************************************************************************
 ENDPOINT
