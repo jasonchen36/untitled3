@@ -21,12 +21,15 @@ POST /quote
 
 INPUT BODY:
 {
-  account_id:  "33",
-  product_id:    "44"
+  accountId:  33,
+  productId:  44
 }
 
 RESPONSE:
 200 OK
+{
+  quoteId: 4
+}
  ******************************************************************************/
 exports.create = function (req, res) {
     res.status(200).send('OK');
@@ -38,8 +41,8 @@ POST /quote/:id/submit
 
 INPUT BODY:
 {
-  account_id:  "33",
-  product_id:    "44"
+  accountId:  33,
+  productId:   44
 }
 
 RESPONSE:
@@ -62,21 +65,23 @@ RESPONSE:
    "id":1,
    "accountId":2,
    "productId":3,
-   "taxReturnsQuoted":[
+   "taxReturns":[
       {
          "taxReturnId":1,
          "name":"Carmela Doctor",
-         "itemCount":3,
          "items":[
             {
+              "id": 1,
                "text":"Tax Prep. Basic",
                "value":80
             },
             {
+              "id": 2,
                "text":"Tax Prep. Investment Income",
                "value":10
             },
             {
+              "id": 3,
                "text":"Tax Prep. Rental Income",
                "value":10
             }
@@ -85,17 +90,19 @@ RESPONSE:
       {
          "taxReturnId":2,
          "name":"Doug Doctor",
-         "itemCount":3,
          "items":[
             {
+              "id": 1,
                "text":"Tax Prep. Basic",
                "value":80
             },
             {
+              "id": 2,
                "text":"Tax Prep. Investment Income",
                "value":10
             },
             {
+              "id": 3,
                "text":"Tax Prep. Rental Income",
                "value":10
             }
@@ -107,9 +114,9 @@ RESPONSE:
       {
          "id":33,
          "name":"Direct Deposit",
-         "itemCount":1,
          "items":[
             {
+               "id": 1,
                "text":"Direct Deposit",
                "value":5
             }

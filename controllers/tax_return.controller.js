@@ -21,46 +21,20 @@ POST /tax_return
 
 INPUT BODY:
 {
-  accountId: 1,
-  productId: 70,
-  filers: [
-    {
-      firstName: 'Carmela'
-    },
-    {
-      firstName: 'Doug'
-    },
-    {
-      firstName: 'Tim'
-    },
-    {
-      firstName: 'Michael'
-    }
-  ]
+  accountId:  1,                            Mandatory
+  productId:  70,                           Mandatory
+  firstName: "Jason",                       Optional
+  lastName: "Chen",                         Optional
+  provinceOfResidence: "Ontario",           Optional
+  dateOfBirth: "08/23/1988",                Optional
+  canadianCitizen: "Y",                     Optional
+  authorizeCra: "Y"                         Optional
 }
 
 RESPONSE:
 200 OK
 {
-  filerCount: 4,
-  taxReturns: [
-    {
-      firstName: 'Carmela',
-      taxReturnId: 55
-    },
-    {
-      firstName: 'Doug',
-      taxReturnId: 56
-    },
-    {
-      firstName: 'Tim',
-      taxReturnId: 57
-    },
-    {
-      firstName: 'Michael',
-      taxReturnId: 58
-    }
-  ]
+  taxReturnId: 3
 }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
@@ -95,7 +69,7 @@ exports.createTaxReturn = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-PUT /tax_return
+PUT /tax_return/:id
 
 INPUT BODY:
 {
@@ -127,8 +101,14 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  accountId: 33,
-  statusId: 44
+  accountId:  1,                            Mandatory
+  productId:  70,                           Mandatory
+  firstName: "Jason",                       Optional
+  lastName: "Chen",                         Optional
+  provinceOfResidence: "Ontario",           Optional
+  dateOfBirth: "08/23/1988",                Optional
+  canadianCitizen: "Y",                     Optional
+  authorizeCra: "Y"                         Optional
 }
 *******************************************************************************/
 exports.findTaxReturnById = function (req, res) {
@@ -151,12 +131,12 @@ exports.findTaxReturnById = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-POST /tax_return/:id/answer
+POST /tax_return/:id/answers
 
 INPUT BODY:
 {
-  questionId:  "33",
-  taxReturnId: "44",
+  questionId:  33,
+  taxReturnId: 44,
   text: "Y"
 }
 
@@ -194,14 +174,16 @@ GET /tax_return/:id/answers
 
 INPUT BODY:
 {
-  taxReturnId: "44",
+  taxReturnId: 44,
 }
 
 RESPONSE:
 {
-  { questionId: "33",
+  { questionId: 33,
+    answerId: 44,
    text: "Y" },
-  { questionId: "34",
+  { questionId: 34,
+  answerId: 45,
    text: "N" }
 }
 *******************************************************************************/
@@ -209,11 +191,11 @@ exports.listAnswers = function (req, res) {
     var id = req.params.id;
     var jsonData = [
         {
-            questionId: "33",
+            questionId: 33,
             text: "Y"
         },
         {
-            questionId: "34",
+            questionId: 34,
             text: "N"
         }
     ];
