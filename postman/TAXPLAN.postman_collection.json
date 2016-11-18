@@ -8,7 +8,6 @@
 		"46312185-9eff-80c9-6be2-42559d506bc1",
 		"466fd9e1-4da4-2dd8-1783-2b3047bcd82f",
 		"7af47852-6226-1d87-bf2e-4196948a69fd",
-		"eafeaa32-1205-fb38-8787-2966bba9391b",
 		"69fd370a-3c24-b155-7aa9-a1887f9ade0b",
 		"a61e3e27-0ad9-03f7-b12a-2fd99ecd93cd",
 		"91ee9326-01f5-1265-15bb-f72896ffd20a",
@@ -19,13 +18,35 @@
 		"cdc373d5-480f-0881-1e41-30910fc1388b",
 		"380e7d5f-cc3f-a9fb-9f49-27cb0bf861de",
 		"cdc39f0d-dc70-4cbd-5c83-52ee3f6d8b85",
-		"494e5aca-6f4a-7ed1-b0b9-aad8db48569b"
+		"494e5aca-6f4a-7ed1-b0b9-aad8db48569b",
+		"217d767e-fb17-cce2-9600-6427dac86997",
+		"6038b42e-7b4f-6410-cc4d-26f6764cdf83"
 	],
 	"folders": [],
 	"timestamp": 1477333914515,
 	"owner": 0,
 	"public": false,
 	"requests": [
+		{
+			"id": "217d767e-fb17-cce2-9600-6427dac86997",
+			"headers": "Content-Type: application/json\n",
+			"url": "http://127.0.0.1:3001/tax_return",
+			"preRequestScript": null,
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"version": 2,
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1479400303055,
+			"name": "Create Tax Returns",
+			"description": "Create Tax Returns",
+			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
+			"responses": [],
+			"rawModeData": "{\r\n  \"accountId\": 1,\r\n  \"productId\": 70,\r\n  \"filers\": [\r\n    {\r\n      \"firstName\": \"Carmela\"\r\n    },\r\n    {\r\n      \"firstName\": \"Doug\"\r\n    },\r\n    {\r\n      \"firstName\": \"Tim\"\r\n    },\r\n    {\r\n      \"firstName\": \"Michael\"\r\n    }\r\n  ]\r\n}"
+		},
 		{
 			"id": "33a83c83-d056-7c08-b8ce-c1a57f635f3a",
 			"headers": "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNzkxMDR9.9Ne6fGSaM1BEe9TJuwMmXYXRRa-bZ2-Ml3ba8MvEBvg\n",
@@ -79,12 +100,12 @@
 			"tests": null,
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1478538542095,
+			"time": 1479316740089,
 			"name": "Register User",
 			"description": "Create User",
 			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
 			"responses": [],
-			"rawModeData": "{ \n  \"password\": \"123\",\n  \"first_name\": \"test_user\",\n  \"last_name\": \"test_user\",\n  \"email\": \"test_user@gmail.com\"\n}"
+			"rawModeData": "{ \n  \"password\": \"123\",\n  \"first_name\": \"test_user1\",\n  \"last_name\": \"test_user1\",\n  \"email\": \"test_use1r@gmail.com\"\n}"
 		},
 		{
 			"id": "466fd9e1-4da4-2dd8-1783-2b3047bcd82f",
@@ -99,12 +120,12 @@
 			"tests": null,
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1478906091259,
+			"time": 1479316125551,
 			"name": "Login",
 			"description": "login",
 			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
 			"responses": [],
-			"rawModeData": "{ \r\n  \"email\": \"test_user@gmail.com\",\r\n  \"password\": \"123\"\r\n}"
+			"rawModeData": "{ \r\n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\",\r\n  \"password\": \"123\"\r\n}"
 		},
 		{
 			"id": "494e5aca-6f4a-7ed1-b0b9-aad8db48569b",
@@ -122,6 +143,32 @@
 			"time": 1478026035668,
 			"name": "Checklist (PDF)",
 			"description": "",
+			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
+			"responses": []
+		},
+		{
+			"id": "6038b42e-7b4f-6410-cc4d-26f6764cdf83",
+			"headers": "",
+			"url": "http://127.0.0.1:3001/tax_return/1",
+			"preRequestScript": null,
+			"pathVariables": {},
+			"method": "GET",
+			"data": [
+				{
+					"key": "",
+					"value": "",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1479402810629,
+			"name": "Find Tax Return By id",
+			"description": "Find Tax Return By id",
 			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
 			"responses": []
 		},
@@ -314,7 +361,7 @@
 		},
 		{
 			"id": "dd5bbbc7-6f62-ccd4-7796-50fde5f1d732",
-			"headers": "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI1ODEwZDE0MDUzM2MxOGQ4MGQwMmNkMzUiLCJyb2xlIjoiQ3VzdG9tZXIiLCJuYW1lIjoiIiwiZW1haWwiOiI0c2E2MXMrYjA4OGR1NzBkdWljc0BzaGFya2xhc2Vycy5jb20iLCJoYXNoZWRfcGFzc3dvcmQiOiJscytVN1R6NENEU0xoRnlrMTU2a0N2dWlKRkQwa0JEczdsaG5UdWk0NkJ1S0t2RGpuUWF3K0hNT2NDa3RQTkg0a0FEWVFIOGVsaGNSbS9IM2htWk9XUT09Iiwic2FsdCI6InVPTUpaa2t4REU2RzdoQU1yWXpFVGc9PSIsInBob25lIjoiMTIzIiwidXNlcm5hbWUiOiJ0ZXN0NyIsImZpcnN0X25hbWUiOiIxMjMiLCJsYXN0X25hbWUiOiI0NTYiLCJfX3YiOjEsImFjY291bnRzIjpbIjU4MTBkMTQxNTMzYzE4ZDgwZDAyY2QzNiJdLCJiaXJ0aGRheSI6W119.dQ6MUo0639PdXWqLQAxr5RrXAQHjP_KKyBUBxWtRD7w\n",
+			"headers": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjR0Y3N2MCszOWViMzRzamEzdXlnQHNoYXJrbGFzZXJzLmNvbSIsImlkIjoxLCJpYXQiOjE0NzkyNDE4ODgsImV4cCI6MTQ3OTI0NTQ4OH0.y3F5tbp7o5uvZ7TMzcC94iYdHrnGlsVQbUVXiOI6FiQ\n",
 			"url": "http://127.0.0.1:3001/users/1",
 			"preRequestScript": null,
 			"pathVariables": {},
@@ -332,31 +379,11 @@
 			"tests": null,
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1478284584358,
+			"time": 1479241910740,
 			"name": "ADMIN User Find",
 			"description": "users",
 			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
 			"responses": []
-		},
-		{
-			"id": "eafeaa32-1205-fb38-8787-2966bba9391b",
-			"headers": "Content-Type: application/json\n",
-			"url": "http://127.0.0.1:3001/users/1",
-			"preRequestScript": null,
-			"pathVariables": {},
-			"method": "GET",
-			"data": [],
-			"dataMode": "raw",
-			"version": 2,
-			"tests": null,
-			"currentHelper": "normal",
-			"helperAttributes": {},
-			"time": 1478200006280,
-			"name": "/users/:id",
-			"description": "Find User",
-			"collectionId": "aef48e57-8a4e-1313-26a3-aeadf274081e",
-			"responses": [],
-			"rawModeData": "{ \n  \"username\": \"test_user\",\n  \"password\": \"123\",\n  \"first_name\": \"test_user\",\n  \"last_name\": \"test_user\",\n  \"email\": \"test_user@gmail.com\"\n}"
 		},
 		{
 			"id": "f160a381-37cb-07b6-1d09-6d5ef3ca9cc5",

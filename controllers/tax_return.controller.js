@@ -9,6 +9,8 @@
  */
 var logger = require('../services/logger.service');
 var TaxReturn = require('../models/tax_return.model');
+var Account = require('../models/account.model');
+var Product = require('../models/product.model');
 var validator = require('express-validator');
 
 // boilerplate
@@ -49,20 +51,36 @@ exports.createTaxReturn = function (req, res) {
         var productId = req.body.productId;
         var filers = req.body.filers;
 
-        // TODO:
         // check that accountId exists
-        // check that productId exists
+        Account.findById(accountId).then(function(account) {
+            if ((!account) || (account.length === 0)) {
+                res.status(404).send({ msg: 'Invalid accountID' });
+            } else {
+                // check that productId exists
+                Product.findById(productId).then(function(product) {
+                    if ((!product) || (product.length === 0)) {
+                        res.status(404).send({ msg: 'Invalid productID' });
+                    } else {
+                        var taxReturnPromises = [];
+                        _.forEach(filers, function(filer) {
+                            var taxReturnObj = {};
+                            taxReturnObj.accountId = accountId;
+                            taxReturnObj.productId = productId;
+                            taxReturnObj.firstName = filer.firstName;
+                            taxReturnPromises.push(TaxReturn.create(taxReturnObj));
+                        });
+                        return Promise.all(taxReturnPromises).then(function(promiseResults) {
+                            var resultObj = {};
+                            resultObj.accountId = accountId;
+                            resultObj.productId = productId;
+                            resultObj.filerCount = filers.length;
+                            resultObj.taxReturns = promiseResults;
 
-        var taxReturnPromises = [];
-        _.forEach(filers, function(filer) {
-            var taxReturnObj = {};
-            taxReturnObj.accountId = accountId;
-            taxReturnObj.productId = productId;
-            taxReturnObj.firstName = filer.firstName;
-            taxReturnPromises.push(TaxReturn.create(taxReturnObj));
-        });
-        return Promise.all([taxReturnPromises]).then(function() {
-            res.status(200).send('OK');
+                            res.status(200).json(resultObj);
+                        });
+                    }
+                });
+            }
         });
     }
 };
@@ -218,28 +236,11 @@ INPUT BODY:
 
 RESPONSE:
 200 OK
+{
+  addressId: 44
+}
 *******************************************************************************/
 exports.createAddress = function (req, res) {
-    res.status(200).send('OK');
-};
-
-/*******************************************************************************
-ENDPOINT
-POST /tax_return/:id/address
-
-INPUT BODY:
-{
-  addressLine1:  "34 Wellington Street",
-  addressLine2: "Suite 504",
-  city: "Toronto",
-  province: "Ontario",
-  postalCode: "L4D 5D7"
-}
-
-RESPONSE:
-200 OK
-*******************************************************************************/
-exports.linkExistingAddress = function (req, res) {
     res.status(200).send('OK');
 };
 
@@ -249,6 +250,7 @@ PUT /tax_return/:id/address/:id
 
 INPUT BODY:
 {
+  addressId: 44,
   addressLine1:  "34 Wellington Street",
   addressLine2: "Suite 504",
   city: "Toronto",
@@ -298,7 +300,7 @@ POST /tax_return/:id/dependent
 
 INPUT BODY:
 {
-  taxReturnId:  "44",
+  taxReturnId:  44,
   firstName: "Jason",
   lastName: "Chen",
   dateOfBirth: "08/07/1988",
@@ -307,28 +309,11 @@ INPUT BODY:
 
 RESPONSE:
 200 OK
+{
+  dependentId: 4
+}
 *******************************************************************************/
 exports.createAddress = function (req, res) {
-    res.status(200).send('OK');
-};
-
-/*******************************************************************************
-ENDPOINT
-POST /tax_return/:id/dependent
-
-INPUT BODY:
-{
-  taxReturnId:  "44",
-  firstName: "Jason",
-  lastName: "Chen",
-  dateOfBirth: "08/07/1988",
-  relationship: "son"
-}
-
-RESPONSE:
-200 OK
-*******************************************************************************/
-exports.linkExistingDependent = function (req, res) {
     res.status(200).send('OK');
 };
 
@@ -338,6 +323,7 @@ PUT /tax_return/:id/dependent/:id
 
 INPUT BODY:
 {
+  dependentId: 4
   taxReturnId:  "44",
   firstName: "Jason",
   lastName: "Chen",
@@ -361,7 +347,7 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  taxReturnId:  "44",
+  taxReturnId:  44,
   firstName: "Jason",
   lastName: "Chen",
   dateOfBirth: "08/07/1988",
@@ -371,7 +357,7 @@ RESPONSE:
 exports.findAddressById = function (req, res) {
     var id = req.params.id;
     var jsonData = {
-      taxReturnId:  "44",
+      taxReturnId:  44,
       firstName: "Jason",
       lastName: "Chen",
       dateOfBirth: "08/07/1988",
@@ -397,7 +383,7 @@ RESPONSE:
 exports.findChecklist = function (req, res) {
     var id = req.params.id;
     var jsonData = {
-      name: "Credits"
+      name: "T5"
     };
 
     res.status(200).send(jsonData);
