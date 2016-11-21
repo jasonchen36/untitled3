@@ -1,9 +1,9 @@
 #!/bin/bash
-export TAXPLAN_MYSQL_HOST="localhost"
-export TAXPLAN_MYSQL_PORT=3306
-export TAXPLAN_MYSQL_USER="root"
-export TAXPLAN_MYSQL_PASSWORD=""
-export TAXPLAN_MYSQL_DATABASE="taxplan"
+export TAXPLAN_API_MYSQL_HOST="localhost"
+export TAXPLAN_API_MYSQL_PORT=3306
+export TAXPLAN_API_MYSQL_USER="root"
+export TAXPLAN_API_MYSQL_PASSWORD=""
+export TAXPLAN_API_MYSQL_DATABASE="taxplan"
 export TAXPLAN_API_ADMIN_EMAIL="email@email.com"
 export TAXPLAN_API_SESSION_SECRET="somesecret"
 export TAXPLAN_API_STRIPE_SECRET_KEY="1234"
