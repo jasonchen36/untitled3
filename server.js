@@ -125,7 +125,7 @@ logger.info('Starting %s API Server ...', config.api.name);
 logger.info('Server Date/Time: %s', Date(Date.now()));
 app.listen(port, ipaddr, function() {
     logger.info('%s API Server started on %s:%d NODE_ENV=%s', config.api.name, ipaddr, port, app.get('env'));
-    logger.info('Upload Directoty:        ' + config.uploadDir);
+    logger.info('Upload Directory:        ' + config.uploadDir);
 });
 
 
