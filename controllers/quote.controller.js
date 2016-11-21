@@ -32,7 +32,10 @@ RESPONSE:
 }
  ******************************************************************************/
 exports.create = function (req, res) {
-    res.status(200).send('OK');
+    var jsonData = {
+      quoteId: 4
+    };
+    res.status(200).json(jsonData);
 };
 
 /*******************************************************************************
@@ -47,9 +50,15 @@ INPUT BODY:
 
 RESPONSE:
 200 OK
+{
+  quoteId: 4
+}
  ******************************************************************************/
 exports.submit = function (req, res) {
-    res.status(200).send('OK');
+  var jsonData = {
+    quoteId: 4
+  };
+    res.status(200).json(jsonData);
 };
 
 
@@ -128,8 +137,68 @@ RESPONSE:
 exports.findById = function (req, res) {
     var id = req.params.id;
     var jsonData = {
-      price: '200'
+       "id":1,
+       "accountId":2,
+       "productId":3,
+       "taxReturns":[
+          {
+             "taxReturnId":1,
+             "name":"Carmela Doctor",
+             "items":[
+                {
+                  "id": 1,
+                   "text":"Tax Prep. Basic",
+                   "value":80
+                },
+                {
+                  "id": 2,
+                   "text":"Tax Prep. Investment Income",
+                   "value":10
+                },
+                {
+                  "id": 3,
+                   "text":"Tax Prep. Rental Income",
+                   "value":10
+                }
+             ]
+          },
+          {
+             "taxReturnId":2,
+             "name":"Doug Doctor",
+             "items":[
+                {
+                  "id": 1,
+                   "text":"Tax Prep. Basic",
+                   "value":80
+                },
+                {
+                  "id": 2,
+                   "text":"Tax Prep. Investment Income",
+                   "value":10
+                },
+                {
+                  "id": 3,
+                   "text":"Tax Prep. Rental Income",
+                   "value":10
+                }
+             ]
+          }
+       ],
+       "otherLineItems":  // quoteLineItems table (taxReturnId needs to be null - remove constraint)
+       [
+          {
+             "id":33,
+             "name":"Direct Deposit",
+             "items":[
+                {
+                   "id": 1,
+                   "text":"Direct Deposit",
+                   "value":5
+                }
+             ]
+          }
+       ]
     };
 
-    res.status(200).send(jsonData);
+    res.status(200).json(jsonData);
 };
