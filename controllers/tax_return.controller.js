@@ -442,9 +442,25 @@ INPUT BODY:
 None. req.params.id is the only input (no body)
 
 RESPONSE:
-{
-  name: "T5"
-}
+[
+ {checklistId: 4,
+  name: "T5",
+  documents: [
+    {
+    documentId: 4
+    name: filename.txt,
+    url: taxplan.com,
+    thumbnailUrl: taxplan.com/taxplan.jpg
+    },
+    {
+    documentId: 5
+    name: filename2.txt,
+    url: taxplan.com,
+    thumbnailUrl: taxplan.com/taxplan2.jpg
+    }
+  ]
+ }
+]
 *******************************************************************************/
 exports.findChecklist = function (req, res) {
     var id = req.params.id;
