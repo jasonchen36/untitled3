@@ -72,7 +72,7 @@ app.get('/favicon.ico', function(req, res) {
     res.sendStatus(200);
 });
 
-app.use(config.api_root_path, routes.router);
+app.use('/', routes.router);
 
 // 404 - Not Found
 app.use(function(req, res, next) {
