@@ -25,12 +25,11 @@ INPUT BODY:
 {
   accountId:  1,                            Mandatory
   productId:  70,                           Mandatory
-  firstName: "Jason",                       Optional
-  lastName: "Chen",                         Optional
-  provinceOfResidence: "Ontario",           Optional
-  dateOfBirth: "08/23/1988",                Optional
-  canadianCitizen: "Y",                     Optional
-  authorizeCra: "Y"                         Optional
+  filers: [                                 Mandatory (at least one)
+      firstName: "Jason",
+      firstName: "Michael",
+      firstName: "Chris"
+  ];
 }
 
 RESPONSE:
