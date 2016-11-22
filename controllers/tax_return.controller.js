@@ -23,19 +23,48 @@ POST /tax_return
 
 INPUT BODY:
 {
-  accountId:  1,                            Mandatory
-  productId:  70,                           Mandatory
-  filers: [                                 Mandatory (at least one)
-      firstName: "Jason",
-      firstName: "Michael",
-      firstName: "Chris"
-  ];
+  "accountId": 8,                      MANDATORY
+  "productId": 1,                      MANDATORY
+  "filers": [                          MANDATORY (at least one)
+    {
+      "firstName": "Carmela"
+    },
+    {
+      "firstName": "Doug"
+    },
+    {
+      "firstName": "Tim"
+    },
+    {
+      "firstName": "Michael"
+    }
+  ]
 }
 
 RESPONSE:
 200 OK
 {
-  taxReturnId: 3
+  "accountId": 8,
+  "productId": 1,
+  "filerCount": 4,
+  "taxReturns": [
+    {
+      "firstName": "Carmela",
+      "taxReturnId": 101
+    },
+    {
+      "firstName": "Doug",
+      "taxReturnId": 102
+    },
+    {
+      "firstName": "Tim",
+      "taxReturnId": 103
+    },
+    {
+      "firstName": "Michael",
+      "taxReturnId": 104
+    }
+  ]
 }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
