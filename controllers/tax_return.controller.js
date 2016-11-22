@@ -201,7 +201,7 @@ RESPONSE:
     answerId: 44,
    text: "Y" },
   { questionId: 34,
-  answerId: 45,
+  answerId: 44,
    text: "N" }
 }
 *******************************************************************************/
@@ -210,10 +210,12 @@ exports.listAnswers = function (req, res) {
     var jsonData = [
         {
             questionId: 33,
+            answerId: 44,
             text: "Y"
         },
         {
             questionId: 34,
+            answerId: 44,
             text: "N"
         }
     ];
@@ -241,12 +243,15 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.createAddress = function (req, res) {
-    res.status(200).send('OK');
+    var jsonData = {
+      addressId: 44
+    }
+    res.status(200).send(jsonData);
 };
 
 /*******************************************************************************
 ENDPOINT
-PUT /tax_return/:id/address/:id
+PUT /tax_return/:id/address/
 
 INPUT BODY:
 {
@@ -296,6 +301,34 @@ exports.findAddressById = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
+POST /tax_return/:id/address/:id
+
+INPUT BODY:
+{
+  addressLine1:  "34 Wellington Street",
+  addressLine2: "Suite 504",
+  city: "Toronto",
+  province: "Ontario",
+  postalCode: "L4D 5D7"
+}
+
+RESPONSE:
+200 OK
+{
+  addressId : 4
+}
+*******************************************************************************/
+exports.linkExistingAddresses = function (req, res) {
+    var id = req.params.id;
+    var jsonData = {
+      addressId : 4
+    };
+
+    res.status(200).send(jsonData);
+};
+
+/*******************************************************************************
+ENDPOINT
 POST /tax_return/:id/dependent
 
 INPUT BODY:
@@ -313,9 +346,14 @@ RESPONSE:
   dependentId: 4
 }
 *******************************************************************************/
-exports.createAddress = function (req, res) {
-    res.status(200).send('OK');
+exports.createDependent = function (req, res) {
+    var jsonData = {
+      dependentId: 4
+    }
+    res.status(200).send(jsonData);
 };
+
+
 
 /*******************************************************************************
 ENDPOINT
@@ -354,7 +392,7 @@ RESPONSE:
   relationship: "son"
 }
 *******************************************************************************/
-exports.findAddressById = function (req, res) {
+exports.findDependentById = function (req, res) {
     var id = req.params.id;
     var jsonData = {
       taxReturnId:  44,
@@ -367,6 +405,34 @@ exports.findAddressById = function (req, res) {
     res.status(200).send(jsonData);
 };
 
+
+/*******************************************************************************
+ENDPOINT
+POST /tax_return/:id/dependent/:id
+
+INPUT BODY:
+{
+    taxReturnId:  44,
+    firstName: "Jason",
+    lastName: "Chen",
+    dateOfBirth: "08/07/1988",
+    relationship: "son"
+}
+
+RESPONSE:
+200 OK
+{
+  addressId : 4
+}
+*******************************************************************************/
+exports.linkExistingDependents = function (req, res) {
+    var id = req.params.id;
+    var jsonData = {
+      addressId : 4
+    };
+
+    res.status(200).send(jsonData);
+};
 
 /*******************************************************************************
 ENDPOINT
@@ -420,6 +486,11 @@ INPUT BODY:
 
 RESPONSE:
 200 OK
+{
+  name: "file.doc",
+  url: "taxplan.com/file.doc",
+  thumbnail_url: "taxplan.com/filename.jpg"
+}
 *******************************************************************************/
 exports.deleteDocumentById = function (req, res) {
     var id = req.params.id;

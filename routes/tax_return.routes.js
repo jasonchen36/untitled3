@@ -21,24 +21,27 @@ module.exports = function (router) {
         .put(tax_return.updateTaxReturnById);
     router.route('/tax_return')
         .post(tax_return.createTaxReturn);
-/*    router.route('/tax_return/:id/answer')
-        .post(answers.createAnswer);
-    router.route('/tax_return/:id/answer/:id')
-        .get(answers.findAnswerById);
     router.route('/tax_return/:id/answers')
-        .get(answers.listAnswers);
+        .post(tax_return.createAnswer)
+        .get(tax_return.listAnswers);
+    router.route('/tax_return/:id/answer/:id')
+        .get(tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
-        .post(address.createAddress);
+        .post(tax_return.createAddress)
+        .put(tax_return.updateAddress);
     router.route('/tax_return/:id/address/:id')
-        .get(address.findAddressById);
+        .get(tax_return.findAddressById)
+        .post(tax_return.linkExistingAddresses);
+    router.route('/tax_return/:id/dependent')
+        .post(tax_return.createDependent)
+        .put(tax_return.updateDependent);
+    router.route('/tax_return/:id/dependent/:id')
+        .get(tax_return.findDependentById)
+        .post(tax_return.linkExistingDependents);
     router.route('/tax_return/:id/checklist')
-        .get(checklist.findChecklist);
+        .get(tax_return.findChecklist);
     router.route('/tax_return/:id/document')
-        .post(document.createDocument);
+        .post(tax_return.createDocument);
     router.route('/tax_return/:id/document/:id')
-        .get(document.deleteDocumentById);
-    router.route('/tax_return/:id/address')
-        .put(address.updateAddress);
-    router.route('tax_return/:id/address/:id')
-        .post(address.linkExistingAddresses);*/
+        .get(tax_return.deleteDocumentById);
 };
