@@ -11,6 +11,7 @@ module.exports = {
     api: {
         name: 'TAXplan'
     },
+    api_root_path: process.env.TAXPLAN_API_ROOT,
     root: rootPath,
 	port: 3001,
     ipaddr : '127.0.0.1',
