@@ -13,7 +13,7 @@ module.exports = {
     },
     api_root_path: process.env.TAXPLAN_API_ROOT,
     root: rootPath,
-	port: 3001,
+    port: 3001,
     ipaddr : '127.0.0.1',
     database: {
       debugSQL: false,
@@ -27,9 +27,9 @@ module.exports = {
         charset: 'utf8'
       }
     },
-	// The secret should be set to a non-guessable string that
-	// is used to compute a session hash
-	sessionSecret: process.env.TAXPLAN_API_SESSION_SECRET,
+    // The secret should be set to a non-guessable string that
+    // is used to compute a session hash
+    sessionSecret: process.env.TAXPLAN_API_SESSION_SECRET,
     JWTExpires: '1h',
     //We need to think about storage, possibly s3
     uploadDir: path.join(__dirname + '/../uploads'),
