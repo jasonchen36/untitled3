@@ -208,12 +208,21 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findAnswerById = function (req, res) {
-    var id = req.params.id;
-    var jsonData = {
-      text: "Yes"
-    };
+  req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send(jsonData);
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var id = req.params.id;
+      Answer.findById(id).then(function(answer) {
+          if (answer) {
+              res.status(200).send(answer);
+          } else {
+              res.status(404).send();
+          }
+      });
+  }
 };
 
 /*******************************************************************************
@@ -317,16 +326,21 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findAddressById = function (req, res) {
-    var id = req.params.id;
-    var jsonData = {
-      addressLine1:  "34 Wellington Street",
-      addressLine2: "Suite 504",
-      city: "Toronto",
-      province: "Ontario",
-      postalCode: "L4D 5D7"
-    };
+  req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send(jsonData);
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var id = req.params.id;
+      Address.findById(id).then(function(address) {
+          if (address) {
+              res.status(200).send(address);
+          } else {
+              res.status(404).send();
+          }
+      });
+  }
 };
 
 /*******************************************************************************
@@ -409,16 +423,21 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findDependentById = function (req, res) {
-    var id = req.params.id;
-    var jsonData = {
-      taxReturnId:  44,
-      firstName: "Jason",
-      lastName: "Chen",
-      dateOfBirth: "08/07/1988",
-      relationship: "son"
-    };
+  req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send(jsonData);
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var id = req.params.id;
+      Dependent.findById(id).then(function(dependent) {
+          if (dependent) {
+              res.status(200).send(dependent);
+          } else {
+              res.status(404).send();
+          }
+      });
+  }
 };
 
 
@@ -451,16 +470,16 @@ RESPONSE:
   name: "T5",
   documents: [
     {
-    documentId: 4
-    name: filename.txt,
-    url: taxplan.com,
-    thumbnailUrl: taxplan.com/taxplan.jpg
+    documentId: 4,
+    name: "filename.txt",
+    url: "taxplan.com",
+    thumbnailUrl: "taxplan.com/taxplan.jpg"
     },
     {
-    documentId: 5
-    name: filename2.txt,
-    url: taxplan.com,
-    thumbnailUrl: taxplan.com/taxplan2.jpg
+    documentId: 5,
+    name: "filename2.txt",
+    url: "taxplan.com",
+    thumbnailUrl: "taxplan.com/taxplan2.jpg"
     }
   ]
  }
@@ -520,7 +539,19 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.deleteDocumentById = function (req, res) {
-    var id = req.params.id;
+  req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send("OK");
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var id = req.params.id;
+      Document.findById(id).then(function(document) {
+          if (document) {
+              res.status(200).remove(document);
+          } else {
+              res.status(404).send();
+          }
+      });
+  }
 };
