@@ -13,7 +13,7 @@ module.exports = {
     },
     api_root_path: process.env.TAXPLAN_API_ROOT,
     root: rootPath,
-    port: 3001,
+    port: process.env.TAXPLAN_API_SERVER_PORT,
     ipaddr : '127.0.0.1',
     database: {
       debugSQL: false,
