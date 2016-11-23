@@ -436,7 +436,7 @@
 		{
 			"name": "GET Account by Id",
 			"request": {
-				"url": "http://{{url}}/account/12345",
+				"url": "http://{{url}}/account/70",
 				"method": "GET",
 				"header": [],
 				"body": {
