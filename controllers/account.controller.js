@@ -21,7 +21,7 @@ POST /account
 
 INPUT BODY:
 {
-  firstname:  "Michael",
+  name:  "Michael",
   productId:  12345
 }
 
