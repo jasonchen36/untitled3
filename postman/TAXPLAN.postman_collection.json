@@ -405,6 +405,47 @@
 				"description": "Find Tax Return By id"
 			},
 			"response": []
+		},
+		{
+			"name": "Create Account",
+			"request": {
+				"url": "http://{{url}}/account",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "john",
+							"type": "text",
+							"enabled": true
+						},
+						{
+							"key": "productId",
+							"value": "12341234",
+							"type": "text",
+							"enabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET Account by Id",
+			"request": {
+				"url": "http://{{url}}/account/12345",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
 		}
 	]
 }
