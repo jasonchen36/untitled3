@@ -40,7 +40,6 @@ var TaxReturn = {
     },
 
     update: function(id, taxReturnObj) {
-console.log('taxReturnObj = ' + JSON.stringify(taxReturnObj, null, 2));
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
