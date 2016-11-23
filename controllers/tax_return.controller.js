@@ -25,59 +25,26 @@ INPUT BODY:
 {
   "accountId": 8,                      MANDATORY
   "productId": 1,                      MANDATORY
-  "filers": [                          MANDATORY (at least one)
-    {
-      "firstName": "Carmela"
-    },
-    {
-      "firstName": "Doug"
-    },
-    {
-      "firstName": "Tim"
-    },
-    {
-      "firstName": "Michael"
-    }
-  ]
+  "firstName": "Carmela"               MANDATORY
 }
 
 RESPONSE:
 200 OK
 {
-  "accountId": 8,
-  "productId": 1,
-  "filerCount": 4,
-  "taxReturns": [
-    {
-      "firstName": "Carmela",
-      "taxReturnId": 101
-    },
-    {
-      "firstName": "Doug",
-      "taxReturnId": 102
-    },
-    {
-      "firstName": "Tim",
-      "taxReturnId": 103
-    },
-    {
-      "firstName": "Michael",
-      "taxReturnId": 104
-    }
-  ]
+  "taxReturnId": 101
 }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
-    req.checkBody('filers', 'Please provide an array of filers').notEmpty();
+    req.checkBody('firstName', 'Please provide a firstName').notEmpty();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
         var accountId = req.body.accountId;
         var productId = req.body.productId;
-        var filers = req.body.filers;
+        var firstName = req.body.firstName;
 
         // check that accountId exists
         Account.findById(accountId).then(function(account) {
@@ -89,20 +56,16 @@ exports.createTaxReturn = function (req, res) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
-                        var taxReturnPromises = [];
-                        _.forEach(filers, function(filer) {
-                            var taxReturnObj = {};
-                            taxReturnObj.accountId = accountId;
-                            taxReturnObj.productId = productId;
-                            taxReturnObj.firstName = filer.firstName;
-                            taxReturnPromises.push(TaxReturn.create(taxReturnObj));
-                        });
-                        return Promise.all(taxReturnPromises).then(function(promiseResults) {
+                        var taxReturnObj = {};
+                        taxReturnObj.accountId = accountId;
+                        taxReturnObj.productId = productId;
+                        taxReturnObj.firstName = firstName;
+
+                        return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                             var resultObj = {};
                             resultObj.accountId = accountId;
                             resultObj.productId = productId;
-                            resultObj.filerCount = filers.length;
-                            resultObj.taxReturns = promiseResults;
+                            resultObj.taxReturnId = taxReturnId;
 
                             res.status(200).json(resultObj);
                         });
@@ -136,7 +99,49 @@ NOTE:
 At least one optional field must be present or there would be nothing to update
  ******************************************************************************/
 exports.updateTaxReturnById = function (req, res) {
-    res.status(200).send('OK');
+    req.checkParams('id', 'Please provide an id').isInt();
+    req.checkBody('accountId', 'Please provide a accountId').isInt();
+    req.checkBody('productId', 'Please provide a productId').isInt();
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var taxReturnId = req.params.id;
+        var accountId = req.body.accountId;
+        var productId = req.body.productId;
+
+
+        // check that accountId exists
+        Account.findById(accountId).then(function(account) {
+            if ((!account) || (account.length === 0)) {
+                res.status(404).send({ msg: 'Invalid accountID' });
+            } else {
+                // check that productId exists
+                Product.findById(productId).then(function(product) {
+                    if ((!product) || (product.length === 0)) {
+                        res.status(404).send({ msg: 'Invalid productID' });
+                    } else {
+                        var taxReturnObj = {};
+                        if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
+                        if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
+                        if (req.body.provinceOfResidence) { taxReturnObj.province_of_redidence = req.body.provinceOfResidence; }
+                        if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
+                        if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
+                        if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
+
+                        return TaxReturn.update(taxReturnId, taxReturnObj).then(function(taxReturnId) {
+                            var resultObj = {};
+                            resultObj.accountId = accountId;
+                            resultObj.productId = productId;
+                            resultObj.taxReturnId = taxReturnId;
+
+                            res.status(200).json(resultObj);
+                        });
+                    }
+                });
+            }
+        });
+    }
 };
 /*******************************************************************************
 ENDPOINT
