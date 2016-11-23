@@ -189,7 +189,7 @@ INPUT BODY:
 {
   questionId:  33,
   taxReturnId: 44,
-  text: "Y"
+  text: "Yes"
 }
 ]
 
@@ -197,7 +197,45 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.createAnswer = function (req, res) {
-    res.status(200).send('OK');
+  req.checkBody('questionId', 'Please provide a questionId').isInt();
+  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkBody('text', 'Please provide an answer').notEmpty();
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var questionId = req.body.questionId;
+      var taxReturnId = req.body.taxReturnId;
+      var answer = req.body.answer;
+
+      // check that accountId exists
+      Account.findById(questionId).then(function(question) {
+          if ((!question) || (question.length === 0)) {
+              res.status(404).send({ msg: 'Invalid questionID' });
+          } else {
+              // check that productId exists
+              Product.findById(taxReturnId).then(function(TaxReturn) {
+                  if ((!TaxReturn) || (TaxReturn.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid TaxReturnID' });
+                  } else {
+                      var answerObj = {};
+                      taxReturnObj.questionId = questionId;
+                      taxReturnObj.taxReturnId = taxReturnId;
+                      taxReturnObj.answer = answer;
+
+                      return TaxReturn.create(answerObj).then(function(answerId) {
+                          var resultObj = {};
+                          resultObj.questionId = questionId;
+                          resultObj.taxReturnId = taxReturnId;
+                          resultObj.answerId = answerId;
+
+                          res.status(200).json(resultObj);
+                      });
+                  }
+              });
+          }
+      });
+  }
 };
 
 /*******************************************************************************
