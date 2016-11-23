@@ -486,28 +486,21 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.findChecklist = function (req, res) {
-    var id = req.params.id;
-    var jsonData = [
-     {checklistId: 4,
-      name: "T5",
-      documents: [
-        {
-        documentId: 4,
-        name: "filename.txt",
-        url: "taxplan.com",
-        thumbnailUrl: "taxplan.com/taxplan.jpg"
-        },
-        {
-        documentId: 5,
-        name: "filename2.txt",
-        url: "taxplan.com",
-        thumbnailUrl: "taxplan.com/taxplan2.jpg"
-        }
-      ]
-     }
-    ];
+    req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send(jsonData);
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
+        Checklist.findById(id).then(function(checklist) {
+            if (checklist) {
+                res.status(200).remove(checklist);
+            } else {
+                res.status(404).send();
+            }
+        });
+  }
 };
 
 /*******************************************************************************
