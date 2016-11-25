@@ -209,12 +209,12 @@ exports.createAnswer = function (req, res) {
       var answer = req.body.answer;
 
       // check that accountId exists
-      Account.findById(questionId).then(function(question) {
+      Question.findById(questionId).then(function(question) {
           if ((!question) || (question.length === 0)) {
               res.status(404).send({ msg: 'Invalid questionID' });
           } else {
               // check that productId exists
-              Product.findById(taxReturnId).then(function(TaxReturn) {
+              TaxReturn.findById(taxReturnId).then(function(TaxReturn) {
                   if ((!TaxReturn) || (TaxReturn.length === 0)) {
                       res.status(404).send({ msg: 'Invalid TaxReturnID' });
                   } else {
@@ -288,21 +288,21 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.listAnswers = function (req, res) {
-    var id = req.params.id;
-    var jsonData = [
-        {
-            questionId: 33,
-            answerId: 44,
-            text: "Y"
-        },
-        {
-            questionId: 34,
-            answerId: 44,
-            text: "N"
-        }
-    ];
+  req.checkParams('id', 'Please provide an integer id').isInt();
 
-    res.status(200).send(jsonData);
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var id = req.params.id;
+      Answer.findById(id).then(function(answers) {
+          if (answers) {
+              res.status(200).send(answers);
+          } else {
+              res.status(404).send();
+          }
+      });
+  }
 };
 
 /*******************************************************************************
@@ -325,10 +325,62 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.createAddress = function (req, res) {
-    var jsonData = {
-      addressId: 44
-    }
-    res.status(200).send(jsonData);
+  req.checkBody('addressLine1', 'Please provide a street address').notEmpty();
+  req.checkBody('city', 'Please provide a city').notEmpty();
+  req.checkBody('province', 'Please provide a province').notEmpty();
+  req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var addressLine1 = req.body.addressLine1;
+      var addressLine2 = req.body.addressLine2;
+      var city = req.body.city;
+      var province = req.body.province;
+      var postalCode = req.body.postalCode;
+
+      // check that addressLine1 exists
+      Address.findById(addressLine1).then(function(addressLine1) {
+          if ((!addressLine1) || (addressLine1.length === 0)) {
+              res.status(404).send({ msg: 'Invalid addressLine1' });
+          } else {
+              // check that city exists
+              Address.findById(city).then(function(city) {
+                  if ((!city) || (city.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid city' });
+                  } else {
+                    // check that province exists
+                    Address.findById(province).then(function(province) {
+                        if ((!province) || (province.length === 0)) {
+                            res.status(404).send({ msg: 'Invalid province' });
+                        } else {
+                          // check that postalCode exists
+                          Address.findById(postalCode).then(function(postalCode) {
+                              if ((!postalCode) || (postalCode.length === 0)) {
+                                  res.status(404).send({ msg: 'Invalid postalCode' });
+                              } else {
+                      var addressObj = {};
+                      addressObj.addressLine1 = addressLine1;
+                      addressObj.addressLine2 = addressLine2;
+                      addressObj.city = city;
+                      addressObj.province = province;
+                      addressObj.postalCode = postalCode;
+
+                      return Address.create(addressObj).then(function(addressObjId) {
+                          var resultObj = {};
+                          resultObj.addressLine1 = addressLine1;
+                          resultObj.addressLine2 = addressLine2;
+                          resultObj.city = city;
+                          resultObj.province = province;
+                          resultObj.postalCode = postalCode;
+
+                          res.status(200).json(resultObj);
+                      });
+                  }
+              });
+          }
+      });
+  }
 };
 
 /*******************************************************************************
@@ -349,7 +401,62 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.updateAddress = function (req, res) {
-    res.status(200).send('OK');
+  req.checkBody('addressLine1', 'Please provide a street address').notEmpty();
+  req.checkBody('city', 'Please provide a city').notEmpty();
+  req.checkBody('province', 'Please provide a province').notEmpty();
+  req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var addressLine1 = req.body.addressLine1;
+      var addressLine2 = req.body.addressLine2;
+      var city = req.body.city;
+      var province = req.body.province;
+      var postalCode = req.body.postalCode;
+
+      // check that addressLine1 exists
+      Address.findById(addressLine1).then(function(addressLine1) {
+          if ((!addressLine1) || (addressLine1.length === 0)) {
+              res.status(404).send({ msg: 'Invalid addressLine1' });
+          } else {
+              // check that city exists
+              Address.findById(city).then(function(city) {
+                  if ((!city) || (city.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid city' });
+                  } else {
+                    // check that province exists
+                    Address.findById(province).then(function(province) {
+                        if ((!province) || (province.length === 0)) {
+                            res.status(404).send({ msg: 'Invalid province' });
+                        } else {
+                          // check that postalCode exists
+                          Address.findById(postalCode).then(function(postalCode) {
+                              if ((!postalCode) || (postalCode.length === 0)) {
+                                  res.status(404).send({ msg: 'Invalid postalCode' });
+                              } else {
+                      var addressObj = {};
+                      if (req.body.addressLine1) { taxReturnObj.address_line1 = req.body.addressLine1; }
+                      if (req.body.addressLine2) { taxReturnObj.address_line2 = req.body.addressLine2; }
+                      if (req.body.city) { taxReturnObj.city = req.body.city; }
+                      if (req.body.province) { taxReturnObj.providence = req.body.province; }
+                      if (req.body.postalCode) { taxReturnObj.postal_code = req.body.postalCode; }
+
+                      return Address.update(addressId, addressObj).then(function(addressObjId) {
+                          var resultObj = {};
+                          resultObj.addressLine1 = addressLine1;
+                          resultObj.addressLine2 = addressLine2;
+                          resultObj.city = city;
+                          resultObj.province = province;
+                          resultObj.postalCode = postalCode;
+
+                          res.status(200).json(resultObj);
+                      });
+                  }
+              });
+          }
+      });
+  }
 };
 
 /*******************************************************************************
@@ -420,10 +527,68 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.createDependent = function (req, res) {
-    var jsonData = {
-      dependentId: 4
-    }
-    res.status(200).send(jsonData);
+  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkBody('firstName', 'Please provide a firstName').notEmpty();
+  req.checkBody('lastName', 'Please provide a lastName').notEmpty();
+  req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
+  req.checkBody('relationship', 'Please provide a relationship').notEmpty();
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var taxReturnId = req.body.taxReturnId;
+      var firstName = req.body.firstName;
+      var lastName = req.body.lastName;
+      var dateOfBirth = req.body.dateOfBirth;
+      var relationship = req.body.relationship;
+
+      // check that taxReturnId exists
+      Dependent.findById(taxReturnId).then(function(taxReturnId) {
+          if ((!taxReturnId) || (taxReturnId.length === 0)) {
+              res.status(404).send({ msg: 'Invalid taxReturnId' });
+          } else {
+              // check that firstName exists
+              Dependent.findById(firstName).then(function(firstName) {
+                  if ((!firstName) || (firstName.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid firstName' });
+                  } else {
+                    // check that lastName exists
+                    Dependent.findById(lastName).then(function(lastName) {
+                        if ((!lastName) || (lastName.length === 0)) {
+                            res.status(404).send({ msg: 'Invalid lastName' });
+                        } else {
+                          // check that dateOfBirth exists
+                          Dependent.findById(dateOfBirth).then(function(dateOfBirth) {
+                              if ((!dateOfBirth) || (dateOfBirth.length === 0)) {
+                                  res.status(404).send({ msg: 'Invalid dateOfBirth' });
+                              } else {
+                                // check that relationship exists
+                                Dependent.findById(relationship).then(function(relationship) {
+                                    if ((!relationship) || (relationship.length === 0)) {
+                                        res.status(404).send({ msg: 'Invalid relationship' });
+                                    } else {
+                      var dependentObj = {};
+                      dependentObj.taxReturnId = taxReturnId;
+                      dependentObj.firstName = firstName;
+                      dependentObj.lastName = lastName;
+                      dependentObj.dateOfBirth = dateOfBirth;
+                      dependentObj.relationship = relationship;
+
+                      return Dependent.create(dependentObj).then(function(dependentObjId) {
+                          var resultObj = {};
+                          resultObj.taxReturnId = taxReturnId;
+                          resultObj.firstName = firstName;
+                          resultObj.lastName = lastName;
+                          resultObj.dateOfBirth = dateOfBirth;
+                          resultObj.relationship = relationship;
+
+                          res.status(200).json(resultObj);
+                      });
+                  }
+              });
+          }
+      });
+  }
 };
 
 
@@ -446,7 +611,68 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.updateDependent = function (req, res) {
-    res.status(200).send('OK');
+  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkBody('firstName', 'Please provide a firstName').notEmpty();
+  req.checkBody('lastName', 'Please provide a lastName').notEmpty();
+  req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
+  req.checkBody('relationship', 'Please provide a relationship').notEmpty();
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var taxReturnId = req.body.taxReturnId;
+      var firstName = req.body.firstName;
+      var lastName = req.body.lastName;
+      var dateOfBirth = req.body.dateOfBirth;
+      var relationship = req.body.relationship;
+
+      // check that taxReturnId exists
+      Dependent.findById(taxReturnId).then(function(taxReturnId) {
+          if ((!taxReturnId) || (taxReturnId.length === 0)) {
+              res.status(404).send({ msg: 'Invalid taxReturnId' });
+          } else {
+              // check that firstName exists
+              Dependent.findById(firstName).then(function(firstName) {
+                  if ((!firstName) || (firstName.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid firstName' });
+                  } else {
+                    // check that lastName exists
+                    Dependent.findById(lastName).then(function(lastName) {
+                        if ((!lastName) || (lastName.length === 0)) {
+                            res.status(404).send({ msg: 'Invalid lastName' });
+                        } else {
+                          // check that dateOfBirth exists
+                          Dependent.findById(dateOfBirth).then(function(dateOfBirth) {
+                              if ((!dateOfBirth) || (dateOfBirth.length === 0)) {
+                                  res.status(404).send({ msg: 'Invalid dateOfBirth' });
+                              } else {
+                                // check that relationship exists
+                                Dependent.findById(relationship).then(function(relationship) {
+                                    if ((!relationship) || (relationship.length === 0)) {
+                                        res.status(404).send({ msg: 'Invalid relationship' });
+                                    } else {
+                      var dependentObj = {};
+                      if (req.body.taxReturnId) { taxReturnObj.tax_return_id = req.body.taxReturnId; }
+                      if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
+                      if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
+                      if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
+                      if (req.body.relationship) { taxReturnObj.relationship = req.body.relationship; }
+
+                      return Dependent.update(dependentId,dependentObj).then(function(dependentObjId) {
+                          var resultObj = {};
+                          resultObj.taxReturnId = taxReturnId;
+                          resultObj.firstName = firstName;
+                          resultObj.lastName = lastName;
+                          resultObj.dateOfBirth = dateOfBirth;
+                          resultObj.relationship = relationship;
+
+                          res.status(200).json(resultObj);
+                      });
+                  }
+              });
+          }
+      });
+  }
 };
 
 /*******************************************************************************
@@ -561,7 +787,50 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.createDocument = function (req, res) {
-    res.status(200).send('OK');
+  req.checkBody('name', 'Please provide a name').isInt();
+  req.checkBody('url', 'Please provide a url').isInt();
+  req.checkBody('thumbnailUrl', 'Please provide a thumbnailUrl').notEmpty();
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var name = req.body.name;
+      var url = req.body.url;
+      var thumbnailUrl = req.body.thumbnailUrl;
+
+      // check that name exists
+      Document.findById(name).then(function(name) {
+          if ((!name) || (name.length === 0)) {
+              res.status(404).send({ msg: 'Invalid name' });
+          } else {
+              // check that url exists
+              Document.findById(url).then(function(url) {
+                  if ((!url) || (url.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid url' });
+                  } else {
+                    // check that thumbnailUrl exists
+                    Document.findById(thumbnailUrl).then(function(thumbnailUrl) {
+                        if ((!thumbnailUrl) || (url.length === 0)) {
+                            res.status(404).send({ msg: 'Invalid thumbnailUrl' });
+                        } else {
+                      var taxReturnObj = {};
+                      taxReturnObj.name = name;
+                      taxReturnObj.url = url;
+                      taxReturnObj.thumbnailUrl = thumbnailUrl;
+
+                      return Document.create(documentObj).then(function(documentId) {
+                          var resultObj = {};
+                          resultObj.name = name;
+                          resultObj.url = url;
+                          resultObj.thumbnailUrl  = thumbnailUrl;
+
+                          res.status(200).json(resultObj);
+                      });
+                  }
+              });
+          }
+      });
+  }
 };
 
 /*******************************************************************************
