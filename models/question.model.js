@@ -5,47 +5,47 @@
 var db = require('../services/db');
 var Promise = require('bluebird');
 
-var Answer = {
-    findById: function(answerId) {
-        if ((!answerId) || (Answer.length === 0)) {
-            return Promise.reject(new Error('No answerId specified!'));
-        }
-        var answerSql = 'SELECT * FROM answer WHERE id = ?';
-        return db.knex.raw(answerSql, [answerId]).then(function(answerSqlResults) {
-            return answerSqlResults[0][0];
-        });
-    },
-
-    create: function(answerObj) {
-        if ((!answerObj.questionId) || (answerObj.questionId.length === 0)) {
+var Question = {
+    findById: function(questionId) {
+        if ((!questionId) || (question.length === 0)) {
             return Promise.reject(new Error('No questionId specified!'));
         }
-        if ((!answerObj.taxReturnId) || (answerObj.taxReturnId.length === 0)) {
-            return Promise.reject(new Error('No taxReturnId specified!'));
-        }
-        if ((!answerObj.text) || (answerObj.text.length === 0)) {
-            return Promise.reject(new Error('No answer specified!'));
-        }
-
-        var answerInsertSql = 'INSERT INTO answer (question_id, tax_return_id, text) VALUES(?, ?, ?)';
-        var answerInsertSqlParams = [
-            answerObj.questionId,
-            answerObj.taxReturnId,
-            answerObj.text
-        ];
-        return db.knex.raw(answerInsertSql, answerInsertSqlParams).then(function(answerInsertSqlResults) {
-            var answerId = answerInsertSqlResults[0].insertId;
-            return Promise.resolve(answerId);
+        var questionSql = 'SELECT * FROM question WHERE id = ?';
+        return db.knex.raw(questionSql, [questionId]).then(function(questionSqlResults) {
+            return questionSqlResults[0][0];
         });
     },
 
-    update: function(id, answerObj) {
-        if ((!id) || (id.length === 0)) {
-            return Promise.reject(new Error('No answerId specified!'));
+    create: function(questionObj) {
+        if ((!questionObj.questionId) || (questionObj.questionId.length === 0)) {
+            return Promise.reject(new Error('No questionId specified!'));
+        }
+        if ((!questionObj.taxReturnId) || (questionObj.taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        if ((!questionObj.text) || (questionObj.text.length === 0)) {
+            return Promise.reject(new Error('No question specified!'));
         }
 
-        return db.knex('answer').update(answerObj).where('id', id);
+        var questionInsertSql = 'INSERT INTO question (question_id, tax_return_id, text) VALUES(?, ?, ?)';
+        var questionInsertSqlParams = [
+            questionObj.questionId,
+            questionObj.taxReturnId,
+            questionObj.text
+        ];
+        return db.knex.raw(questionInsertSql, questionInsertSqlParams).then(function(questionInsertSqlResults) {
+            var questionId = questionInsertSqlResults[0].insertId;
+            return Promise.resolve(questionId);
+        });
+    },
+
+    update: function(id, questionObj) {
+        if ((!id) || (id.length === 0)) {
+            return Promise.reject(new Error('No questionId specified!'));
+        }
+
+        return db.knex('question').update(questionObj).where('id', id);
     }
 };
 
-module.exports = Answer;
+module.exports = question;
