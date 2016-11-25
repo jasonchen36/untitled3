@@ -219,11 +219,11 @@ exports.createAnswer = function (req, res) {
                       res.status(404).send({ msg: 'Invalid TaxReturnID' });
                   } else {
                       var answerObj = {};
-                      taxReturnObj.questionId = questionId;
-                      taxReturnObj.taxReturnId = taxReturnId;
-                      taxReturnObj.answer = answer;
+                      answerObj.questionId = questionId;
+                      answerObj.taxReturnId = taxReturnId;
+                      answerObj.answer = answer;
 
-                      return TaxReturn.create(answerObj).then(function(answerId) {
+                      return Answer.create(answerObj).then(function(answerId) {
                           var resultObj = {};
                           resultObj.questionId = questionId;
                           resultObj.taxReturnId = taxReturnId;
@@ -436,11 +436,11 @@ exports.updateAddress = function (req, res) {
                                   res.status(404).send({ msg: 'Invalid postalCode' });
                               } else {
                       var addressObj = {};
-                      if (req.body.addressLine1) { taxReturnObj.address_line1 = req.body.addressLine1; }
-                      if (req.body.addressLine2) { taxReturnObj.address_line2 = req.body.addressLine2; }
-                      if (req.body.city) { taxReturnObj.city = req.body.city; }
-                      if (req.body.province) { taxReturnObj.providence = req.body.province; }
-                      if (req.body.postalCode) { taxReturnObj.postal_code = req.body.postalCode; }
+                      if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
+                      if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
+                      if (req.body.city) { addressObj.city = req.body.city; }
+                      if (req.body.province) { addressObj.providence = req.body.province; }
+                      if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
 
                       return Address.update(addressId, addressObj).then(function(addressObjId) {
                           var resultObj = {};
@@ -652,11 +652,11 @@ exports.updateDependent = function (req, res) {
                                         res.status(404).send({ msg: 'Invalid relationship' });
                                     } else {
                       var dependentObj = {};
-                      if (req.body.taxReturnId) { taxReturnObj.tax_return_id = req.body.taxReturnId; }
-                      if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
-                      if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
-                      if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
-                      if (req.body.relationship) { taxReturnObj.relationship = req.body.relationship; }
+                      if (req.body.taxReturnId) { dependentObj.tax_return_id = req.body.taxReturnId; }
+                      if (req.body.firstName) { dependentObj.first_name = req.body.firstName; }
+                      if (req.body.lastName) { dependentObj.last_name = req.body.lastName; }
+                      if (req.body.dateOfBirth) { dependentObj.date_of_birth = req.body.dateOfBirth; }
+                      if (req.body.relationship) { dependentObj.relationship = req.body.relationship; }
 
                       return Dependent.update(dependentId,dependentObj).then(function(dependentObjId) {
                           var resultObj = {};
@@ -813,10 +813,10 @@ exports.createDocument = function (req, res) {
                         if ((!thumbnailUrl) || (url.length === 0)) {
                             res.status(404).send({ msg: 'Invalid thumbnailUrl' });
                         } else {
-                      var taxReturnObj = {};
-                      taxReturnObj.name = name;
-                      taxReturnObj.url = url;
-                      taxReturnObj.thumbnailUrl = thumbnailUrl;
+                      var DocumentObj = {};
+                      DocumentObj.name = name;
+                      DocumentObj.url = url;
+                      DocumentObj.thumbnailUrl = thumbnailUrl;
 
                       return Document.create(documentObj).then(function(documentId) {
                           var resultObj = {};
