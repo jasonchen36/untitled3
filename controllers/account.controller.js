@@ -66,7 +66,7 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
-    req.checkParam('id', 'Please provide an Account Id').isInt();
+    req.checkParams('id', 'Please provide an Account Id').isInt();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
@@ -77,11 +77,11 @@ exports.findById = function (req, res) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send();
             } else {
-                var jsonData = {
-                  accountId: account.id,
-                  name: account.name
-                };
-                res.status(200).send(jsonData);
+                var accountObj = {};
+                accountObj.accountId = account.id;
+                accountObj.name = account.name;
+
+                res.status(200).send(accountObj);
             }
         });
     }

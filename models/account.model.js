@@ -12,7 +12,7 @@ var Account = {
 
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
         return db.knex.raw(accountSql, [id]).then(function(accountSqlResults) {
-            return(accountSqlResults[0]);
+            return(accountSqlResults[0][0]);
         });
     },
 
@@ -24,7 +24,7 @@ var Account = {
         var accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
 
         return db.knex.raw(accountInsertSql, [accountObj.name]).then(function(messageInsertSqlResults) {
-            return messageInsertSqlResults[0];
+            return messageInsertSqlResults[0].insertId;
         });
     }
 };
