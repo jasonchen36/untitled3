@@ -17,21 +17,29 @@ var dependant = {
     },
 
     create: function(dependantObj) {
-        if ((!dependantObj.accountId) || (dependantObj.accountId.length === 0)) {
-            return Promise.reject(new Error('No accountId specified!'));
-        }
-        if ((!dependantObj.productId) || (dependantObj.productId.length === 0)) {
-            return Promise.reject(new Error('No productId specified!'));
+        if ((!dependantObj.taxReturnId) || (dependantObj.taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
         }
         if ((!dependantObj.firstName) || (dependantObj.firstName.length === 0)) {
             return Promise.reject(new Error('No firstName specified!'));
         }
+        if ((!dependantObj.lastName) || (dependantObj.lastName.length === 0)) {
+            return Promise.reject(new Error('No lastName specified!'));
+        }
+        if ((!dependantObj.dateOfBirth) || (dependantObj.dateOfBirth.length === 0)) {
+            return Promise.reject(new Error('No dateOfBirth specified!'));
+        }
+        if ((!dependantObj.relationship) || (dependantObj.relationship.length === 0)) {
+            return Promise.reject(new Error('No relationship specified!'));
+        }
 
-        var dependantInsertSql = 'INSERT INTO dependants (account_id, product_id, first_name) VALUES(?, ?, ?)';
+        var dependantInsertSql = 'INSERT INTO dependants (tax_return_id, first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?, ?)';
         var dependantInsertSqlParams = [
-            dependantObj.accountId,
-            dependantObj.productId,
-            dependantObj.firstName
+            dependantObj.taxReturnId,
+            dependantObj.firstName,
+            dependantObj.lastName,
+            dependantObj.dateOfBirth,
+            dependantObj.relationship
         ];
         return db.knex.raw(dependantInsertSql, dependantInsertSqlParams).then(function(dependantInsertSqlResults) {
             var dependantId = dependantInsertSqlResults[0].insertId;

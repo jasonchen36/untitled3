@@ -30,7 +30,7 @@ var address = {
             return Promise.reject(new Error('No postalCode specified!'));
         }
 
-        var addressInsertSql = 'INSERT INTO address (addressLine1, city, province, postalCode) VALUES(?, ?, ?)';
+        var addressInsertSql = 'INSERT INTO address (addressLine1, city, province, postalCode) VALUES(?, ?, ?, ?)';
         var addressInsertSqlParams = [
             addressObj.addressLine1,
             addressObj.city,
