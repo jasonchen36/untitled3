@@ -51,5 +51,11 @@ module.exports = {
     },
     postageapp: {
         api_key: process.env.TAXPLAN_API_POSTAGEAPP_API_KEY
+    },
+    thumbnail: {
+        baseUploadUrl: 'http://localhost/uploads/',
+        baseThumbnailUrl: 'http://localhost/thumb/',
+        destPath: './thumb',
+        width: 100
     }
 };

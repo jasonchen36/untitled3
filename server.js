@@ -20,6 +20,8 @@ var moment = require('moment');
 var routes = require('./routes');
 var expressValidator = require('express-validator');
 var multer = require('multer');
+var crypto = require('crypto');
+var path = require('path');
 
 morgan.token('api_timestamp', function(req, res){ return moment().format('DD MMM H:mm:ss'); });
 morgan.token('response-time', function getResponseTimeToken(req, res) {
@@ -56,7 +58,20 @@ app.use(expressValidator([])); // this line must be immediately after express.bo
 // Using multer for file upload as bodyParser file uploads are depricated in Express 4.x
 // see: http://stackoverflow.com/questions/23340548/how-to-upload-files-use-expressjs-4
 // 'uploadFileName' below needs to be a field name on the upload form
-app.use(multer({ dest: config.uploadDir }).single('uploadFileName'));
+var storage = multer.diskStorage({
+    destination: config.uploadDir,
+    filename: function (req, file, cb) {
+        crypto.pseudoRandomBytes(32, function (err, raw) {
+            if (err) {
+              return cb(err);
+            }
+
+            var uploadFileName = raw.toString('hex') + Date.now() + path.extname(file.originalname);
+            cb(null, uploadFileName);
+        });
+    }
+});
+app.use(multer({ storage: storage }).single('uploadFileName'));
 
 if (process.env.NODE_ENV === 'development') {
     app.set('json spaces', 4);
