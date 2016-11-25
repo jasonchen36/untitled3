@@ -25,13 +25,8 @@ Dump this DB and Import it locally
 4. Config
 A sample config file is provided as /config/sample_config.js. 
 
-In addition, the following environment variables need to be set:
-NODE_ENV=development
-SET DOMAIN="example.com"
-SET SESSION_SECRET="somesecret"
-SET STRIPE_SECRET_KEY="1234"
-SET STRIPE_PUBLIC_KEY="1234"
-SET POSTAGEAPP_API_KEY="1234"
+In addition, a number of environment variables need to be set. See included env.sh
+
 
 5. Running Automated Tests
 node node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha test/mocha/**/*.js
