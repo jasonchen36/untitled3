@@ -8,7 +8,7 @@ var Promise = require('bluebird');
 var dependant = {
     findById: function(dependantId) {
         if ((!dependantId) || (dependantId.length === 0)) {
-            return Promise.reject(new Error('No messageId specified!'));
+            return Promise.reject(new Error('No dependantId specified!'));
         }
         var dependantSql = 'SELECT * FROM dependants WHERE id = ?';
         return db.knex.raw(dependantSql, [dependantId]).then(function(dependantSqlResults) {

@@ -11,7 +11,13 @@ var logger = require('../services/logger.service');
 var TaxReturn = require('../models/tax_return.model');
 var Account = require('../models/account.model');
 var Product = require('../models/product.model');
+var Question = require('../models/question.model');
+var Answer = require('../models/answer.model');
+var Address = require('../models/address.model');
+var Dependent = require('../models/dependent.model');
+var Document = require('../models/document.model');
 var validator = require('express-validator');
+// var Checklist = require('../models/checklist.model');
 
 // boilerplate
 var _ = require('underscore');
@@ -381,6 +387,10 @@ exports.createAddress = function (req, res) {
           }
       });
   }
+});
+}
+});
+}
 };
 
 /*******************************************************************************
@@ -442,7 +452,7 @@ exports.updateAddress = function (req, res) {
                       if (req.body.province) { addressObj.providence = req.body.province; }
                       if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
 
-                      return Address.update(addressId, addressObj).then(function(addressObjId) {
+                      return Address.update(addressLine1, addressObj).then(function(addressObjId) {
                           var resultObj = {};
                           resultObj.addressLine1 = addressLine1;
                           resultObj.addressLine2 = addressLine2;
@@ -457,8 +467,11 @@ exports.updateAddress = function (req, res) {
           }
       });
   }
+});
+}
+});
+}
 };
-
 /*******************************************************************************
 ENDPOINT
 GET /tax_return/:id/address/:id
@@ -589,10 +602,13 @@ exports.createDependent = function (req, res) {
           }
       });
   }
+});
+}
+});
+}
+});
+}
 };
-
-
-
 /*******************************************************************************
 ENDPOINT
 PUT /tax_return/:id/dependent/:id
@@ -658,7 +674,7 @@ exports.updateDependent = function (req, res) {
                       if (req.body.dateOfBirth) { dependentObj.date_of_birth = req.body.dateOfBirth; }
                       if (req.body.relationship) { dependentObj.relationship = req.body.relationship; }
 
-                      return Dependent.update(dependentId,dependentObj).then(function(dependentObjId) {
+                      return Dependent.update(taxReturnId,dependentObj).then(function(dependentObjId) {
                           var resultObj = {};
                           resultObj.taxReturnId = taxReturnId;
                           resultObj.firstName = firstName;
@@ -673,6 +689,12 @@ exports.updateDependent = function (req, res) {
           }
       });
   }
+});
+}
+});
+}
+});
+}
 };
 
 /*******************************************************************************
@@ -754,23 +776,23 @@ RESPONSE:
  }
 ]
 *******************************************************************************/
-exports.findChecklist = function (req, res) {
-    req.checkParams('id', 'Please provide an integer id').isInt();
-
-    var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var id = req.params.id;
-        Checklist.findById(id).then(function(checklist) {
-            if (checklist) {
-                res.status(200).remove(checklist);
-            } else {
-                res.status(404).send();
-            }
-        });
-  }
-};
+// exports.findChecklist = function (req, res) {
+//     req.checkParams('id', 'Please provide an integer id').isInt();
+//
+//     var errors = req.validationErrors();
+//     if (errors) {
+//         res.status(400).send(errors);
+//     } else {
+//         var id = req.params.id;
+//         Checklist.findById(id).then(function(checklist) {
+//             if (checklist) {
+//                 res.status(200).remove(checklist);
+//             } else {
+//                 res.status(404).send();
+//             }
+//         });
+//   }
+// };
 
 /*******************************************************************************
 ENDPOINT
@@ -813,10 +835,10 @@ exports.createDocument = function (req, res) {
                         if ((!thumbnailUrl) || (url.length === 0)) {
                             res.status(404).send({ msg: 'Invalid thumbnailUrl' });
                         } else {
-                      var DocumentObj = {};
-                      DocumentObj.name = name;
-                      DocumentObj.url = url;
-                      DocumentObj.thumbnailUrl = thumbnailUrl;
+                      var documentObj = {};
+                      documentObj.name = name;
+                      documentObj.url = url;
+                      documentObj.thumbnailUrl = thumbnailUrl;
 
                       return Document.create(documentObj).then(function(documentId) {
                           var resultObj = {};
@@ -831,6 +853,8 @@ exports.createDocument = function (req, res) {
           }
       });
   }
+});
+}
 };
 
 /*******************************************************************************

@@ -8,11 +8,11 @@ var Promise = require('bluebird');
 var address = {
     findById: function(addressId) {
         if ((!addressId) || (addressId.length === 0)) {
-            return Promise.reject(new Error('No messageId specified!'));
+            return Promise.reject(new Error('No addressId specified!'));
         }
         var addressSql = 'SELECT * FROM address WHERE id = ?';
         return db.knex.raw(addressSql, [addressId]).then(function(addressSqlResults) {
-            return answerSqlResults[0][0];
+            return addressSqlResults[0][0];
         });
     },
 
