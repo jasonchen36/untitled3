@@ -16,7 +16,8 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/account/:id')
-        .get(account.findById);
+        .get(account.findById)
+        .put(account.update);
     router.route('/account')
         .post(account.create);
 };

@@ -30,6 +30,7 @@ RESPONSE:
 *******************************************************************************/
 exports.create = function (req, res) {
     req.checkBody('name', 'Please provide a name').notEmpty();
+    req.checkBody('productId', 'Please provide a productId').isInt();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
@@ -83,6 +84,45 @@ exports.findById = function (req, res) {
                 };
                 res.status(200).send(jsonData);
             }
+        });
+    }
+};
+
+/*******************************************************************************
+ENDPOINT
+PUT /account/:id
+
+INPUT BODY:
+{
+  name:  "Michael",
+  productId:  12345
+}
+
+RESPONSE:
+200 OK
+*******************************************************************************/
+
+exports.update = function (req, res) {
+    req.checkBody('name', 'Please provide a name').notEmpty();
+    req.checkBody('productId', 'Please provide a productId').isInt();
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var accountObj = {};
+        accountObj.name = req.body.name;
+        account.create(accountObj).then(function(insertId) {
+            account.findById(insertId).then(function(account) {
+                if ((!account) || (account.length === 0)) {
+                    res.status(500).send("Internal Error");
+                } else {
+                    var jsonData = {
+                        accountId: account.id,
+                        name: account.name
+                    };
+                    res.status(200).send(jsonData);
+                }
+            });
         });
     }
 };
