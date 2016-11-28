@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 
 var Question = {
     findById: function(questionId) {
-        if ((!questionId) || (question.length === 0)) {
+        if ((!questionId) || (Question.length === 0)) {
             return Promise.reject(new Error('No questionId specified!'));
         }
         var questionSql = 'SELECT * FROM question WHERE id = ?';
@@ -17,21 +17,29 @@ var Question = {
     },
 
     create: function(questionObj) {
-        if ((!questionObj.questionId) || (questionObj.questionId.length === 0)) {
+        if ((!questionObj.categoryId) || (questionObj.categoryId.length === 0)) {
             return Promise.reject(new Error('No questionId specified!'));
-        }
-        if ((!questionObj.taxReturnId) || (questionObj.taxReturnId.length === 0)) {
-            return Promise.reject(new Error('No taxReturnId specified!'));
         }
         if ((!questionObj.text) || (questionObj.text.length === 0)) {
             return Promise.reject(new Error('No question specified!'));
         }
+        if ((!questionObj.instructions) || (questionObj.instructions.length === 0)) {
+            return Promise.reject(new Error('No instructions specified!'));
+        }
+        if ((!questionObj.type) || (questionObj.type.length === 0)) {
+            return Promise.reject(new Error('No type specified!'));
+        }
+        if ((!questionObj.hasMultipleAnswers) || (questionObj.hasMultipleAnswers.length === 0)) {
+            return Promise.reject(new Error('No multiple answers option specified!'));
+        }
 
-        var questionInsertSql = 'INSERT INTO question (question_id, tax_return_id, text) VALUES(?, ?, ?)';
+        var questionInsertSql = 'INSERT INTO question (category_id, text, instructions, type, has_multiple_answers) VALUES(?, ?, ?, ?, ?)';
         var questionInsertSqlParams = [
-            questionObj.questionId,
-            questionObj.taxReturnId,
-            questionObj.text
+            questionObj.categoryId,
+            questionObj.text,
+            questionObj.instructions,
+            questionObj.type,
+            questionObj.hasMultipleAnswers
         ];
         return db.knex.raw(questionInsertSql, questionInsertSqlParams).then(function(questionInsertSqlResults) {
             var questionId = questionInsertSqlResults[0].insertId;
@@ -48,4 +56,4 @@ var Question = {
     }
 };
 
-module.exports = question;
+module.exports = Question;

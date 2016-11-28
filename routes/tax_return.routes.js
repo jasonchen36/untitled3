@@ -38,8 +38,8 @@ module.exports = function (router) {
     router.route('/tax_return/:id/dependent/:id')
         .get(tax_return.findDependentById)
         .post(tax_return.linkExistingDependents);
-    router.route('/tax_return/:id/checklist')
-        .get(tax_return.findChecklist);
+    //router.route('/tax_return/:id/checklist')
+        //.get(tax_return.findChecklist);
     router.route('/tax_return/:id/document')
         .post(tax_return.createDocument);
     router.route('/tax_return/:id/document/:id')
