@@ -345,52 +345,24 @@ exports.createAddress = function (req, res) {
       var province = req.body.province;
       var postalCode = req.body.postalCode;
 
-      // check that addressLine1 exists
-      Address.findById(addressLine1).then(function(addressLine1) {
-          if ((!addressLine1) || (addressLine1.length === 0)) {
-              res.status(404).send({ msg: 'Invalid addressLine1' });
-          } else {
-              // check that city exists
-              Address.findById(city).then(function(city) {
-                  if ((!city) || (city.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid city' });
-                  } else {
-                    // check that province exists
-                    Address.findById(province).then(function(province) {
-                        if ((!province) || (province.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid province' });
-                        } else {
-                          // check that postalCode exists
-                          Address.findById(postalCode).then(function(postalCode) {
-                              if ((!postalCode) || (postalCode.length === 0)) {
-                                  res.status(404).send({ msg: 'Invalid postalCode' });
-                              } else {
-                      var addressObj = {};
-                      addressObj.addressLine1 = addressLine1;
-                      addressObj.addressLine2 = addressLine2;
-                      addressObj.city = city;
-                      addressObj.province = province;
-                      addressObj.postalCode = postalCode;
+      var addressObj = {};
+      addressObj.addressLine1 = addressLine1;
+      addressObj.addressLine2 = addressLine2;
+      addressObj.city = city;
+      addressObj.province = province;
+      addressObj.postalCode = postalCode;
 
-                      return Address.create(addressObj).then(function(addressObjId) {
-                          var resultObj = {};
-                          resultObj.addressLine1 = addressLine1;
-                          resultObj.addressLine2 = addressLine2;
-                          resultObj.city = city;
-                          resultObj.province = province;
-                          resultObj.postalCode = postalCode;
+      return Address.create(addressObj).then(function(addressObjId) {
+          var resultObj = {};
+          resultObj.addressLine1 = addressLine1;
+          resultObj.addressLine2 = addressLine2;
+          resultObj.city = city;
+          resultObj.province = province;
+          resultObj.postalCode = postalCode;
 
-                          res.status(200).json(resultObj);
-                      });
-                  }
-              });
-          }
-      });
+          res.status(200).json(resultObj);
+    });
   }
-});
-}
-});
-}
 };
 
 /*******************************************************************************

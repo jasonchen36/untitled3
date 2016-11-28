@@ -10,7 +10,7 @@ var Answer = {
         if ((!answerId) || (Answer.length === 0)) {
             return Promise.reject(new Error('No answerId specified!'));
         }
-        var answerSql = 'SELECT * FROM answer WHERE id = ?';
+        var answerSql = 'SELECT * FROM answers WHERE id = ?';
         return db.knex.raw(answerSql, [answerId]).then(function(answerSqlResults) {
             return answerSqlResults[0][0];
         });
@@ -27,7 +27,7 @@ var Answer = {
             return Promise.reject(new Error('No answer specified!'));
         }
 
-        var answerInsertSql = 'INSERT INTO answer (question_id, tax_return_id, text) VALUES(?, ?, ?)';
+        var answerInsertSql = 'INSERT INTO answers (question_id, tax_return_id, text) VALUES(?, ?, ?)';
         var answerInsertSqlParams = [
             answerObj.questionId,
             answerObj.taxReturnId,

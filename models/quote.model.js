@@ -26,8 +26,8 @@ var Quote = {
         }
 
         var quoteInsertSql = 'INSERT INTO quote (account_id, product_id) VALUES(?, ?)';
-
-        return db.knex.raw(quoteInsertSql, [quoteObj.name]).then(function(messageInsertSqlResults) {
+        console.log(JSON.stringify(quoteObj));
+        return db.knex.raw(quoteInsertSql, [quoteObj.accountId,quoteObj.productId]).then(function(messageInsertSqlResults) {
             return messageInsertSqlResults[0];
         });
     }

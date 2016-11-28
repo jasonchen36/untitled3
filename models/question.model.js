@@ -10,7 +10,7 @@ var Question = {
         if ((!questionId) || (Question.length === 0)) {
             return Promise.reject(new Error('No questionId specified!'));
         }
-        var questionSql = 'SELECT * FROM question WHERE id = ?';
+        var questionSql = 'SELECT * FROM questions WHERE id = ?';
         return db.knex.raw(questionSql, [questionId]).then(function(questionSqlResults) {
             return questionSqlResults[0][0];
         });
@@ -33,7 +33,7 @@ var Question = {
             return Promise.reject(new Error('No multiple answers option specified!'));
         }
 
-        var questionInsertSql = 'INSERT INTO question (category_id, text, instructions, type, has_multiple_answers) VALUES(?, ?, ?, ?, ?)';
+        var questionInsertSql = 'INSERT INTO questions (category_id, text, instructions, type, has_multiple_answers) VALUES(?, ?, ?, ?, ?)';
         var questionInsertSqlParams = [
             questionObj.categoryId,
             questionObj.text,
@@ -53,6 +53,19 @@ var Question = {
         }
 
         return db.knex('question').update(questionObj).where('id', id);
+    },
+
+    findByProductIdCategoryId: function(productId, categoryId) {
+      if ((!productId) || (productId.length === 0)) {
+          return Promise.reject(new Error('No productId specified!'));
+      }
+      if ((!categoryId) || (categoryId.length === 0)) {
+          return Promise.reject(new Error('No categoryId specified!'));
+      }
+      var questionSql = 'SELECT * FROM products_questions AS pq JOIN questions AS q ON q.id = pq.question_id AND q.category_id = ? WHERE pq.product_id = ?' ;
+      return db.knex.raw(questionSql, [categoryId,productId]).then(function(questionSqlResults) {
+          return questionSqlResults[0][0];
+      });
     }
 };
 
