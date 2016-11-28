@@ -14,7 +14,7 @@ var Product = require('../models/product.model');
 var Question = require('../models/question.model');
 var Answer = require('../models/answer.model');
 var Address = require('../models/address.model');
-var Dependent = require('../models/dependent.model');
+var Dependant = require('../models/dependant.model');
 var Document = require('../models/document.model');
 var validator = require('express-validator');
 // var Checklist = require('../models/checklist.model');
@@ -212,7 +212,7 @@ exports.createAnswer = function (req, res) {
   } else {
       var questionId = req.body.questionId;
       var taxReturnId = req.body.taxReturnId;
-      var answer = req.body.answer;
+      var text = req.body.text;
 
       // check that accountId exists
       Question.findById(questionId).then(function(question) {
@@ -227,7 +227,7 @@ exports.createAnswer = function (req, res) {
                       var answerObj = {};
                       answerObj.questionId = questionId;
                       answerObj.taxReturnId = taxReturnId;
-                      answerObj.answer = answer;
+                      answerObj.text = text;
 
                       return Answer.create(answerObj).then(function(answerId) {
                           var resultObj = {};
@@ -397,26 +397,6 @@ exports.updateAddress = function (req, res) {
       var province = req.body.province;
       var postalCode = req.body.postalCode;
 
-      // check that addressLine1 exists
-      Address.findById(addressLine1).then(function(addressLine1) {
-          if ((!addressLine1) || (addressLine1.length === 0)) {
-              res.status(404).send({ msg: 'Invalid addressLine1' });
-          } else {
-              // check that city exists
-              Address.findById(city).then(function(city) {
-                  if ((!city) || (city.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid city' });
-                  } else {
-                    // check that province exists
-                    Address.findById(province).then(function(province) {
-                        if ((!province) || (province.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid province' });
-                        } else {
-                          // check that postalCode exists
-                          Address.findById(postalCode).then(function(postalCode) {
-                              if ((!postalCode) || (postalCode.length === 0)) {
-                                  res.status(404).send({ msg: 'Invalid postalCode' });
-                              } else {
                       var addressObj = {};
                       if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
                       if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
@@ -435,14 +415,6 @@ exports.updateAddress = function (req, res) {
                           res.status(200).json(resultObj);
                       });
                   }
-              });
-          }
-      });
-  }
-});
-}
-});
-}
 };
 /*******************************************************************************
 ENDPOINT
@@ -488,75 +460,44 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.linkExistingAddresses = function (req, res) {
-  req.checkBody('addressLine1', 'Please provide a street address').notEmpty();
-  req.checkBody('city', 'Please provide a city').notEmpty();
-  req.checkBody('province', 'Please provide a province').notEmpty();
-  req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var addressLine1 = req.body.addressLine1;
-      var addressLine2 = req.body.addressLine2;
-      var city = req.body.city;
-      var province = req.body.province;
-      var postalCode = req.body.postalCode;
-
-      // check that addressLine1 exists
-      Address.findById(addressLine1).then(function(addressLine1) {
-          if ((!addressLine1) || (addressLine1.length === 0)) {
-              res.status(404).send({ msg: 'Invalid addressLine1' });
+    var addressId = req.params.addressId;
+    var taxReturnId = req.params.taxReturnId;
+      // check that address exists
+      Address.findById(addressId).then(function(address) {
+          if ((!address) || (address.length === 0)) {
+              res.status(404).send({ msg: 'Invalid address' });
           } else {
               // check that city exists
-              Address.findById(city).then(function(city) {
-                  if ((!city) || (city.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid city' });
+              TaxReturn.findById(taxReturnId).then(function(taxReturn) {
+                  if ((!taxReturn) || (taxReturn.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid taxReturn' });
                   } else {
-                    // check that province exists
-                    Address.findById(province).then(function(province) {
-                        if ((!province) || (province.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid province' });
-                        } else {
-                          // check that postalCode exists
-                          Address.findById(postalCode).then(function(postalCode) {
-                              if ((!postalCode) || (postalCode.length === 0)) {
-                                  res.status(404).send({ msg: 'Invalid postalCode' });
-                              } else {
-                      var addressObj = {};
-                      addressObj.addressLine1 = addressLine1;
-                      addressObj.addressLine2 = addressLine2;
-                      addressObj.city = city;
-                      addressObj.province = province;
-                      addressObj.postalCode = postalCode;
+                      var addressTaxReturnObj = {};
+                      addressTaxReturnObj.addressId = addressId;
+                      addressTaxReturnObj.taxReturnId = taxReturnId;
 
-                      return Address.create(addressObj).then(function(addressObjId) {
-                          var resultObj = {};
-                          resultObj.addressLine1 = addressLine1;
-                          resultObj.addressLine2 = addressLine2;
-                          resultObj.city = city;
-                          resultObj.province = province;
-                          resultObj.postalCode = postalCode;
+                      return Address.createAssociation(addressTaxReturnObj).then(function() {
 
-                          res.status(200).json(resultObj);
+
+                          res.status(200).send("OK");
                       });
                   }
               });
           }
       });
   }
-});
-}
-});
-}
 };
 
 /*******************************************************************************
 ENDPOINT
-POST /tax_return/:id/dependent
+POST /tax_return/:id/dependant
 
 INPUT BODY:
 {
-  taxReturnId:  44,
   firstName: "Jason",
   lastName: "Chen",
   dateOfBirth: "08/07/1988",
@@ -566,11 +507,10 @@ INPUT BODY:
 RESPONSE:
 200 OK
 {
-  dependentId: 4
+  dependantId: 4
 }
 *******************************************************************************/
-exports.createDependent = function (req, res) {
-  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+exports.createDependant = function (req, res) {
   req.checkBody('firstName', 'Please provide a firstName').notEmpty();
   req.checkBody('lastName', 'Please provide a lastName').notEmpty();
   req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
@@ -579,73 +519,35 @@ exports.createDependent = function (req, res) {
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var taxReturnId = req.body.taxReturnId;
       var firstName = req.body.firstName;
       var lastName = req.body.lastName;
       var dateOfBirth = req.body.dateOfBirth;
       var relationship = req.body.relationship;
 
-      // check that taxReturnId exists
-      Dependent.findById(taxReturnId).then(function(taxReturnId) {
-          if ((!taxReturnId) || (taxReturnId.length === 0)) {
-              res.status(404).send({ msg: 'Invalid taxReturnId' });
-          } else {
-              // check that firstName exists
-              Dependent.findById(firstName).then(function(firstName) {
-                  if ((!firstName) || (firstName.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid firstName' });
-                  } else {
-                    // check that lastName exists
-                    Dependent.findById(lastName).then(function(lastName) {
-                        if ((!lastName) || (lastName.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid lastName' });
-                        } else {
-                          // check that dateOfBirth exists
-                          Dependent.findById(dateOfBirth).then(function(dateOfBirth) {
-                              if ((!dateOfBirth) || (dateOfBirth.length === 0)) {
-                                  res.status(404).send({ msg: 'Invalid dateOfBirth' });
-                              } else {
-                                // check that relationship exists
-                                Dependent.findById(relationship).then(function(relationship) {
-                                    if ((!relationship) || (relationship.length === 0)) {
-                                        res.status(404).send({ msg: 'Invalid relationship' });
-                                    } else {
-                      var dependentObj = {};
-                      dependentObj.taxReturnId = taxReturnId;
-                      dependentObj.firstName = firstName;
-                      dependentObj.lastName = lastName;
-                      dependentObj.dateOfBirth = dateOfBirth;
-                      dependentObj.relationship = relationship;
+      var dependantObj = {};
+      dependantObj.firstName = firstName;
+      dependantObj.lastName = lastName;
+      dependantObj.dateOfBirth = dateOfBirth;
+      dependantObj.relationship = relationship;
 
-                      return Dependent.create(dependentObj).then(function(dependentObjId) {
-                          var resultObj = {};
-                          resultObj.taxReturnId = taxReturnId;
-                          resultObj.firstName = firstName;
-                          resultObj.lastName = lastName;
-                          resultObj.dateOfBirth = dateOfBirth;
-                          resultObj.relationship = relationship;
+      return Dependant.create(dependantObj).then(function(dependantObjId) {
+          var resultObj = {};
+          resultObj.firstName = firstName;
+          resultObj.lastName = lastName;
+          resultObj.dateOfBirth = dateOfBirth;
+          resultObj.relationship = relationship;
 
-                          res.status(200).json(resultObj);
-                      });
-                  }
-              });
-          }
-      });
-  }
-});
-}
-});
-}
-});
-}
-};
+          res.status(200).json(resultObj);
+        });
+      }
+      };
 /*******************************************************************************
 ENDPOINT
-PUT /tax_return/:id/dependent/:id
+PUT /tax_return/:id/dependant/:id
 
 INPUT BODY:
 {
-  dependentId: 4,     Mandatory
+  dependantId: 4,     Mandatory
   taxReturnId:  "44",    Mandatory
   firstName: "Jason",    Optional
   lastName: "Chen",       Optional
@@ -656,7 +558,7 @@ INPUT BODY:
 RESPONSE:
 200 OK
 *******************************************************************************/
-exports.updateDependent = function (req, res) {
+exports.updateDependant = function (req, res) {
   req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
   req.checkBody('firstName', 'Please provide a firstName').notEmpty();
   req.checkBody('lastName', 'Please provide a lastName').notEmpty();
@@ -673,38 +575,38 @@ exports.updateDependent = function (req, res) {
       var relationship = req.body.relationship;
 
       // check that taxReturnId exists
-      Dependent.findById(taxReturnId).then(function(taxReturnId) {
+      Dependant.findById(taxReturnId).then(function(taxReturnId) {
           if ((!taxReturnId) || (taxReturnId.length === 0)) {
               res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
               // check that firstName exists
-              Dependent.findById(firstName).then(function(firstName) {
+              Dependant.findById(firstName).then(function(firstName) {
                   if ((!firstName) || (firstName.length === 0)) {
                       res.status(404).send({ msg: 'Invalid firstName' });
                   } else {
                     // check that lastName exists
-                    Dependent.findById(lastName).then(function(lastName) {
+                    Dependant.findById(lastName).then(function(lastName) {
                         if ((!lastName) || (lastName.length === 0)) {
                             res.status(404).send({ msg: 'Invalid lastName' });
                         } else {
                           // check that dateOfBirth exists
-                          Dependent.findById(dateOfBirth).then(function(dateOfBirth) {
+                          Dependant.findById(dateOfBirth).then(function(dateOfBirth) {
                               if ((!dateOfBirth) || (dateOfBirth.length === 0)) {
                                   res.status(404).send({ msg: 'Invalid dateOfBirth' });
                               } else {
                                 // check that relationship exists
-                                Dependent.findById(relationship).then(function(relationship) {
+                                Dependant.findById(relationship).then(function(relationship) {
                                     if ((!relationship) || (relationship.length === 0)) {
                                         res.status(404).send({ msg: 'Invalid relationship' });
                                     } else {
-                      var dependentObj = {};
-                      if (req.body.taxReturnId) { dependentObj.tax_return_id = req.body.taxReturnId; }
-                      if (req.body.firstName) { dependentObj.first_name = req.body.firstName; }
-                      if (req.body.lastName) { dependentObj.last_name = req.body.lastName; }
-                      if (req.body.dateOfBirth) { dependentObj.date_of_birth = req.body.dateOfBirth; }
-                      if (req.body.relationship) { dependentObj.relationship = req.body.relationship; }
+                      var dependantObj = {};
+                      if (req.body.taxReturnId) { dependantObj.tax_return_id = req.body.taxReturnId; }
+                      if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
+                      if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
+                      if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
+                      if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
 
-                      return Dependent.update(taxReturnId,dependentObj).then(function(dependentObjId) {
+                      return Dependant.update(taxReturnId,dependantObj).then(function(dependantObjId) {
                           var resultObj = {};
                           resultObj.taxReturnId = taxReturnId;
                           resultObj.firstName = firstName;
@@ -729,7 +631,7 @@ exports.updateDependent = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-GET /tax_return/:id/dependent/:id
+GET /tax_return/:id/dependant/:id
 
 INPUT BODY:
 None. req.params.id is the only input (no body)
@@ -743,7 +645,7 @@ RESPONSE:
   relationship: "son"
 }
 *******************************************************************************/
-exports.findDependentById = function (req, res) {
+exports.findDependantById = function (req, res) {
   req.checkParams('id', 'Please provide an integer id').isInt();
 
   var errors = req.validationErrors();
@@ -751,9 +653,9 @@ exports.findDependentById = function (req, res) {
       res.status(400).send(errors);
   } else {
       var id = req.params.id;
-      Dependent.findById(id).then(function(dependent) {
-          if (dependent) {
-              res.status(200).send(dependent);
+      Dependant.findById(id).then(function(dependant) {
+          if (dependant) {
+              res.status(200).send(dependant);
           } else {
               res.status(404).send();
           }
@@ -764,7 +666,7 @@ exports.findDependentById = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-POST /tax_return/:id/dependent/:id
+POST /tax_return/:id/dependant/:id
 
 INPUT BODY:
 
@@ -772,75 +674,40 @@ RESPONSE:
 200 OK
 
 *******************************************************************************/
-exports.linkExistingDependents = function (req, res) {
-  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
-  req.checkBody('firstName', 'Please provide a firstName').notEmpty();
-  req.checkBody('lastName', 'Please provide a lastName').notEmpty();
-  req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
-  req.checkBody('relationship', 'Please provide a relationship').notEmpty();
+exports.linkExistingDependants = function (req, res) {
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var taxReturnId = req.body.taxReturnId;
-      var firstName = req.body.firstName;
-      var lastName = req.body.lastName;
-      var dateOfBirth = req.body.dateOfBirth;
-      var relationship = req.body.relationship;
-
-      // check that taxReturnId exists
-      Dependent.findById(taxReturnId).then(function(taxReturnId) {
-          if ((!taxReturnId) || (taxReturnId.length === 0)) {
-              res.status(404).send({ msg: 'Invalid taxReturnId' });
+    var dependantId = req.params.dependantId;
+    var taxReturnId = req.params.taxReturnId;
+    console.log(dependantId);
+      // check that dependantId exists
+      Dependant.findById(dependantId).then(function(dependant) {
+          if ((!dependant) || (dependant.length === 0)) {
+              res.status(404).send({ msg: 'Invalid dependant' });
           } else {
-              // check that firstName exists
-              Dependent.findById(firstName).then(function(firstName) {
-                  if ((!firstName) || (firstName.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid firstName' });
+              // check that taxReturnId exists
+              TaxReturn.findById(taxReturnId).then(function(taxReturn) {
+                  if ((!taxReturn) || (taxReturn.length === 0)) {
+                      res.status(404).send({ msg: 'Invalid taxReturn' });
                   } else {
-                    // check that lastName exists
-                    Dependent.findById(lastName).then(function(lastName) {
-                        if ((!lastName) || (lastName.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid lastName' });
-                        } else {
-                          // check that dateOfBirth exists
-                          Dependent.findById(dateOfBirth).then(function(dateOfBirth) {
-                              if ((!dateOfBirth) || (dateOfBirth.length === 0)) {
-                                  res.status(404).send({ msg: 'Invalid dateOfBirth' });
-                              } else {
-                                // check that relationship exists
-                                Dependent.findById(relationship).then(function(relationship) {
-                                    if ((!relationship) || (relationship.length === 0)) {
-                                        res.status(404).send({ msg: 'Invalid relationship' });
-                                    } else {
-                      var dependentObj = {};
-                      dependentObj.taxReturnId = taxReturnId;
-                      dependentObj.firstName = firstName;
-                      dependentObj.lastName = lastName;
-                      dependentObj.dateOfBirth = dateOfBirth;
-                      dependentObj.relationship = relationship;
+                      var dependantTaxReturnObj = {};
+                      dependantTaxReturnObj.dependantId = dependantId;
+                      dependantTaxReturnObj.taxReturnId = taxReturnId;
+                      console.log('tax return controller');
+                      console.log(JSON.stringify(dependantTaxReturnObj));
+                      console.log('tax return controller end');
+                      return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
 
-                      return Dependent.create(dependentObj).then(function(dependentObjId) {
-                          var resultObj = {};
-                          resultObj.taxReturnId = taxReturnId;
-                          resultObj.firstName = firstName;
-                          resultObj.lastName = lastName;
-                          resultObj.dateOfBirth = dateOfBirth;
-                          resultObj.relationship = relationship;
 
-                          res.status(200).json(resultObj);
+                          res.status(200).send("OK");
                       });
                   }
               });
           }
       });
   }
-});
-}
-});
-}
-});
-}
 };
 
 /*******************************************************************************
@@ -904,52 +771,7 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.createDocument = function (req, res) {
-  req.checkBody('name', 'Please provide a name').isInt();
-  req.checkBody('url', 'Please provide a url').isInt();
-  req.checkBody('thumbnailUrl', 'Please provide a thumbnailUrl').notEmpty();
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var name = req.body.name;
-      var url = req.body.url;
-      var thumbnailUrl = req.body.thumbnailUrl;
-
-      // check that name exists
-      Document.findById(name).then(function(name) {
-          if ((!name) || (name.length === 0)) {
-              res.status(404).send({ msg: 'Invalid name' });
-          } else {
-              // check that url exists
-              Document.findById(url).then(function(url) {
-                  if ((!url) || (url.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid url' });
-                  } else {
-                    // check that thumbnailUrl exists
-                    Document.findById(thumbnailUrl).then(function(thumbnailUrl) {
-                        if ((!thumbnailUrl) || (url.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid thumbnailUrl' });
-                        } else {
-                      var documentObj = {};
-                      documentObj.name = name;
-                      documentObj.url = url;
-                      documentObj.thumbnailUrl = thumbnailUrl;
-
-                      return Document.create(documentObj).then(function(documentId) {
-                          var resultObj = {};
-                          resultObj.name = name;
-                          resultObj.url = url;
-                          resultObj.thumbnailUrl  = thumbnailUrl;
-
-                          res.status(200).json(resultObj);
-                      });
-                  }
-              });
-          }
-      });
-  }
-});
-}
+// Michael to add implementation
 };
 
 /*******************************************************************************

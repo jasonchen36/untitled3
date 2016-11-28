@@ -17,9 +17,6 @@ var dependant = {
     },
 
     create: function(dependantObj) {
-        if ((!dependantObj.taxReturnId) || (dependantObj.taxReturnId.length === 0)) {
-            return Promise.reject(new Error('No taxReturnId specified!'));
-        }
         if ((!dependantObj.firstName) || (dependantObj.firstName.length === 0)) {
             return Promise.reject(new Error('No firstName specified!'));
         }
@@ -33,9 +30,8 @@ var dependant = {
             return Promise.reject(new Error('No relationship specified!'));
         }
 
-        var dependantInsertSql = 'INSERT INTO dependants (tax_return_id, first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?, ?)';
+        var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?)';
         var dependantInsertSqlParams = [
-            dependantObj.taxReturnId,
             dependantObj.firstName,
             dependantObj.lastName,
             dependantObj.dateOfBirth,
@@ -53,7 +49,21 @@ var dependant = {
         }
 
         return db.knex('dependants').update(dependantObj).where('id', id);
-    }
+    },
+    createAssociation: function(dependantTaxReturnObj) {
+        console.log(JSON.stringify(dependantTaxReturnObj));
+        if ((!dependantTaxReturnObj.dependantId) || (dependantTaxReturnObj.dependantId.length === 0)) {
+            return Promise.reject(new Error('No dependantId specified!'));
+        }
+        if ((!dependantTaxReturnObj.taxReturnId) || (dependantTaxReturnObj.taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        var dependantTaxReturnInsertSql = 'INSERT IGNORE INTO tax_returns_dependants (tax_return_id, dependant_id) VALUES(?, ?)';
+        return db.knex.raw(dependantTaxReturnInsertSql, [dependantTaxReturnObj.taxReturnId,dependantTaxReturnObj.dependantId]).then(function(dependantTaxReturnInsertSqlResults) {
+            var dependantId = dependantTaxReturnInsertSqlResults[0].insertId;
+            return Promise.resolve(dependantId);
+          });
+      }
 };
 
 module.exports = dependant;

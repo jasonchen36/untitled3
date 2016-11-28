@@ -44,7 +44,7 @@ var Answer = {
             return Promise.reject(new Error('No answerId specified!'));
         }
 
-        return db.knex('answer').update(answerObj).where('id', id);
+        return db.knex('answers').update(answerObj).where('id', id);
     }
 };
 

@@ -27,17 +27,17 @@ module.exports = function (router) {
     router.route('/tax_return/:id/answer/:id')
         .get(tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
-        .post(tax_return.createAddress)
-        .put(tax_return.updateAddress);
-    router.route('/tax_return/:id/address/:id')
+        .post(tax_return.createAddress);
+    router.route('/tax_return/:taxReturnId/address/:addressId')
         .get(tax_return.findAddressById)
+        .put(tax_return.updateAddress)
         .post(tax_return.linkExistingAddresses);
-    router.route('/tax_return/:id/dependent')
-        .post(tax_return.createDependent)
-        .put(tax_return.updateDependent);
-    router.route('/tax_return/:id/dependent/:id')
-        .get(tax_return.findDependentById)
-        .post(tax_return.linkExistingDependents);
+    router.route('/tax_return/:id/dependant')
+        .post(tax_return.createDependant);
+    router.route('/tax_return/:taxReturnId/dependant/:dependantId')
+        .get(tax_return.findDependantById)
+        .put(tax_return.updateDependant)
+        .post(tax_return.linkExistingDependants);
     //router.route('/tax_return/:id/checklist')
         //.get(tax_return.findChecklist);
     router.route('/tax_return/:id/document')

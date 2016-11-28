@@ -52,7 +52,7 @@ var Question = {
             return Promise.reject(new Error('No questionId specified!'));
         }
 
-        return db.knex('question').update(questionObj).where('id', id);
+        return db.knex('questions').update(questionObj).where('id', id);
     },
 
     findByProductIdCategoryId: function(productId, categoryId) {

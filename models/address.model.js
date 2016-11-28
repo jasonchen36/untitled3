@@ -54,7 +54,22 @@ var address = {
             return Promise.reject(new Error('No addressId specified!'));
         }
 
-        return db.knex('address').update(addressObj).where('id', id);
+        return db.knex('addresses').update(addressObj).where('id', id);
+    },
+
+    createAssociation: function(addressTaxReturnObj) {
+        if ((!addressTaxReturnObj.addressId) || (addressTaxReturnObj.addressId.length === 0)) {
+            return Promise.reject(new Error('No addressId specified!'));
+        }
+        if ((!addressTaxReturnObj.taxReturnId) || (addressTaxReturnObj.taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        var addressTaxReturnInsertSql = 'INSERT IGNORE INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES(?, ?)';
+        return db.knex.raw(addressTaxReturnInsertSql, [addressTaxReturnObj.taxReturnId,addressTaxReturnObj.addressId]).then(function(addressTaxReturnInsertSqlResults) {
+            console.log(JSON.stringify(addressTaxReturnInsertSql));
+            var addressId = addressTaxReturnInsertSqlResults[0].insertId;
+            return Promise.resolve(addressId);
+        });
     }
 };
 
