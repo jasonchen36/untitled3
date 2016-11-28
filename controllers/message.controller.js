@@ -121,18 +121,17 @@ INPUT BODY:
 NONE - ONLY AUTH TOKEN IS REQUIRED
 
 RESPONSE:
-[
-  {
-    "id": 7,
-    "status": "new",
-    "body": "admin test message body",
-    "subject": "admin test message",
-    "client_id": 57,
-    "fromname": "test_admin test_admin",
-    "from_id": 1,
-    "date": "2016-11-28T18:25:52.000Z"
-  }
-]
+{
+  "id": 7,
+  "status": "new",
+  "body": "admin test message body",
+  "subject": "admin test message",
+  "client_id": 57,
+  "fromname": "test_admin test_admin",
+  "from_id": 1,
+  "date": "2016-11-28T18:25:52.000Z"
+}
+
 200 OK
 *******************************************************************************/
 exports.read = function (req, res) {
@@ -160,7 +159,7 @@ exports.read = function (req, res) {
 
         // change status of message if this user is intended recipient
         // i.e. admins can read messages for others without updating status
-        if ((!isAdmin) && (client === req.user.id)) {
+        if ((!isAdmin) && (message.status === 'new') && (client === req.user.id)) {
             Message.setReadStatusById(id).then(function() {
                 res.status(200).send(message);
             });

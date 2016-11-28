@@ -32,7 +32,7 @@ var Message = {
             messageSqlParams = [messageId, clientId];
         }
         return db.knex.raw(messageSql, messageSqlParams).then(function(messageSqlResults) {
-            return(messageSqlResults[0]);
+            return(messageSqlResults[0][0]);
         });
     },
 
