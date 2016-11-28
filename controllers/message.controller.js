@@ -164,7 +164,13 @@ exports.read = function (req, res) {
                 res.status(200).send(message);
             });
         } else {
-            res.status(200).send(message);
+            if ((isAdmin) && (message.status === 'new') && (req.user.id === message.client_id)) {
+                Message.setReadStatusById(id).then(function() {
+                    res.status(200).send(message);
+                });
+            } else {
+                res.status(200).send(message);
+            }
         }
     });
 };
