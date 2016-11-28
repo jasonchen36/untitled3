@@ -19,7 +19,25 @@ var async = require("async");
 var mail = require('../services/mail');
 var mailclient = require('../services/mailclient2'); // just here for initiaL TEST
 
+/*******************************************************************************
+ENDPOINT
+POST /messages
 
+INPUT BODY:
+{
+  "from": 2,                    MANDATORY (USER ID)
+  "client": 1,                  ADMINS SHOULD SET THIS TO MESSAGE SPECIFIC USERS (USER ID)
+                                FOR CUSTOMERS IT DEFAULTS TO CURRENT USER ID
+                                THEREFORE, IT DOES NOT NEED TO BE PASSED
+  "subject": "test message",    OPTIONAL
+  "body": "test message body"   MANDATORY
+}
+
+AUTH TOKEN IS REQUIRED
+
+RESPONSE:
+200 OK
+*******************************************************************************/
 exports.create = function (req, res) {
     var message = {};
     logger.debug('controller - message instantiated');
@@ -56,6 +74,16 @@ exports.create = function (req, res) {
 
 };
 
+/*******************************************************************************
+ENDPOINT
+GET /messages/:client
+
+INPUT BODY:
+NONE - ONLY AUTH TOKEN IS REQUIRED
+
+RESPONSE:
+200 OK
+*******************************************************************************/
 exports.getMessageListForUser = function (req, res) {
 
     if (!req.user) {
@@ -66,7 +94,10 @@ exports.getMessageListForUser = function (req, res) {
 
     var client = req.user.id; // user comes from authentication
 
-    if (req.user.role != 'Customer') {
+    if (req.user.role != 'Customer') { // Admins must specify client to message
+        if (!req.params.client) {
+            res.status(409).send('no client parameter in request!');
+        }
         client = req.params.client;
     }
 
@@ -82,6 +113,28 @@ exports.getMessageListForUser = function (req, res) {
 
 };
 
+/*******************************************************************************
+ENDPOINT
+GET /messages/:id
+
+INPUT BODY:
+NONE - ONLY AUTH TOKEN IS REQUIRED
+
+RESPONSE:
+[
+  {
+    "id": 7,
+    "status": "new",
+    "body": "admin test message body",
+    "subject": "admin test message",
+    "client_id": 57,
+    "fromname": "test_admin test_admin",
+    "from_id": 1,
+    "date": "2016-11-28T18:25:52.000Z"
+  }
+]
+200 OK
+*******************************************************************************/
 exports.read = function (req, res) {
 
     if (!req.user) {
@@ -93,15 +146,27 @@ exports.read = function (req, res) {
 
     //TODO: if user is admin, ensure that message is associated with one of their clients
 
-    Message.findOneById(id, client).then(function(message) {
+    var isAdmin = false;
+    if (req.user.role === 'Admin') { // Admins can read any users messages
+        isAdmin = true
+    } else {
+        isAdmin = false;
+    }
+    Message.findOneById(id, client, isAdmin).then(function(message) {
         if (!message) {
             res.status(404).send();
             return;
         }
 
-        // TODO: change status of message
-
-        res.status(200).send(message);
+        // change status of message if this user is intended recipient
+        // i.e. admins can read messages for others without updating status
+        if ((!isAdmin) && (client === req.user.id)) {
+            Message.setReadStatusById(id).then(function() {
+                res.status(200).send(message);
+            });
+        } else {
+            res.status(200).send(message);
+        }
     });
 };
 

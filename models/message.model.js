@@ -15,15 +15,23 @@ var Message = {
         });
     },
 
-    findOneById: function(messageId, clientId) {
+    findOneById: function(messageId, clientId, isAdmin) {
         if ((!messageId) || (messageId.length === 0)) {
           return Promise.reject('No messageId specified!');
         }
-        if ((!clientId) || (clientId.length === 0)) {
+        if ((!isAdmin) && ((!clientId) || (clientId.length === 0))) {
           return Promise.reject('No clientId specified!');
         }
-        var messageSql = 'SELECT * FROM messages WHERE id = ? and client_id = ?';
-        return db.knex.raw(messageSql, [messageId, clientId]).then(function(messageSqlResults) {
+        var messageSql = '';
+        var messageSqlParams = [];
+        if (isAdmin) {
+            messageSql = 'SELECT * FROM messages WHERE id = ?';
+            messageSqlParams = [messageId];
+        } else {
+            messageSql = 'SELECT * FROM messages WHERE id = ? and client_id = ?';
+            messageSqlParams = [messageId, clientId];
+        }
+        return db.knex.raw(messageSql, messageSqlParams).then(function(messageSqlResults) {
             return(messageSqlResults[0]);
         });
     },
@@ -49,6 +57,16 @@ var Message = {
         return db.knex.raw(messageInsertSql, messageInsertSqlParams).then(function(messageInsertSqlResults) {
           return messageInsertSqlResults[0][0];
         });
+    },
+
+
+    setReadStatusById: function(id) {
+        if ((!id) || (id.length === 0)) {
+          return Promise.reject('No id specified!');
+        }
+
+        var messageSql = 'UPDATE messages SET status="read" WHERE id = ?';
+        return db.knex.raw(messageSql, [id]);
     }
 };
 
