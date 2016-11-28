@@ -1,451 +1,333 @@
 {
-	"variables": [],
-	"info": {
-		"name": "TAXPLAN API",
-		"_postman_id": "dd2c5128-670e-f63c-a2d2-107fe186d9e4",
-		"description": "",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
-	},
-	"item": [
+	"id": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+	"name": "TAXPLAN API",
+	"description": "",
+	"order": [
+		"322d0768-cc24-b272-1f17-feaf5a70bf41",
+		"4810834f-b0f3-3ec9-0638-a8976baffb86",
+		"d75cf14e-10a2-4060-8be2-17ba0e7bb2a0",
+		"a11ccf87-05df-0977-6144-96b41025a842",
+		"c0b02868-b7d4-8773-5636-53e29827f5ee",
+		"9ce8b541-9672-3c7d-b8dc-4681b3c27280",
+		"8fb78e55-283d-5271-b06f-5dfc002928a7",
+		"b631e9d3-10a5-c405-f39a-b3b9eb03430e",
+		"5e1f8f17-7359-30c5-f319-3f330667e4e2",
+		"10c140d7-0533-9311-e405-fc3cc48d421f",
+		"23c98dcd-e366-d243-f16e-81269491815f",
+		"850418ff-8204-c388-d5f3-d1801e9e23fc",
+		"1b12dd57-b2dd-91a1-d197-02ac02c9d45b",
+		"b36436f2-4c75-4f2a-0eb5-239525448d92",
+		"03050d4a-f82a-6f26-c146-f2f489681898",
+		"1db89677-74c0-3309-1a85-d323dc3c5823",
+		"17589fe9-1186-36a9-31fa-05b9c48ecfd2",
+		"02ee367f-6b5b-570d-a152-451149b34148",
+		"b98fed5f-5a3c-10ff-f6f9-497ca5fbe30e",
+		"d716b15b-b582-4ce3-c8c9-11c6cd1049a6"
+	],
+	"folders": [],
+	"timestamp": 0,
+	"owner": 0,
+	"public": false,
+	"requests": [
 		{
-			"name": "/",
-			"request": {
-				"url": "http://{{url}}/",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNzkxMDR9.9Ne6fGSaM1BEe9TJuwMmXYXRRa-bZ2-Ml3ba8MvEBvg",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \n  \"username\": \"test_admin\",\n  \"password\": \"123\"\n}"
-				},
-				"description": "index"
-			},
-			"response": []
-		},
-		{
-			"name": "Healthcheck",
-			"request": {
-				"url": "http://{{url}}/healthcheck",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\",\n  \"password\": \"1234\"\n}"
-				},
-				"description": "Healthcheck"
-			},
-			"response": []
-		},
-		{
-			"name": "Register User",
-			"request": {
-				"url": "http://{{url}}/users",
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \n  \"password\": \"123\",\n  \"first_name\": \"test_user1\",\n  \"last_name\": \"test_user1\",\n  \"email\": \"test_use1r@gmail.com\"\n}"
-				},
-				"description": "Create User"
-			},
-			"response": []
-		},
-		{
-			"name": "Login",
-			"request": {
-				"url": "http://{{url}}/login",
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \r\n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\",\r\n  \"password\": \"123\"\r\n}"
-				},
-				"description": "login"
-			},
-			"response": []
-		},
-		{
-			"name": "users/me",
-			"request": {
-				"url": "http://{{url}}/users/me",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjR0Y3N2MCszOWViMzRzamEzdXlnQHNoYXJrbGFzZXJzLmNvbSIsImlkIjoxLCJpYXQiOjE0NzgyODQ1MDUsImV4cCI6MTQ3ODI4ODEwNX0.DQwcm208b0zrB1jlBwireVHQwgoFYOJoPO_amKSm3cI",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "",
-							"value": "",
-							"type": "text",
-							"enabled": true
-						}
-					]
-				},
-				"description": "users/me"
-			},
-			"response": []
-		},
-		{
-			"name": "Get Reset Token",
-			"request": {
-				"url": "http://{{url}}/users/reset",
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\"\n}"
-				},
-				"description": "password reset"
-			},
-			"response": []
-		},
-		{
-			"name": "Use Reset Token",
-			"request": {
-				"url": "http://{{url}}/users/reset/a65316fdfeb92b265ee9fa6f2abe29ca815080da38c589e84d8834b744a203cd",
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \n  \"password\": \"1234\"\n}"
-				},
-				"description": "password reset"
-			},
-			"response": []
-		},
-		{
-			"name": "Update User",
-			"request": {
-				"url": "http://{{url}}/users/31",
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImZha2VAZW1haWwuY29tIiwiaWQiOjMxLCJpYXQiOjE0Nzg1NDUxNzksImV4cCI6MTQ3ODU0ODc3OX0.wHNpad0Yrf4cYdAZg7EUopoST2nCXmuQJ1eoUUfGl1E",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"email\": \"fake@email.com\",\r\n  \"id\": 31,\r\n  \"iat\": 1478544215,\r\n  \"exp\": 1478547815,\r\n  \"phone\": \"1234567890\"\r\n}"
-				},
-				"description": "Update User"
-			},
-			"response": []
-		},
-		{
-			"name": "Update Password",
-			"request": {
-				"url": "http://{{url}}/users/4/password",
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MTM4ODA1LCJleHAiOjE0NzkxNDI0MDV9.rK7CxZZD5kQXbpdiLG8SP84FRCQWgr3R1WoqvvHv9Ig",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"password\": \"12345\"\r\n}"
-				},
-				"description": "Update Password"
-			},
-			"response": []
-		},
-		{
-			"name": "ADMIN Delete User",
-			"request": {
-				"url": "http://{{url}}/users/68",
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNDU5Mzd9.6dOpzAyFlNPdCeHC8gwRXFEneMpmVt2zg_zGTjoNGGg",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"description": "ADMIN Delete User"
-			},
-			"response": []
-		},
-		{
-			"name": "ADMIN User Find",
-			"request": {
-				"url": "http://{{url}}/users/1",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjR0Y3N2MCszOWViMzRzamEzdXlnQHNoYXJrbGFzZXJzLmNvbSIsImlkIjoxLCJpYXQiOjE0NzkyNDE4ODgsImV4cCI6MTQ3OTI0NTQ4OH0.y3F5tbp7o5uvZ7TMzcC94iYdHrnGlsVQbUVXiOI6FiQ",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "",
-							"value": "",
-							"type": "text",
-							"enabled": true
-						}
-					]
-				},
-				"description": "users"
-			},
-			"response": []
-		},
-		{
-			"name": "ADMIN List Users",
-			"request": {
-				"url": "http://{{url}}/users",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNDU5Mzd9.6dOpzAyFlNPdCeHC8gwRXFEneMpmVt2zg_zGTjoNGGg",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{ \n  \"username\": \"test_admin\",\n  \"password\": \"123\"\n}"
-				},
-				"description": "auth with token"
-			},
-			"response": []
-		},
-		{
-			"name": "Send Message",
-			"request": {
-				"url": "http://{{url}}/messages",
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MDg5NTM5LCJleHAiOjE0NzkwOTMxMzl9.0ZcYhiFbHsDwYkij8jRDu05URgMD7pK8xEo_ezZjmMc",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"from\": 2,\r\n  \"fromname\": \"test_user\",\r\n  \"client\": 1,\r\n  \"subject\": \"test message\",\r\n  \"body\": \"test message body\",\r\n  \"status\": \"new\",\r\n  \"user\": {\r\n    \"id\": 4,\r\n    \"role\": \"Customer\",\r\n    \"provider\": \"local\",\r\n    \"name\": null,\r\n    \"email\": \"test_user@gmail.com\",\r\n    \"phone\": \"1234567890\",\r\n    \"username\": \"test_user\",\r\n    \"first_name\": \"test_user\",\r\n    \"last_name\": \"test_user\",\r\n    \"accounts\": null,\r\n    \"birthday\": null,\r\n    \"reset_key\": null\r\n  }\r\n  \r\n}"
-				},
-				"description": "Send Message"
-			},
-			"response": []
-		},
-		{
-			"name": "Get Message List For User",
-			"request": {
-				"url": "http://{{url}}/messages",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MDg5NTM5LCJleHAiOjE0NzkwOTMxMzl9.0ZcYhiFbHsDwYkij8jRDu05URgMD7pK8xEo_ezZjmMc",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"user\": {\r\n    \"id\": 4,\r\n    \"role\": \"Customer\",\r\n    \"provider\": \"local\",\r\n    \"name\": null,\r\n    \"email\": \"test_user@gmail.com\",\r\n    \"phone\": \"1234567890\",\r\n    \"username\": \"test_user\",\r\n    \"first_name\": \"test_user\",\r\n    \"last_name\": \"test_user\",\r\n    \"accounts\": null,\r\n    \"birthday\": null,\r\n    \"reset_key\": null\r\n  }\r\n  \r\n}"
-				},
-				"description": "Get Message List For User"
-			},
-			"response": []
-		},
-		{
-			"name": "Get Message By ID",
-			"request": {
-				"url": "http://{{url}}/messages/1",
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					},
-					{
-						"key": "Authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MDg5NTM5LCJleHAiOjE0NzkwOTMxMzl9.0ZcYhiFbHsDwYkij8jRDu05URgMD7pK8xEo_ezZjmMc",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"user\": {\r\n    \"id\": 4,\r\n    \"role\": \"Customer\",\r\n    \"provider\": \"local\",\r\n    \"name\": null,\r\n    \"email\": \"test_user@gmail.com\",\r\n    \"phone\": \"1234567890\",\r\n    \"username\": \"test_user\",\r\n    \"first_name\": \"test_user\",\r\n    \"last_name\": \"test_user\",\r\n    \"accounts\": null,\r\n    \"birthday\": null,\r\n    \"reset_key\": null\r\n  }\r\n  \r\n}"
-				},
-				"description": "Get Message By ID"
-			},
-			"response": []
-		},
-		{
-			"name": "Checklist (PDF)",
-			"request": {
-				"url": "http://{{url}}/accounts/5810d141533c18d80d02cd36/products/569432e8d4f005a004641d4d/questionnaires/56942e79d4f005a004641d4b/checklist",
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
-				"description": ""
-			},
-			"response": []
-		},
-		{
-			"name": "Create Tax Returns",
-			"request": {
-				"url": "http://{{url}}/tax_return",
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"description": ""
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"accountId\": 1,\r\n  \"productId\": 70,\r\n  \"filers\": [\r\n    {\r\n      \"firstName\": \"Carmela\"\r\n    },\r\n    {\r\n      \"firstName\": \"Doug\"\r\n    },\r\n    {\r\n      \"firstName\": \"Tim\"\r\n    },\r\n    {\r\n      \"firstName\": \"Michael\"\r\n    }\r\n  ]\r\n}"
-				},
-				"description": "Create Tax Returns"
-			},
-			"response": []
-		},
-		{
+			"id": "02ee367f-6b5b-570d-a152-451149b34148",
 			"name": "Find Tax Return By id",
-			"request": {
-				"url": "http://{{url}}/tax_return/1",
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "",
-							"value": "",
-							"type": "text",
-							"enabled": true
-						}
-					]
-				},
-				"description": "Find Tax Return By id"
-			},
-			"response": []
+			"description": "Find Tax Return By id",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "",
+			"dataMode": "urlencoded",
+			"data": [
+				{
+					"key": "",
+					"value": "",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"rawModeData": "",
+			"url": "http://{{url}}/tax_return/1",
+			"responses": []
 		},
 		{
+			"id": "03050d4a-f82a-6f26-c146-f2f489681898",
+			"name": "Get Message By ID",
+			"description": "Get Message By ID",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Content-Type: application/json\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MDg5NTM5LCJleHAiOjE0NzkwOTMxMzl9.0ZcYhiFbHsDwYkij8jRDu05URgMD7pK8xEo_ezZjmMc",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{\r\n  \"user\": {\r\n    \"id\": 4,\r\n    \"role\": \"Customer\",\r\n    \"provider\": \"local\",\r\n    \"name\": null,\r\n    \"email\": \"test_user@gmail.com\",\r\n    \"phone\": \"1234567890\",\r\n    \"username\": \"test_user\",\r\n    \"first_name\": \"test_user\",\r\n    \"last_name\": \"test_user\",\r\n    \"accounts\": null,\r\n    \"birthday\": null,\r\n    \"reset_key\": null\r\n  }\r\n  \r\n}",
+			"url": "http://{{url}}/messages/1",
+			"responses": []
+		},
+		{
+			"id": "10c140d7-0533-9311-e405-fc3cc48d421f",
+			"name": "ADMIN Delete User",
+			"description": "ADMIN Delete User",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "DELETE",
+			"headers": "Content-Type: application/json\nAuthorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNDU5Mzd9.6dOpzAyFlNPdCeHC8gwRXFEneMpmVt2zg_zGTjoNGGg",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "",
+			"url": "http://{{url}}/users/68",
+			"responses": []
+		},
+		{
+			"id": "17589fe9-1186-36a9-31fa-05b9c48ecfd2",
+			"name": "Create Tax Returns",
+			"description": "Create Tax Returns",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "POST",
+			"headers": "Content-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{\r\n  \"accountId\": 1,\r\n  \"productId\": 70,\r\n  \"filers\": [\r\n    {\r\n      \"firstName\": \"Carmela\"\r\n    },\r\n    {\r\n      \"firstName\": \"Doug\"\r\n    },\r\n    {\r\n      \"firstName\": \"Tim\"\r\n    },\r\n    {\r\n      \"firstName\": \"Michael\"\r\n    }\r\n  ]\r\n}",
+			"url": "http://{{url}}/tax_return",
+			"responses": []
+		},
+		{
+			"id": "1b12dd57-b2dd-91a1-d197-02ac02c9d45b",
+			"headers": "Content-Type: application/json\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MDg5NTM5LCJleHAiOjE0NzkwOTMxMzl9.0ZcYhiFbHsDwYkij8jRDu05URgMD7pK8xEo_ezZjmMc\n",
+			"url": "http://{{url}}/messages",
+			"preRequestScript": null,
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "raw",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1480367099899,
+			"name": "Send Message",
+			"description": "Send Message",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"responses": [],
+			"rawModeData": "{\r\n  \"from\": 2,\r\n  \"client\": 1,\r\n  \"subject\": \"test message\",\r\n  \"body\": \"test message body\"\r\n}"
+		},
+		{
+			"id": "1db89677-74c0-3309-1a85-d323dc3c5823",
+			"name": "Checklist (PDF)",
+			"description": "",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "",
+			"dataMode": "params",
+			"data": [],
+			"rawModeData": "",
+			"url": "http://{{url}}/accounts/5810d141533c18d80d02cd36/products/569432e8d4f005a004641d4d/questionnaires/56942e79d4f005a004641d4b/checklist",
+			"responses": []
+		},
+		{
+			"id": "23c98dcd-e366-d243-f16e-81269491815f",
+			"name": "ADMIN User Find",
+			"description": "users",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjR0Y3N2MCszOWViMzRzamEzdXlnQHNoYXJrbGFzZXJzLmNvbSIsImlkIjoxLCJpYXQiOjE0NzkyNDE4ODgsImV4cCI6MTQ3OTI0NTQ4OH0.y3F5tbp7o5uvZ7TMzcC94iYdHrnGlsVQbUVXiOI6FiQ",
+			"dataMode": "urlencoded",
+			"data": [
+				{
+					"key": "",
+					"value": "",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"rawModeData": "",
+			"url": "http://{{url}}/users/1",
+			"responses": []
+		},
+		{
+			"id": "322d0768-cc24-b272-1f17-feaf5a70bf41",
+			"name": "/",
+			"description": "index",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNzkxMDR9.9Ne6fGSaM1BEe9TJuwMmXYXRRa-bZ2-Ml3ba8MvEBvg",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \n  \"username\": \"test_admin\",\n  \"password\": \"123\"\n}",
+			"url": "http://{{url}}/",
+			"responses": []
+		},
+		{
+			"id": "4810834f-b0f3-3ec9-0638-a8976baffb86",
+			"name": "Healthcheck",
+			"description": "Healthcheck",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Content-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\",\n  \"password\": \"1234\"\n}",
+			"url": "http://{{url}}/healthcheck",
+			"responses": []
+		},
+		{
+			"id": "5e1f8f17-7359-30c5-f319-3f330667e4e2",
+			"name": "Update Password",
+			"description": "Update Password",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "PUT",
+			"headers": "Content-Type: application/json\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MTM4ODA1LCJleHAiOjE0NzkxNDI0MDV9.rK7CxZZD5kQXbpdiLG8SP84FRCQWgr3R1WoqvvHv9Ig",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{\r\n  \"password\": \"12345\"\r\n}",
+			"url": "http://{{url}}/users/4/password",
+			"responses": []
+		},
+		{
+			"id": "850418ff-8204-c388-d5f3-d1801e9e23fc",
+			"name": "ADMIN List Users",
+			"description": "auth with token",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwicm9sZSI6IkFkbWluIiwicHJvdmlkZXIiOiJsb2NhbCIsIm5hbWUiOiJBZG1pbiIsImVtYWlsIjoiNHRjc3YwKzM5ZWIzNHNqYTN1eWdAc2hhcmtsYXNlcnMuY29tIiwiaGFzaGVkX3Bhc3N3b3JkIjoibHMrVTdUejRDRFNMaEZ5azE1NmtDdnVpSkZEMGtCRHM3bGhuVHVpNDZCdUtLdkRqblFhdytITU9jQ2t0UE5INGtBRFlRSDhlbGhjUm0vSDNobVpPV1E9PSIsInNhbHQiOiJ1T01KWmtreERFNkc3aEFNcll6RVRnPT0iLCJwaG9uZSI6bnVsbCwidXNlcm5hbWUiOiJ0ZXN0X2FkbWluIiwiZmlyc3RfbmFtZSI6InRlc3RfYWRtaW4iLCJsYXN0X25hbWUiOiJ0ZXN0X2FkbWluIiwiYWNjb3VudHMiOm51bGwsImJpcnRoZGF5IjpudWxsLCJpYXQiOjE0NzgxNDU5Mzd9.6dOpzAyFlNPdCeHC8gwRXFEneMpmVt2zg_zGTjoNGGg",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \n  \"username\": \"test_admin\",\n  \"password\": \"123\"\n}",
+			"url": "http://{{url}}/users",
+			"responses": []
+		},
+		{
+			"id": "8fb78e55-283d-5271-b06f-5dfc002928a7",
+			"name": "Use Reset Token",
+			"description": "password reset",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "PUT",
+			"headers": "Content-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \n  \"password\": \"1234\"\n}",
+			"url": "http://{{url}}/users/reset/a65316fdfeb92b265ee9fa6f2abe29ca815080da38c589e84d8834b744a203cd",
+			"responses": []
+		},
+		{
+			"id": "9ce8b541-9672-3c7d-b8dc-4681b3c27280",
+			"name": "Get Reset Token",
+			"description": "password reset",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "PUT",
+			"headers": "Content-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\"\n}",
+			"url": "http://{{url}}/users/reset",
+			"responses": []
+		},
+		{
+			"id": "a11ccf87-05df-0977-6144-96b41025a842",
+			"name": "Login",
+			"description": "login",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "POST",
+			"headers": "Content-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \r\n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\",\r\n  \"password\": \"123\"\r\n}",
+			"url": "http://{{url}}/login",
+			"responses": []
+		},
+		{
+			"id": "b36436f2-4c75-4f2a-0eb5-239525448d92",
+			"name": "Get Message List For User",
+			"description": "Get Message List For User",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Content-Type: application/json\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RfdXNlckBnbWFpbC5jb20iLCJpZCI6NCwiaWF0IjoxNDc5MDg5NTM5LCJleHAiOjE0NzkwOTMxMzl9.0ZcYhiFbHsDwYkij8jRDu05URgMD7pK8xEo_ezZjmMc",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{\r\n  \"user\": {\r\n    \"id\": 4,\r\n    \"role\": \"Customer\",\r\n    \"provider\": \"local\",\r\n    \"name\": null,\r\n    \"email\": \"test_user@gmail.com\",\r\n    \"phone\": \"1234567890\",\r\n    \"username\": \"test_user\",\r\n    \"first_name\": \"test_user\",\r\n    \"last_name\": \"test_user\",\r\n    \"accounts\": null,\r\n    \"birthday\": null,\r\n    \"reset_key\": null\r\n  }\r\n  \r\n}",
+			"url": "http://{{url}}/messages",
+			"responses": []
+		},
+		{
+			"id": "b631e9d3-10a5-c405-f39a-b3b9eb03430e",
+			"name": "Update User",
+			"description": "Update User",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "PUT",
+			"headers": "Content-Type: application/json\nAuthorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImZha2VAZW1haWwuY29tIiwiaWQiOjMxLCJpYXQiOjE0Nzg1NDUxNzksImV4cCI6MTQ3ODU0ODc3OX0.wHNpad0Yrf4cYdAZg7EUopoST2nCXmuQJ1eoUUfGl1E",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{\r\n  \"email\": \"fake@email.com\",\r\n  \"id\": 31,\r\n  \"iat\": 1478544215,\r\n  \"exp\": 1478547815,\r\n  \"phone\": \"1234567890\"\r\n}",
+			"url": "http://{{url}}/users/31",
+			"responses": []
+		},
+		{
+			"id": "b98fed5f-5a3c-10ff-f6f9-497ca5fbe30e",
 			"name": "Create Account",
-			"request": {
-				"url": "http://{{url}}/account",
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "name",
-							"value": "john",
-							"type": "text",
-							"enabled": true
-						},
-						{
-							"key": "productId",
-							"value": "12341234",
-							"type": "text",
-							"enabled": true
-						}
-					]
+			"description": "",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "POST",
+			"headers": "",
+			"dataMode": "params",
+			"data": [
+				{
+					"key": "name",
+					"value": "john",
+					"type": "text",
+					"enabled": true
 				},
-				"description": ""
-			},
-			"response": []
+				{
+					"key": "productId",
+					"value": "12341234",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"rawModeData": "",
+			"url": "http://{{url}}/account",
+			"responses": []
 		},
 		{
+			"id": "c0b02868-b7d4-8773-5636-53e29827f5ee",
+			"name": "users/me",
+			"description": "users/me",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IjR0Y3N2MCszOWViMzRzamEzdXlnQHNoYXJrbGFzZXJzLmNvbSIsImlkIjoxLCJpYXQiOjE0NzgyODQ1MDUsImV4cCI6MTQ3ODI4ODEwNX0.DQwcm208b0zrB1jlBwireVHQwgoFYOJoPO_amKSm3cI",
+			"dataMode": "urlencoded",
+			"data": [
+				{
+					"key": "",
+					"value": "",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"rawModeData": "",
+			"url": "http://{{url}}/users/me",
+			"responses": []
+		},
+		{
+			"id": "d716b15b-b582-4ce3-c8c9-11c6cd1049a6",
 			"name": "GET Account by Id",
-			"request": {
-				"url": "http://{{url}}/account/70",
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
-				"description": ""
-			},
-			"response": []
+			"description": "",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "GET",
+			"headers": "",
+			"dataMode": "params",
+			"data": [],
+			"rawModeData": "",
+			"url": "http://{{url}}/account/70",
+			"responses": []
+		},
+		{
+			"id": "d75cf14e-10a2-4060-8be2-17ba0e7bb2a0",
+			"name": "Register User",
+			"description": "Create User",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
+			"method": "POST",
+			"headers": "Content-Type: application/json",
+			"dataMode": "raw",
+			"data": [],
+			"rawModeData": "{ \n  \"password\": \"123\",\n  \"first_name\": \"test_user1\",\n  \"last_name\": \"test_user1\",\n  \"email\": \"test_use1r@gmail.com\"\n}",
+			"url": "http://{{url}}/users",
+			"responses": []
 		}
 	]
 }
