@@ -27,10 +27,6 @@ var document = {
         if ((!documentObj.thumbnailUrl) || (documentObj.thumbnailUrl.length === 0)) {
             return Promise.reject(new Error('No thumbnailUrl specified!'));
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> route_implementation
         var documentInsertSql = 'INSERT INTO documents (name, url, thumbnail_url) VALUES(?, ?, ?)';
         var documentInsertSqlParams = [
             documentObj.name,
