@@ -664,7 +664,6 @@ exports.linkExistingDependants = function (req, res) {
   } else {
     var dependantId = req.params.dependantId;
     var taxReturnId = req.params.taxReturnId;
-    console.log(dependantId);
       // check that dependantId exists
       Dependant.findById(dependantId).then(function(dependant) {
           if ((!dependant) || (dependant.length === 0)) {
@@ -678,12 +677,7 @@ exports.linkExistingDependants = function (req, res) {
                       var dependantTaxReturnObj = {};
                       dependantTaxReturnObj.dependantId = dependantId;
                       dependantTaxReturnObj.taxReturnId = taxReturnId;
-                      console.log('tax return controller');
-                      console.log(JSON.stringify(dependantTaxReturnObj));
-                      console.log('tax return controller end');
                       return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
-
-
                           res.status(200).send("OK");
                       });
                   }
