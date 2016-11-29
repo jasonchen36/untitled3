@@ -16,7 +16,7 @@ module.exports = {
     port: process.env.TAXPLAN_API_SERVER_PORT,
     ipaddr : '127.0.0.1',
     database: {
-      debugSQL: true,
+      debugSQL: false,
       client:'mysql',
       connection: {
         host: process.env.TAXPLAN_API_MYSQL_HOST,
