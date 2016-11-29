@@ -58,9 +58,13 @@ exports.create = function (req, res) {
 //    message.datetime = new Date();
 
     // fix me
-    if (!message.from || !message.client || !message.subject || !message.body) {
+    if (!message.from || !message.client || !message.body) {
         res.status(401).send('missing stuff');
         return;
+    }
+
+    if (!message.subject) {
+        message.subject = ''; // optional parameter
     }
 
 
