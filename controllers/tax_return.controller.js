@@ -388,6 +388,8 @@ exports.updateAddress = function (req, res) {
   req.checkBody('city', 'Please provide a city').notEmpty();
   req.checkBody('province', 'Please provide a province').notEmpty();
   req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('addressId', 'Please provide an addressId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
