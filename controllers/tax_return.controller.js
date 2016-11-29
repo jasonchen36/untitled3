@@ -21,6 +21,8 @@ var validator = require('express-validator');
 
 // boilerplate
 var _ = require('underscore');
+var moment = require('moment');
+var dateFormat = "YYYY-MM-DD";
 var config = require('../config/config');
 
 /*******************************************************************************
@@ -367,11 +369,10 @@ exports.createAddress = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-PUT /tax_return/:id/address/
+PUT /tax_return/:id/address/:id
 
 INPUT BODY:
 {
-  addressId: 44,
   addressLine1:  "34 Wellington Street",
   addressLine2: "Suite 504",
   city: "Toronto",
@@ -545,10 +546,11 @@ exports.createDependant = function (req, res) {
 ENDPOINT
 PUT /tax_return/:id/dependant/:id
 
+Params:
+taxReturnId and dependantId
+
 INPUT BODY:
 {
-  dependantId: 4,     Mandatory
-  taxReturnId:  "44",    Mandatory
   firstName: "Jason",    Optional
   lastName: "Chen",       Optional
   dateOfBirth: "08/07/1988",    Optional
@@ -559,7 +561,8 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.updateDependant = function (req, res) {
-  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('dependantId', 'Please provide a dependantId').isInt();
   req.checkBody('firstName', 'Please provide a firstName').notEmpty();
   req.checkBody('lastName', 'Please provide a lastName').notEmpty();
   req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
@@ -568,31 +571,37 @@ exports.updateDependant = function (req, res) {
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var taxReturnId = req.body.taxReturnId;
       var firstName = req.body.firstName;
       var lastName = req.body.lastName;
       var dateOfBirth = req.body.dateOfBirth;
       var relationship = req.body.relationship;
-
+      var dependantId = req.params.dependantId;
+      var taxReturnId = req.params.taxReturnId;
+      var isValidDate = moment(dateOfBirth, dateFormat, true).isValid();
+      if(!isValidDate){
+        res.status(400).send({msg: "Invalid date format. Expected date format is " + dateFormat});
+        res.end();
+        return;
+      }
       // check that taxReturnId exists
-      Dependant.findById(taxReturnId).then(function(taxReturnId) {
-          if ((!taxReturnId) || (taxReturnId.length === 0)) {
-              res.status(404).send({ msg: 'Invalid taxReturnId' });
+      Dependant.findById(dependantId).then(function(dependant) {
+          if ((!dependant) || (dependant.length === 0)) {
+              res.status(404).send({ msg: 'Dependant not found' });
           } else {
                       var dependantObj = {};
-                      if (req.body.taxReturnId) { dependantObj.tax_return_id = req.body.taxReturnId; }
                       if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
                       if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
                       if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
                       if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
+                      if (req.params.taxReturnId) { dependantObj.tax_return_id = req.params.taxReturnId; }
 
-                      return Dependant.update(taxReturnId,dependantObj).then(function(dependantObjId) {
+                      return Dependant.update(dependantId,dependantObj).then(function() {
                           var resultObj = {};
-                          resultObj.taxReturnId = taxReturnId;
                           resultObj.firstName = firstName;
                           resultObj.lastName = lastName;
                           resultObj.dateOfBirth = dateOfBirth;
                           resultObj.relationship = relationship;
+                          resultObj.taxReturnId = taxReturnId;
 
                           res.status(200).json(resultObj);
                       });
