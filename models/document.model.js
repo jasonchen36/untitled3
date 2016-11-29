@@ -4,15 +4,16 @@
 
 var db = require('../services/db');
 
-var Document = {
-    findById: function(id) {
-        if ((!id) || (id.length === 0)) {
-            return Promise.reject(new Error('No id specified!'));
-        }
+var Promise = require('bluebird');
 
+var document = {
+    findById: function(documentId) {
+        if ((!documentId) || (documentId.length === 0)) {
+            return Promise.reject(new Error('No documentId specified!'));
+        }
         var documentSql = 'SELECT * FROM documents WHERE id = ?';
-        return db.knex.raw(documentSql, [id]).then(function(documentSqlResults) {
-            return(documentSqlResults[0][0]);
+        return db.knex.raw(documentSql, [documentId]).then(function(documentSqlResults) {
+            return documentSqlResults[0][0];
         });
     },
 
@@ -26,6 +27,10 @@ var Document = {
         if ((!documentObj.thumbnailUrl) || (documentObj.thumbnailUrl.length === 0)) {
             return Promise.reject(new Error('No thumbnailUrl specified!'));
         }
+<<<<<<< HEAD
+=======
+
+>>>>>>> route_implementation
         var documentInsertSql = 'INSERT INTO documents (name, url, thumbnail_url) VALUES(?, ?, ?)';
         var documentInsertSqlParams = [
             documentObj.name,
@@ -33,9 +38,27 @@ var Document = {
             documentObj.thumbnailUrl
         ];
         return db.knex.raw(documentInsertSql, documentInsertSqlParams).then(function(documentInsertSqlResults) {
+<<<<<<< HEAD
             return documentInsertSqlResults[0].insertId;
         });
     }
 };
 
 module.exports = Document;
+=======
+            var documentId = documentInsertSqlResults[0].insertId;
+            return Promise.resolve(documentId);
+        });
+    },
+
+    update: function(id, documentObj) {
+        if ((!id) || (id.length === 0)) {
+            return Promise.reject(new Error('No documentId specified!'));
+        }
+
+        return db.knex('documents').update(documentObj).where('id', id);
+    }
+};
+
+module.exports = document;
+>>>>>>> route_implementation

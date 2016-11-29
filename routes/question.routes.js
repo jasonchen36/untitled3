@@ -8,16 +8,14 @@ var config = require('../config/config');
 var _ = require('underscore');
 var logger = require('../services/logger.service');
 var passport = require('passport');
-var account = require('../controllers/account.controller');
+var question = require('../controllers/question.controller');
+
 
 
 
 module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
-    router.route('/account/:id')
-        .get(account.findById)
-        .put(account.update);
-    router.route('/account')
-        .post(account.create);
+    router.route('/questions/product/:productId/category/:categoryId')
+        .get(question.findById);
 };

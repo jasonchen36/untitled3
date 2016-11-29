@@ -3,6 +3,7 @@
 'use strict';
 
 var db = require('../services/db');
+var Promise = require('bluebird');
 
 var Account = {
     findById: function(id) {

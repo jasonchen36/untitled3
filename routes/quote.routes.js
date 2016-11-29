@@ -22,5 +22,7 @@ module.exports = function (router) {
         .get(quote.findById);
     router.route('/quote')
         .post(quote.create);
+    router.route('/quote/:id/calculate')
+        .post(quote.calculate);
 
 };

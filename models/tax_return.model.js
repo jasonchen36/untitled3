@@ -34,11 +34,17 @@ var TaxReturn = {
             taxReturnObj.firstName
         ];
         return db.knex.raw(taxReturnInsertSql, taxReturnInsertSqlParams).then(function(taxReturnInsertSqlResults) {
-            var resultObj = {};
-            resultObj.firstName = taxReturnObj.firstName;
-            resultObj.taxReturnId = taxReturnInsertSqlResults[0].insertId;
-            return Promise.resolve(resultObj);
+            var taxReturnId = taxReturnInsertSqlResults[0].insertId;
+            return Promise.resolve(taxReturnId);
         });
+    },
+
+    update: function(id, taxReturnObj) {
+        if ((!id) || (id.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+
+        return db.knex('tax_returns').update(taxReturnObj).where('id', id);
     }
 };
 
