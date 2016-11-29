@@ -34,14 +34,6 @@ var document = {
             documentObj.thumbnailUrl
         ];
         return db.knex.raw(documentInsertSql, documentInsertSqlParams).then(function(documentInsertSqlResults) {
-<<<<<<< HEAD
-            return documentInsertSqlResults[0].insertId;
-        });
-    }
-};
-
-module.exports = Document;
-=======
             var documentId = documentInsertSqlResults[0].insertId;
             return Promise.resolve(documentId);
         });
@@ -57,4 +49,3 @@ module.exports = Document;
 };
 
 module.exports = document;
->>>>>>> route_implementation
