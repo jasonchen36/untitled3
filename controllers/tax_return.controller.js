@@ -397,24 +397,24 @@ exports.updateAddress = function (req, res) {
       var province = req.body.province;
       var postalCode = req.body.postalCode;
 
-                      var addressObj = {};
-                      if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
-                      if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
-                      if (req.body.city) { addressObj.city = req.body.city; }
-                      if (req.body.province) { addressObj.providence = req.body.province; }
-                      if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
+      var addressObj = {};
+      if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
+      if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
+      if (req.body.city) { addressObj.city = req.body.city; }
+      if (req.body.province) { addressObj.providence = req.body.province; }
+      if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
 
-                      return Address.update(addressLine1, addressObj).then(function(addressObjId) {
-                          var resultObj = {};
-                          resultObj.addressLine1 = addressLine1;
-                          resultObj.addressLine2 = addressLine2;
-                          resultObj.city = city;
-                          resultObj.province = province;
-                          resultObj.postalCode = postalCode;
+      return Address.update(addressLine1, addressObj).then(function(addressObjId) {
+          var resultObj = {};
+          resultObj.addressLine1 = addressLine1;
+          resultObj.addressLine2 = addressLine2;
+          resultObj.city = city;
+          resultObj.province = province;
+          resultObj.postalCode = postalCode;
 
-                          res.status(200).json(resultObj);
-                      });
-                  }
+          res.status(200).json(resultObj);
+      });
+  }
 };
 /*******************************************************************************
 ENDPOINT
@@ -579,26 +579,6 @@ exports.updateDependant = function (req, res) {
           if ((!taxReturnId) || (taxReturnId.length === 0)) {
               res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
-              // check that firstName exists
-              Dependant.findById(firstName).then(function(firstName) {
-                  if ((!firstName) || (firstName.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid firstName' });
-                  } else {
-                    // check that lastName exists
-                    Dependant.findById(lastName).then(function(lastName) {
-                        if ((!lastName) || (lastName.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid lastName' });
-                        } else {
-                          // check that dateOfBirth exists
-                          Dependant.findById(dateOfBirth).then(function(dateOfBirth) {
-                              if ((!dateOfBirth) || (dateOfBirth.length === 0)) {
-                                  res.status(404).send({ msg: 'Invalid dateOfBirth' });
-                              } else {
-                                // check that relationship exists
-                                Dependant.findById(relationship).then(function(relationship) {
-                                    if ((!relationship) || (relationship.length === 0)) {
-                                        res.status(404).send({ msg: 'Invalid relationship' });
-                                    } else {
                       var dependantObj = {};
                       if (req.body.taxReturnId) { dependantObj.tax_return_id = req.body.taxReturnId; }
                       if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
@@ -619,14 +599,6 @@ exports.updateDependant = function (req, res) {
                   }
               });
           }
-      });
-  }
-});
-}
-});
-}
-});
-}
 };
 
 /*******************************************************************************

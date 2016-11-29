@@ -44,6 +44,7 @@ var dependant = {
     },
 
     update: function(id, dependantObj) {
+      console.log(JSON.stringify(dependantObj));
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No dependantId specified!'));
         }
