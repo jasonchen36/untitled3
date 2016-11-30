@@ -22,7 +22,8 @@
 		"17589fe9-1186-36a9-31fa-05b9c48ecfd2",
 		"02ee367f-6b5b-570d-a152-451149b34148",
 		"b98fed5f-5a3c-10ff-f6f9-497ca5fbe30e",
-		"d716b15b-b582-4ce3-c8c9-11c6cd1049a6"
+		"d716b15b-b582-4ce3-c8c9-11c6cd1049a6",
+		"b1b085a8-8354-f871-f0c7-fabce8fe3d44"
 	],
 	"folders": [],
 	"timestamp": 0,
@@ -229,6 +230,38 @@
 			"data": [],
 			"rawModeData": "{ \r\n  \"email\": \"4tcsv0+39eb34sja3uyg@sharklasers.com\",\r\n  \"password\": \"123\"\r\n}",
 			"url": "http://{{url}}/login",
+			"responses": []
+		},
+		{
+			"id": "b1b085a8-8354-f871-f0c7-fabce8fe3d44",
+			"headers": "",
+			"url": "http://127.0.0.1:3001/document",
+			"preRequestScript": null,
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "uploadFileName",
+					"value": "TAXPLAN.postman_collection.json",
+					"type": "file",
+					"enabled": true
+				},
+				{
+					"key": "taxReturnId",
+					"value": "123",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "params",
+			"version": 2,
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1479699235134,
+			"name": "Upload Document",
+			"description": "",
+			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",
 			"responses": []
 		},
 		{
