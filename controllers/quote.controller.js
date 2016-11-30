@@ -23,14 +23,14 @@ POST /quote
 
 INPUT BODY:
 {
-  accountId:  33,
-  productId:  44
+  "accountId":  33,
+  "productId":  44
 }
 
 RESPONSE:
 200 OK
 {
-  quoteId: 4
+  "quoteId": 4
 }
  ******************************************************************************/
 exports.create = function (req, res) {
@@ -77,19 +77,20 @@ POST /quote/:id/submit
 
 INPUT BODY:
 {
-  accountId:  33,
-  productId:   44
+  "accountId":  70,
+  "productId":   10
 }
 
 RESPONSE:
 200 OK
 {
-  quoteId: 4
+  "quoteId": 4
 }
  ******************************************************************************/
 exports.submit = function (req, res) {
   req.checkBody('accountId', 'Please provide a accountId').isInt();
   req.checkBody('productId', 'Please provide a productId').isInt();
+  req.checkParams('id', 'Please provide a quoteId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
@@ -199,7 +200,7 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
-  req.checkParams('id', 'Please provide an integer id').isInt();
+  req.checkParams('id', 'Please provide a quoteId').isInt();
 
   var errors = req.validationErrors();
   if (errors) {
@@ -222,21 +223,22 @@ POST /quote/:id/calculate
 
 INPUT BODY:
 {
-  accountId:  33,
-  productId:  44
+  "accountId":  33,
+  "productId":  44
 }
 
 RESPONSE:
 200 OK
 {
-  quoteId: 4,
-  lineItems: [],
-  taxReturns: []
+  "quoteId": 4,
+  "lineItems": [],
+  "taxReturns": []
 }
  ******************************************************************************/
 exports.calculate = function (req, res) {
   req.checkBody('accountId', 'Please provide a accountId').isInt();
   req.checkBody('productId', 'Please provide a productId').isInt();
+  req.checkParams('id', 'Please provide a quoteId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
