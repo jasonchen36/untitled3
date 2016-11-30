@@ -351,7 +351,7 @@ exports.find = function(req, res, err) {
                 delete user.salt;
                 res.status(200).send(user);
             } else {
-                res.status(404).send;
+                res.status(404).send();
             }
         });
     }
