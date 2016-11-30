@@ -21,6 +21,8 @@ var validator = require('express-validator');
 
 // boilerplate
 var _ = require('underscore');
+var moment = require('moment');
+var dateFormat = "YYYY-MM-DD";
 var config = require('../config/config');
 
 /*******************************************************************************
@@ -88,14 +90,14 @@ PUT /tax_return/:id
 
 INPUT BODY:
 {
-  accountId:  1,                            Mandatory
-  productId:  70,                           Mandatory
-  firstName: "Jason",                       Optional
-  lastName: "Chen",                         Optional
-  provinceOfResidence: "Ontario",           Optional
-  dateOfBirth: "08/23/1988",                Optional
-  canadianCitizen: "Y",                     Optional
-  authorizeCra: "Y"                         Optional
+  "accountId":  1,                            Mandatory
+  "productId":  70,                           Mandatory
+  "firstName": "Jason",                       Optional
+  "lastName": "Chen",                         Optional
+  "provinceOfResidence": "Ontario",           Optional
+  "dateOfBirth": "08/23/1988",                Optional
+  "canadianCitizen": "Y",                     Optional
+  "authorizeCra": "Y"                         Optional
 }
 
 RESPONSE:
@@ -158,14 +160,14 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  accountId:  1,                            Mandatory
-  productId:  70,                           Mandatory
-  firstName: "Jason",                       Optional
-  lastName: "Chen",                         Optional
-  provinceOfResidence: "Ontario",           Optional
-  dateOfBirth: "08/23/1988",                Optional
-  canadianCitizen: "Y",                     Optional
-  authorizeCra: "Y"                         Optional
+  "accountId":  1,                            Mandatory
+  "productId":  70,                           Mandatory
+  "firstName": "Jason",                       Optional
+  "lastName": "Chen",                         Optional
+  "provinceOfResidence": "Ontario",           Optional
+  "dateOfBirth": "08/23/1988",                Optional
+  "canadianCitizen": "Y",                     Optional
+  "authorizeCra": "Y"                         Optional
 }
 *******************************************************************************/
 exports.findTaxReturnById = function (req, res) {
@@ -193,9 +195,9 @@ POST /tax_return/:id/answers
 INPUT BODY:
 [
 {
-  questionId:  33,
-  taxReturnId: 44,
-  text: "Yes"
+  "questionId":  33,
+  "taxReturnId": 44,
+  "text": "Yes"
 }
 ]
 
@@ -253,7 +255,7 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  text: "Yes"
+  "text": "Yes"
 }
 *******************************************************************************/
 exports.findAnswerById = function (req, res) {
@@ -280,17 +282,17 @@ GET /tax_return/:id/answers
 
 INPUT BODY:
 {
-  taxReturnId: 44,
+  "taxReturnId": 44,
 }
 
 RESPONSE:
 [
-  { questionId: 33,
-    answerId: 44,
-   text: "Y" },
-  { questionId: 34,
-  answerId: 44,
-   text: "N" }
+  { "questionId": 33,
+    "answerId": 44,
+   "text": "Y" },
+  { "questionId": 34,
+  "answerId": 44,
+   "text": "N" }
 ]
 *******************************************************************************/
 exports.listAnswers = function (req, res) {
@@ -317,11 +319,11 @@ POST /tax_return/:id/address
 
 INPUT BODY:
 {
-  addressLine1:  "34 Wellington Street",
-  addressLine2: "Suite 504",
-  city: "Toronto",
-  province: "Ontario",
-  postalCode: "L4D 5D7"
+  "addressLine1":  "34 Wellington Street",
+  "addressLine2": "Suite 504",
+  "city": "Toronto",
+  "province": "Ontario",
+  "postalCode": "L4D 5D7"
 }
 
 RESPONSE:
@@ -367,16 +369,15 @@ exports.createAddress = function (req, res) {
 
 /*******************************************************************************
 ENDPOINT
-PUT /tax_return/:id/address/
+PUT /tax_return/:id/address/:id
 
 INPUT BODY:
 {
-  addressId: 44,
-  addressLine1:  "34 Wellington Street",
-  addressLine2: "Suite 504",
-  city: "Toronto",
-  province: "Ontario",
-  postalCode: "L4D 5D7"
+  "addressLine1":  "34 Wellington Street",
+  "addressLine2": "Suite 504",
+  "city": "Toronto",
+  "province": "Ontario",
+  "postalCode": "L4D 5D7"
 }
 
 RESPONSE:
@@ -387,6 +388,8 @@ exports.updateAddress = function (req, res) {
   req.checkBody('city', 'Please provide a city').notEmpty();
   req.checkBody('province', 'Please provide a province').notEmpty();
   req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('addressId', 'Please provide an addressId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
@@ -425,11 +428,11 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  addressLine1:  "34 Wellington Street",
-  addressLine2: "Suite 504",
-  city: "Toronto",
-  province: "Ontario",
-  postalCode: "L4D 5D7"
+  "addressLine1":  "34 Wellington Street",
+  "addressLine2": "Suite 504",
+  "city": "Toronto",
+  "province": "Ontario",
+  "postalCode": "L4D 5D7"
 }
 *******************************************************************************/
 exports.findAddressById = function (req, res) {
@@ -498,10 +501,10 @@ POST /tax_return/:id/dependant
 
 INPUT BODY:
 {
-  firstName: "Jason",
-  lastName: "Chen",
-  dateOfBirth: "08/07/1988",
-  relationship: "son"
+  "firstName": "Jason",
+  "lastName": "Chen",
+  "dateOfBirth": "08/07/1988",
+  "relationship": "son"
 }
 
 RESPONSE:
@@ -545,21 +548,23 @@ exports.createDependant = function (req, res) {
 ENDPOINT
 PUT /tax_return/:id/dependant/:id
 
+Params:
+taxReturnId and dependantId
+
 INPUT BODY:
 {
-  dependantId: 4,     Mandatory
-  taxReturnId:  "44",    Mandatory
-  firstName: "Jason",    Optional
-  lastName: "Chen",       Optional
-  dateOfBirth: "08/07/1988",    Optional
-  relationship: "son"        Optional
+  "firstName": "Jason",    Optional
+  "lastName": "Chen",       Optional
+  "dateOfBirth": "08/07/1988",    Optional
+  "relationship": "son"        Optional
 }
 
 RESPONSE:
 200 OK
 *******************************************************************************/
 exports.updateDependant = function (req, res) {
-  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('dependantId', 'Please provide a dependantId').isInt();
   req.checkBody('firstName', 'Please provide a firstName').notEmpty();
   req.checkBody('lastName', 'Please provide a lastName').notEmpty();
   req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
@@ -568,31 +573,37 @@ exports.updateDependant = function (req, res) {
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var taxReturnId = req.body.taxReturnId;
       var firstName = req.body.firstName;
       var lastName = req.body.lastName;
       var dateOfBirth = req.body.dateOfBirth;
       var relationship = req.body.relationship;
-
+      var dependantId = req.params.dependantId;
+      var taxReturnId = req.params.taxReturnId;
+      var isValidDate = moment(dateOfBirth, dateFormat, true).isValid();
+      if(!isValidDate){
+        res.status(400).send({msg: "Invalid date format. Expected date format is " + dateFormat});
+        res.end();
+        return;
+      }
       // check that taxReturnId exists
-      Dependant.findById(taxReturnId).then(function(taxReturnId) {
-          if ((!taxReturnId) || (taxReturnId.length === 0)) {
-              res.status(404).send({ msg: 'Invalid taxReturnId' });
+      Dependant.findById(dependantId).then(function(dependant) {
+          if ((!dependant) || (dependant.length === 0)) {
+              res.status(404).send({ msg: 'Dependant not found' });
           } else {
                       var dependantObj = {};
-                      if (req.body.taxReturnId) { dependantObj.tax_return_id = req.body.taxReturnId; }
                       if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
                       if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
                       if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
                       if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
+                      if (req.params.taxReturnId) { dependantObj.tax_return_id = req.params.taxReturnId; }
 
-                      return Dependant.update(taxReturnId,dependantObj).then(function(dependantObjId) {
+                      return Dependant.update(dependantId,dependantObj).then(function() {
                           var resultObj = {};
-                          resultObj.taxReturnId = taxReturnId;
                           resultObj.firstName = firstName;
                           resultObj.lastName = lastName;
                           resultObj.dateOfBirth = dateOfBirth;
                           resultObj.relationship = relationship;
+                          resultObj.taxReturnId = taxReturnId;
 
                           res.status(200).json(resultObj);
                       });
@@ -610,11 +621,11 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 {
-  taxReturnId:  44,
-  firstName: "Jason",
-  lastName: "Chen",
-  dateOfBirth: "08/07/1988",
-  relationship: "son"
+  "taxReturnId":  44,
+  "firstName": "Jason",
+  "lastName": "Chen",
+  "dateOfBirth": "08/07/1988",
+  "relationship": "son"
 }
 *******************************************************************************/
 exports.findDependantById = function (req, res) {
@@ -685,20 +696,20 @@ None. req.params.id is the only input (no body)
 
 RESPONSE:
 [
- {checklistId: 4,
-  name: "T5",
-  documents: [
+ {"checklistId": 4,
+  "name": "T5",
+  "documents": [
     {
-    documentId: 4,
-    name: "filename.txt",
-    url: "taxplan.com",
-    thumbnailUrl: "taxplan.com/taxplan.jpg"
+    "documentId": 4,
+    "name": "filename.txt",
+    "url": "taxplan.com",
+    "thumbnailUrl": "taxplan.com/taxplan.jpg"
     },
     {
-    documentId: 5,
-    name: "filename2.txt",
-    url: "taxplan.com",
-    thumbnailUrl: "taxplan.com/taxplan2.jpg"
+    "documentId": 5,
+    "name": "filename2.txt",
+    "url": "taxplan.com",
+    "thumbnailUrl": "taxplan.com/taxplan2.jpg"
     }
   ]
  }
@@ -728,9 +739,9 @@ POST /tax_return/:id/document
 
 INPUT BODY:
 {
-  name: "file.doc",
-  url: "taxplan.com/file.doc",
-  thumbnail_url: "taxplan.com/filename.jpg"
+  "name": "file.doc",
+  "url": "taxplan.com/file.doc",
+  "thumbnail_url": "taxplan.com/filename.jpg"
 }
 
 RESPONSE:

@@ -44,12 +44,13 @@ var dependant = {
     },
 
     update: function(id, dependantObj) {
+      console.log('this is the start');
       console.log(JSON.stringify(dependantObj));
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No dependantId specified!'));
         }
 
-        return db.knex('dependants').update(dependantObj).where('id', id);
+        return db.knex('dependants').update(dependantObj).where('tax_return_id', id);
     },
     createAssociation: function(dependantTaxReturnObj) {
         console.log(JSON.stringify(dependantTaxReturnObj));
