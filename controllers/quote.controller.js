@@ -75,6 +75,9 @@ exports.create = function (req, res) {
 ENDPOINT
 POST /quote/:id/submit
 
+Params:
+quoteId
+
 INPUT BODY:
 {
   "accountId":  70,
@@ -131,8 +134,8 @@ exports.submit = function (req, res) {
 ENDPOINT
 GET /quote/:id
 
-INPUT BODY:
-None. req.params.id is the only input (no body)
+Params:
+quoteId
 
 RESPONSE:
 {
@@ -220,6 +223,9 @@ exports.findById = function (req, res) {
 /*******************************************************************************
 ENDPOINT
 POST /quote/:id/calculate
+
+Params:
+quoteId
 
 INPUT BODY:
 {

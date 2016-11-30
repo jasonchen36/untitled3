@@ -88,6 +88,9 @@ exports.createTaxReturn = function (req, res) {
 ENDPOINT
 PUT /tax_return/:id
 
+Params:
+taxReturnId
+
 INPUT BODY:
 {
   "accountId":  1,                            Mandatory
@@ -155,8 +158,8 @@ exports.updateTaxReturnById = function (req, res) {
 ENDPOINT
 GET /tax_return/:id
 
-INPUT BODY:
-None. req.params.id is the only input (no body)
+Params:
+taxReturnId
 
 RESPONSE:
 {
@@ -191,6 +194,9 @@ exports.findTaxReturnById = function (req, res) {
 /*******************************************************************************
 ENDPOINT
 POST /tax_return/:id/answers
+
+Params:
+taxReturnId
 
 INPUT BODY:
 [
@@ -251,8 +257,8 @@ exports.createAnswer = function (req, res) {
 ENDPOINT
 GET /tax_return/:id/answer/:id
 
-INPUT BODY:
-None. req.params.id is the only input (no body)
+Params:
+taxReturnId and answerId
 
 RESPONSE:
 {
@@ -282,10 +288,8 @@ exports.findAnswerById = function (req, res) {
 ENDPOINT
 GET /tax_return/:id/answers
 
-INPUT BODY:
-{
-  "taxReturnId": 44,
-}
+Params:
+taxReturnId
 
 RESPONSE:
 [
@@ -318,6 +322,9 @@ exports.listAnswers = function (req, res) {
 /*******************************************************************************
 ENDPOINT
 POST /tax_return/:id/address
+
+Params:
+taxReturnId
 
 INPUT BODY:
 {
@@ -374,6 +381,9 @@ exports.createAddress = function (req, res) {
 ENDPOINT
 PUT /tax_return/:id/address/:id
 
+Params:
+taxReturnId and addressId
+
 INPUT BODY:
 {
   "addressLine1":  "34 Wellington Street",
@@ -426,6 +436,9 @@ exports.updateAddress = function (req, res) {
 ENDPOINT
 GET /tax_return/:id/address/:id
 
+Params:
+taxReturnId and addressId
+
 INPUT BODY:
 None. req.params.id is the only input (no body)
 
@@ -459,6 +472,9 @@ exports.findAddressById = function (req, res) {
 /*******************************************************************************
 ENDPOINT
 POST /tax_return/:id/address/:id
+
+Params:
+taxReturnId and addressId
 
 INPUT BODY:
 
@@ -503,6 +519,9 @@ exports.linkExistingAddresses = function (req, res) {
 /*******************************************************************************
 ENDPOINT
 POST /tax_return/:id/dependant
+
+Params:
+taxReturnId
 
 INPUT BODY:
 {
@@ -622,8 +641,8 @@ exports.updateDependant = function (req, res) {
 ENDPOINT
 GET /tax_return/:id/dependant/:id
 
-INPUT BODY:
-None. req.params.id is the only input (no body)
+Params:
+taxReturnId and dependantId
 
 RESPONSE:
 {
@@ -658,7 +677,8 @@ exports.findDependantById = function (req, res) {
 ENDPOINT
 POST /tax_return/:id/dependant/:id
 
-INPUT BODY:
+Params:
+taxReturnId and dependantId
 
 RESPONSE:
 200 OK
@@ -700,8 +720,8 @@ exports.linkExistingDependants = function (req, res) {
 ENDPOINT
 GET /tax_return/:id/checklist
 
-INPUT BODY:
-None. req.params.id is the only input (no body)
+Params:
+taxReturnId
 
 RESPONSE:
 [
@@ -746,6 +766,9 @@ RESPONSE:
 ENDPOINT
 POST /tax_return/:id/document
 
+Params:
+taxReturnId
+
 INPUT BODY:
 {
   "name": "file.doc",
@@ -764,8 +787,8 @@ exports.createDocument = function (req, res) {
 ENDPOINT
 DELETE /tax_return/:id/document/:id
 
-INPUT BODY:
-None. req.params.id is the only input (no body)
+Params:
+taxReturnId and documentId
 
 RESPONSE:
 200 OK
