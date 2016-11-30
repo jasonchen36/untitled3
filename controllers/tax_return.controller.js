@@ -107,7 +107,7 @@ NOTE:
 At least one optional field must be present or there would be nothing to update
  ******************************************************************************/
 exports.updateTaxReturnById = function (req, res) {
-    req.checkParams('id', 'Please provide an id').isInt();
+    req.checkParams('id', 'Please provide a taxReturnId').isInt();
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     var errors = req.validationErrors();
@@ -171,7 +171,7 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findTaxReturnById = function (req, res) {
-    req.checkParams('id', 'Please provide an integer id').isInt();
+    req.checkParams('id', 'Please provide a taxReturnId').isInt();
 
     var errors = req.validationErrors();
     if (errors) {
@@ -208,6 +208,7 @@ exports.createAnswer = function (req, res) {
   req.checkBody('questionId', 'Please provide a questionId').isInt();
   req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
   req.checkBody('text', 'Please provide an answer').notEmpty();
+  req.checkParams('id', 'Please provide a taxReturnId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
@@ -216,12 +217,12 @@ exports.createAnswer = function (req, res) {
       var taxReturnId = req.body.taxReturnId;
       var text = req.body.text;
 
-      // check that accountId exists
+      // check that questionId exists
       Question.findById(questionId).then(function(question) {
           if ((!question) || (question.length === 0)) {
               res.status(404).send({ msg: 'Invalid questionID' });
           } else {
-              // check that productId exists
+              // check that taxReturnId exists
               TaxReturn.findById(taxReturnId).then(function(TaxReturn) {
                   if ((!TaxReturn) || (TaxReturn.length === 0)) {
                       res.status(404).send({ msg: 'Invalid TaxReturnID' });
@@ -259,14 +260,15 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findAnswerById = function (req, res) {
-  req.checkParams('id', 'Please provide an integer id').isInt();
+  req.checkParams('answerId', 'Please provide an answerId').isInt();
+  req.checkParams('taxReturnId', 'Please provide an taxReturnId').isInt();
 
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var id = req.params.id;
-      Answer.findById(id).then(function(answer) {
+      var answerId = req.params.answerId;
+      Answer.findById(answerId).then(function(answer) {
           if (answer) {
               res.status(200).send(answer);
           } else {
@@ -296,7 +298,7 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.listAnswers = function (req, res) {
-  req.checkParams('id', 'Please provide an integer id').isInt();
+  req.checkParams('id', 'Please provide a taxReturnId').isInt();
 
   var errors = req.validationErrors();
   if (errors) {
@@ -337,6 +339,7 @@ exports.createAddress = function (req, res) {
   req.checkBody('city', 'Please provide a city').notEmpty();
   req.checkBody('province', 'Please provide a province').notEmpty();
   req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
+  req.checkParams('id', 'Please provide a taxReturnId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
@@ -436,14 +439,14 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findAddressById = function (req, res) {
-  req.checkParams('id', 'Please provide an integer id').isInt();
-
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('addressId', 'Please provide a addressId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var id = req.params.id;
-      Address.findById(id).then(function(address) {
+      var addressId = req.params.addressId;
+      Address.findById(addressId).then(function(address) {
           if (address) {
               res.status(200).send(address);
           } else {
@@ -463,18 +466,20 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.linkExistingAddresses = function (req, res) {
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('addressId', 'Please provide a addressId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
     var addressId = req.params.addressId;
     var taxReturnId = req.params.taxReturnId;
-      // check that address exists
+      // check that addressId exists
       Address.findById(addressId).then(function(address) {
           if ((!address) || (address.length === 0)) {
               res.status(404).send({ msg: 'Invalid address' });
           } else {
-              // check that city exists
+              // check that taxReturnId exists
               TaxReturn.findById(taxReturnId).then(function(taxReturn) {
                   if ((!taxReturn) || (taxReturn.length === 0)) {
                       res.status(404).send({ msg: 'Invalid taxReturn' });
@@ -518,6 +523,7 @@ exports.createDependant = function (req, res) {
   req.checkBody('lastName', 'Please provide a lastName').notEmpty();
   req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
   req.checkBody('relationship', 'Please provide a relationship').notEmpty();
+  req.checkParams('id', 'Please provide a dependantId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
@@ -585,7 +591,7 @@ exports.updateDependant = function (req, res) {
         res.end();
         return;
       }
-      // check that taxReturnId exists
+      // check that dependantId exists
       Dependant.findById(dependantId).then(function(dependant) {
           if ((!dependant) || (dependant.length === 0)) {
               res.status(404).send({ msg: 'Dependant not found' });
@@ -629,14 +635,15 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findDependantById = function (req, res) {
-  req.checkParams('id', 'Please provide an integer id').isInt();
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+  req.checkParams('dependantId', 'Please provide a dependantId').isInt();
 
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var id = req.params.id;
-      Dependant.findById(id).then(function(dependant) {
+      var dependantId = req.params.dependantId;
+      Dependant.findById(dependantId).then(function(dependant) {
           if (dependant) {
               res.status(200).send(dependant);
           } else {
@@ -658,6 +665,8 @@ RESPONSE:
 
 *******************************************************************************/
 exports.linkExistingDependants = function (req, res) {
+  req.checkParams('taxReturnId', 'Please provide a taxReturnId id').isInt();
+  req.checkParams('dependantId', 'Please provide a dependantId id').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
