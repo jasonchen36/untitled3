@@ -235,7 +235,7 @@
 		{
 			"id": "b1b085a8-8354-f871-f0c7-fabce8fe3d44",
 			"headers": "",
-			"url": "http://127.0.0.1:3001/document",
+			"url": "http://{{url}}/quote/1/document",
 			"preRequestScript": null,
 			"pathVariables": {},
 			"method": "POST",
@@ -248,7 +248,13 @@
 				},
 				{
 					"key": "taxReturnId",
-					"value": "123",
+					"value": "1",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "checklistItemId",
+					"value": "1",
 					"type": "text",
 					"enabled": true
 				}
@@ -258,7 +264,7 @@
 			"tests": null,
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"time": 1479699235134,
+			"time": 1480567557690,
 			"name": "Upload Document",
 			"description": "",
 			"collectionId": "de6de06f-b2fc-a48d-143b-8d6c184c8d7c",

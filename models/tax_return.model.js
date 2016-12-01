@@ -45,6 +45,19 @@ var TaxReturn = {
         }
 
         return db.knex('tax_returns').update(taxReturnObj).where('id', id);
+    },
+
+    checkIdExists: function(id) {
+        if (!id) {
+            return Promise.resolve(false);
+        }
+        return this.findById(id).then(function(row) {
+            if (row) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 };
 

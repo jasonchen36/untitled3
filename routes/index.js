@@ -25,7 +25,6 @@ require('./healthcheck.routes')(router);
 require('./message.routes')(router);
 require('./account.routes')(router);
 require('./tax_return.routes')(router);
-require('./document.routes')(router);
 require('./quote.routes')(router);
 require('./question.routes')(router);
 exports.router = router;

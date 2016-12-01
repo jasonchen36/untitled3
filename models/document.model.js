@@ -18,6 +18,12 @@ var document = {
     },
 
     create: function(documentObj) {
+        if ((!documentObj.quoteId) || (documentObj.quoteId.length === 0)) {
+            return Promise.reject(new Error('No quoteId specified!'));
+        }
+        if ((!documentObj.checklistItemId) || (documentObj.checklistItemId.length === 0)) {
+            return Promise.reject(new Error('No checklistItemId specified!'));
+        }
         if ((!documentObj.name) || (documentObj.name.length === 0)) {
             return Promise.reject(new Error('No name specified!'));
         }
@@ -27,12 +33,22 @@ var document = {
         if ((!documentObj.thumbnailUrl) || (documentObj.thumbnailUrl.length === 0)) {
             return Promise.reject(new Error('No thumbnailUrl specified!'));
         }
-        var documentInsertSql = 'INSERT INTO documents (name, url, thumbnail_url) VALUES(?, ?, ?)';
+        var documentInsertSql = '';
+        if (documentObj.taxReturnId) {
+            documentInsertSql = 'INSERT INTO documents (quote_id, tax_return_id, checklist_item_id, name, url, thumbnail_url) VALUES(?, ?, ?, ?, ?, ?)';
+        } else {
+            documentInsertSql = 'INSERT INTO documents (quote_id, checklist_item_id, name, url, thumbnail_url) VALUES(?, ?, ?, ?, ?)';
+        }
         var documentInsertSqlParams = [
+            documentObj.quoteId,
+            documentObj.checklistItemId,
             documentObj.name,
             documentObj.url,
             documentObj.thumbnailUrl
         ];
+        if (documentObj.taxReturnId) {
+            documentInsertSqlParams.push(documentObj.taxReturnId);
+        }
         return db.knex.raw(documentInsertSql, documentInsertSqlParams).then(function(documentInsertSqlResults) {
             var documentId = documentInsertSqlResults[0].insertId;
             return Promise.resolve(documentId);

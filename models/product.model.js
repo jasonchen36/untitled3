@@ -13,7 +13,7 @@ var Product = {
 
         var productSql = 'SELECT * FROM products WHERE id = ?';
         return db.knex.raw(productSql, [id]).then(function(productSqlResults) {
-            return(productSqlResults[0]);
+            return(productSqlResults[0][0]);
         });
     }
 };

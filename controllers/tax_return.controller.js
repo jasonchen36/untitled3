@@ -16,8 +16,8 @@ var Answer = require('../models/answer.model');
 var Address = require('../models/address.model');
 var Dependant = require('../models/dependant.model');
 var Document = require('../models/document.model');
+var Checklist = require('../models/checklist.model');
 var validator = require('express-validator');
-// var Checklist = require('../models/checklist.model');
 
 // boilerplate
 var _ = require('underscore');
@@ -744,69 +744,21 @@ RESPONSE:
  }
 ]
 *******************************************************************************/
-// exports.findChecklist = function (req, res) {
-//     req.checkParams('id', 'Please provide an integer id').isInt();
-//
-//     var errors = req.validationErrors();
-//     if (errors) {
-//         res.status(400).send(errors);
-//     } else {
-//         var id = req.params.id;
-//         Checklist.findById(id).then(function(checklist) {
-//             if (checklist) {
-//                 res.status(200).remove(checklist);
-//             } else {
-//                 res.status(404).send();
-//             }
-//         });
-//   }
-// };
+exports.getChecklist = function (req, res) {
+    req.checkParams('id', 'Please provide an integer tax return id').isInt();
 
-/*******************************************************************************
-ENDPOINT
-POST /tax_return/:id/document
-
-Params:
-taxReturnId
-
-INPUT BODY:
-{
-  "name": "file.doc",
-  "url": "taxplan.com/file.doc",
-  "thumbnail_url": "taxplan.com/filename.jpg"
-}
-
-RESPONSE:
-200 OK
-*******************************************************************************/
-exports.createDocument = function (req, res) {
-// Michael to add implementation
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
+        Checklist.getCheckListForTaxReturn(id).then(function(checklist) {
+            if (checklist) {
+                res.status(200).send(checklist);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
 };
 
-/*******************************************************************************
-ENDPOINT
-DELETE /tax_return/:id/document/:id
-
-Params:
-taxReturnId and documentId
-
-RESPONSE:
-200 OK
-*******************************************************************************/
-exports.deleteDocumentById = function (req, res) {
-  req.checkParams('id', 'Please provide an integer id').isInt();
-
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var id = req.params.id;
-      Document.findById(id).then(function(document) {
-          if (document) {
-              res.status(200).remove(document);
-          } else {
-              res.status(404).send();
-          }
-      });
-  }
-};
