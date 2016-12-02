@@ -17,5 +17,5 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/questions/product/:productId/category/:categoryId')
-        .get(question.findById);
+        .get(question.findByCategoryId);
 };

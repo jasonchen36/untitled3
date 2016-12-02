@@ -89,7 +89,7 @@ RESPONSE:
    ]
 }
 *******************************************************************************/
-exports.findById = function (req, res) {
+exports.findByCategoryId = function (req, res) {
   req.checkParams('productId', 'Please provide a product id').isInt();
   req.checkParams('categoryId', 'Please provide a category id').isInt();
 
