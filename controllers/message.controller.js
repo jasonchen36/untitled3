@@ -151,7 +151,7 @@ exports.read = function (req, res) {
 
     var isAdmin = false;
     if (req.user.role === 'Admin') { // Admins can read any users messages
-        isAdmin = true
+        isAdmin = true;
     } else {
         isAdmin = false;
     }
