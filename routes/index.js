@@ -27,4 +27,5 @@ require('./account.routes')(router);
 require('./tax_return.routes')(router);
 require('./quote.routes')(router);
 require('./question.routes')(router);
+require('./categories.routes')(router);
 exports.router = router;
