@@ -33,11 +33,14 @@ var Checklist = {
                                  SELECT tax_return_id FROM quotes_tax_returns \
                                  WHERE quote_id = ?);';
         return db.knex.raw(checklistSQL, [quoteId]).then(function(checklistSQLResults) {
-            var resultObj = {};
-            if (checklistSQLResults[0][0]) { // allow for undefined
-                resultObj.checklist = checklistSQLResults[0][0];
+            var checklistArr = [];
+            if (checklistSQLResults[0]) { // allow for undefined
+                checklistArr = checklistSQLResults[0];
             } else {
+                checklistArr = [];
+                var resultObj = {};
                 resultObj.checklist = [];
+                resultObj.additionalDocuments = [];
             }
 
             var documentsSQL = 'SELECT * FROM documents AS d \
@@ -57,7 +60,18 @@ var Checklist = {
                     docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
                     documents.push(docObj);
                 });
-                resultObj.documents = documents;
+                _.forEach(checklistArr, function(checklistItem) {
+                    thisCheckListItemId = checklistItem.checklist_item_id;
+                    checklistItem.documents = _.filter(documents, function(o) {
+                        return o.checkListItemId === thisCheckListItemId;
+                    });
+                });
+
+                resultObj = {};
+                resultObj.checklistitems = checklistArr;
+                resultObj.additionalDocuments = _.filter(documents, function(o) {
+                    return o.checkListItemId === null; // no checklistItemId
+                });;
                 return(resultObj);
             });
         });
