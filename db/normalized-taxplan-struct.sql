@@ -33,9 +33,19 @@ CREATE TABLE `answers` (
 CREATE TABLE `categories` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
+  `displaytext` varchar(255) DEFAULT NULL,
+  `secondarytext` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `checklist_documents` (
+  `checklist_item_id` int(11) NOT NULL,
+  `document_id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`checklist_item_id`,`document_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `checklist_items` (
@@ -50,7 +60,7 @@ CREATE TABLE `checklist_rules` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `checklist_item_id` int(11) NOT NULL,
   `question_id` int(11) NOT NULL,
-  `value` varchar(255) DEFAULT NULL,
+  `value` varchar(255) DEFAULT 'Yes',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -69,7 +79,10 @@ CREATE TABLE `dependants` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `documents` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `quote_id` int(11) unsigned NOT NULL,
+  `tax_return_id` int(11) unsigned DEFAULT NULL,
+  `checklist_item_id` int(11) unsigned DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `url` varchar(255) DEFAULT NULL,
   `thumbnail_url` varchar(255) DEFAULT NULL,
@@ -163,12 +176,13 @@ CREATE TABLE `status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tax_returns` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
-  `status_id` int(11) NOT NULL,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) unsigned DEFAULT NULL,
+  `account_id` int(11) unsigned NOT NULL,
+  `status_id` int(11) unsigned NOT NULL,
   `first_name` varchar(255) DEFAULT NULL,
   `last_name` varchar(255) DEFAULT NULL,
-  `province_of_residence` varchar(2) DEFAULT NULL,
+  `province_of_redidence` varchar(2) DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
   `canadian_citizen` int(1) DEFAULT NULL,
   `authorize_cra` int(1) DEFAULT NULL,
@@ -201,14 +215,6 @@ CREATE TABLE `tax_returns_dependants` (
   PRIMARY KEY (`tax_return_id`,`dependant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `tax_returns_documents` (
-  `tax_return_id` int(11) NOT NULL,
-  `document_id` int(11) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`tax_return_id`,`document_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `users` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `role` varchar(45) DEFAULT NULL,
@@ -224,6 +230,7 @@ CREATE TABLE `users` (
   `accounts` varchar(45) DEFAULT NULL,
   `birthday` varchar(45) DEFAULT NULL,
   `reset_key` varchar(100) DEFAULT NULL,
+  `account_id` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
