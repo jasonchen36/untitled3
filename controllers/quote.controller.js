@@ -392,7 +392,7 @@ exports.deleteDocumentById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var quoteId = req.params.quoteId;
-        Document.findById(id).then(function(document) {
+        Document.findById(quoteId).then(function(document) {
             if (document) {
                 Document.deleteById(quoteId).then(function() {
                     res.status(200).send('Ok');
