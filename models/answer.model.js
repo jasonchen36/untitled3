@@ -7,7 +7,7 @@ var Promise = require('bluebird');
 
 var Answer = {
     findById: function(answerId) {
-        if ((!answerId) || (Answer.length === 0)) {
+        if ((!answerId) || (answerId.length === 0)) {
             return Promise.reject(new Error('No answerId specified!'));
         }
         var answerSql = 'SELECT * FROM answers WHERE id = ?';
