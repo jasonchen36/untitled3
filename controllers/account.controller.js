@@ -21,8 +21,8 @@ POST /account
 
 INPUT BODY:
 {
-  name:  "Michael",
-  productId:  12345
+  "name":  "Michael",
+  "productId":  12345
 }
 
 RESPONSE:
@@ -94,8 +94,8 @@ PUT /account/:id
 
 INPUT BODY:
 {
-  name:  "Michael",
-  productId:  12345
+  "name":  "Michael",
+  "productId":  12345
 }
 
 RESPONSE:

@@ -295,12 +295,12 @@ id:        123                      MANDATORY (QUOTE ID MUST EXIST)
 
 INPUT BODY:
 {
-  taxReturnId:    456,              OPTIONAL (ID MUST EXIST if specified)
+  "taxReturnId":    456,              OPTIONAL (ID MUST EXIST if specified)
                                     - to allow for docs not associated with a particular tax return
-  checklistItemId  70,              OPTIONAL (ID MUST EXIST if specified)
+  "checklistItemId": 70,              OPTIONAL (ID MUST EXIST if specified)
                                     - specify which document this is from the checklist.
                                     - if not specified, additional doc associated with the quote is assumed
-  uploadFileName: {multer object}   MANDATORY
+  "uploadFileName": {multer object}   MANDATORY
 }
 
 RESPONSE:
