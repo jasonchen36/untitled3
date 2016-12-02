@@ -5,44 +5,6 @@ var db = require('../services/db');
 var _ = require('lodash');
 
 
-// move the code below to tax return controller
-/*******************************************************************************
-ENDPOINT
-GET /tax_return/:id/checklist
-
-INPUT BODY:
-{
-  taxReturnId: 44,
-}
-
-RESPONSE:
-{
-  checklist: [
-    {
-      checklist_item_id: 93,
-      name: "T4A"
-    },
-    {
-      checklist_item_id: 91,
-      name: "T5007"
-    }
-  ],
-  documents: [
-    {
-      documentId: 4,
-      name: "filename.txt",
-      url: "http://localhost/uploads/taxplan.com",
-      thumbnailUrl: "http://localhost/thumb/taxplan.jpg"
-    },
-    {
-      documentId: 5,
-      name: "filename2.txt",
-      url: "http://localhost/uploads/taxplan.com",
-      thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
-    }
-  ]
-}
-*******************************************************************************/
 
 var Checklist = {
     findById: function(id) {
@@ -56,9 +18,9 @@ var Checklist = {
         });
     },
 
-    getCheckListForTaxReturn: function(taxReturnId) {
-        if ((!taxReturnId) || (taxReturnId.length === 0)) {
-            return Promise.reject('No taxReturnId specified!');
+    getCheckListForQuoteId: function(quoteId) {
+        if ((!quoteId) || (quoteId.length === 0)) {
+            return Promise.reject('No quoteId specified!');
         }
 
         var checklistSQL = 'SELECT cr.checklist_item_id, ci.name FROM answers AS a \
@@ -67,33 +29,36 @@ var Checklist = {
                                  AND a.text = cr.value \
                             JOIN checklist_items AS ci \
                                  ON ci.id = cr.checklist_item_id \
-                            WHERE a.tax_return_id = ?;';
-        return db.knex.raw(checklistSQL, [taxReturnId]).then(function(checklistSQLResults) {
-            var responseObj = {};
-            if (checklistSQLResults[0][0] > 0) { // allow for undefined
-                responseObj.checklist = checklistSQLResults[0][0];
+                            WHERE a.tax_return_id IN( \
+                                 SELECT tax_return_id FROM quotes_tax_returns \
+                                 WHERE quote_id = ?);';
+        return db.knex.raw(checklistSQL, [quoteId]).then(function(checklistSQLResults) {
+            var resultObj = {};
+            if (checklistSQLResults[0][0]) { // allow for undefined
+                resultObj.checklist = checklistSQLResults[0][0];
             } else {
-                responseObj.checklist = [];
+                resultObj.checklist = [];
             }
 
             var documentsSQL = 'SELECT * FROM documents AS d \
-                                JOIN tax_returns_documents AS td \
-                                ON td.document_id = d.id \
-                                WHERE td.tax_return_id = ?;';
-            return db.knex.raw(documentsSQL, [taxReturnId]).then(function(documentsSQLResults) {
+                                WHERE d.quote_id = ?;';
+            return db.knex.raw(documentsSQL, [quoteId]).then(function(documentsSQLResults) {
                 var dbDocs = documentsSQLResults[0];
                 var documents = [];
                 var docObj = {};
                 _.forEach(dbDocs, function(dbDoc) {
                     docObj = {};
                     docObj.documentId = dbDoc.id;
+                    docObj.quoteId = dbDoc.quote_id;
+                    docObj.taxReturnId = dbDoc.tax_return_id;
+                    docObj.checkListItemId = dbDoc.checklist_item_id;
                     docObj.name = dbDoc.name;
                     docObj.url = config.thumbnail.baseUploadUrl + dbDoc.url;
                     docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
                     documents.push(docObj);
                 });
-                responseObj.documents = documents;
-                return(responseObj);
+                resultObj.documents = documents;
+                return(resultObj);
             });
         });
     },

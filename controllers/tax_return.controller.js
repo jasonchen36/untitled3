@@ -16,7 +16,6 @@ var Answer = require('../models/answer.model');
 var Address = require('../models/address.model');
 var Dependant = require('../models/dependant.model');
 var Document = require('../models/document.model');
-var Checklist = require('../models/checklist.model');
 var validator = require('express-validator');
 
 // boilerplate
@@ -716,49 +715,4 @@ exports.linkExistingDependants = function (req, res) {
   }
 };
 
-/*******************************************************************************
-ENDPOINT
-GET /tax_return/:id/checklist
-
-Params:
-taxReturnId
-
-RESPONSE:
-[
- {"checklistId": 4,
-  "name": "T5",
-  "documents": [
-    {
-    "documentId": 4,
-    "name": "filename.txt",
-    "url": "taxplan.com",
-    "thumbnailUrl": "taxplan.com/taxplan.jpg"
-    },
-    {
-    "documentId": 5,
-    "name": "filename2.txt",
-    "url": "taxplan.com",
-    "thumbnailUrl": "taxplan.com/taxplan2.jpg"
-    }
-  ]
- }
-]
-*******************************************************************************/
-exports.getChecklist = function (req, res) {
-    req.checkParams('id', 'Please provide an integer tax return id').isInt();
-
-    var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var id = req.params.id;
-        Checklist.getCheckListForTaxReturn(id).then(function(checklist) {
-            if (checklist) {
-                res.status(200).send(checklist);
-            } else {
-                res.status(404).send();
-            }
-        });
-    }
-};
 

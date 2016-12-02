@@ -38,6 +38,4 @@ module.exports = function (router) {
         .get(tax_return.findDependantById)
         .put(tax_return.updateDependant)
         .post(tax_return.linkExistingDependants);
-    router.route('/tax_return/:id/checklist')
-        .get(tax_return.getChecklist);
 };

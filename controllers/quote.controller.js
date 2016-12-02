@@ -384,22 +384,84 @@ RESPONSE:
 200 OK or 404
 *******************************************************************************/
 exports.deleteDocumentById = function (req, res) {
-  req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
-  req.checkParams('documentId', 'Please provide an integer documentId').isInt();
+    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
+    req.checkParams('documentId', 'Please provide an integer documentId').isInt();
 
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var quoteId = req.params.quoteId;
-      Document.findById(id).then(function(document) {
-          if (document) {
-              Document.deleteById(quoteId).then(function() {
-                  res.status(200).send('Ok');
-              });
-          } else {
-              res.status(404).send();
-          }
-      });
-  }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var quoteId = req.params.quoteId;
+        Document.findById(id).then(function(document) {
+            if (document) {
+                Document.deleteById(quoteId).then(function() {
+                    res.status(200).send('Ok');
+                });
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
+};
+
+/*******************************************************************************
+ENDPOINT
+GET /quote/:id/checklist
+
+Params:
+quoteId
+
+RESPONSE:
+{
+  checklist: [
+    {
+      checklist_item_id: 93,
+      name: "T4A"
+      documents: [
+      {
+        documentId: 4,
+        taxReturnId: 1,
+        name: "filename.jpg",
+        url: "http://localhost/uploads/taxplan.com",
+        thumbnailUrl: "http://localhost/thumb/taxplan.jpg"
+      },
+      {
+        documentId: 5,
+        taxReturnId: 2,
+        name: "filename2.jpg",
+        url: "http://localhost/uploads/taxplan.com",
+        thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
+      }
+    },
+    {
+      ...
+    },
+  ],
+  additionalDocuments: [ // these have null taxreturnId on the documents table
+    {
+       documentId: 12,
+      name: "filename12.jpg",
+      url: "http://localhost/uploads/taxplan.com",
+      thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
+    }
+  ]
+}
+*******************************************************************************/
+
+exports.getChecklist = function (req, res) {
+    req.checkParams('id', 'Please provide an integer quote id').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
+        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+            if (checklist) {
+                res.status(200).send(checklist);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
 };

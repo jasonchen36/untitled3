@@ -27,5 +27,7 @@ module.exports = function (router) {
     router.route('/quote/:id/document')
         .post(quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
-        .get(quote.deleteDocumentById);
+        .delete(quote.deleteDocumentById);
+    router.route('/quote/:id/checklist')
+        .get(quote.getChecklist);
 };
