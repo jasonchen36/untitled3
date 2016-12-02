@@ -3,10 +3,11 @@
 'use strict';
 
 var db = require('../services/db');
+var Promise = require('bluebird');
 
 var TaxReturnDocument = {
     findByTaxReturnId: function(id) {
-        if ((!taxReturnId) || (taxReturnId.length === 0)) {
+        if ((!TaxReturnDocument) || (TaxReturnDocument.length === 0)) {
             return Promise.reject(new Error('No TaxReturnId specified!'));
         }
 
