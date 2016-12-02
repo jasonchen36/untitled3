@@ -25,69 +25,32 @@ INPUT BODY:
 None. req.params.id is the only input (no body)
 
 RESPONSE:
-{
-   "id":1,
-   "accountId":2,
-   "productId":3,
-   "taxReturns":[
-      {
-         "taxReturnId":1,
-         "name":"Carmela Doctor",
-         "items":[
-            {
-              "id": 1,
-               "text":"Tax Prep. Basic",
-               "value":80
-            },
-            {
-              "id": 2,
-               "text":"Tax Prep. Investment Income",
-               "value":10
-            },
-            {
-              "id": 3,
-               "text":"Tax Prep. Rental Income",
-               "value":10
-            }
-         ]
-      },
-      {
-         "taxReturnId":2,
-         "name":"Doug Doctor",
-         "items":[
-            {
-              "id": 1,
-               "text":"Tax Prep. Basic",
-               "value":80
-            },
-            {
-              "id": 2,
-               "text":"Tax Prep. Investment Income",
-               "value":10
-            },
-            {
-              "id": 3,
-               "text":"Tax Prep. Rental Income",
-               "value":10
-            }
-         ]
-      }
-   ],
-   "otherLineItems":  // quoteLineItems table (taxReturnId needs to be null - remove constraint)
-   [
-      {
-         "id":33,
-         "name":"Direct Deposit",
-         "items":[
-            {
-               "id": 1,
-               "text":"Direct Deposit",
-               "value":5
-            }
-         ]
-      }
-   ]
-}
+[
+  {
+    "question_id": 79,
+    "product_id": 10,
+    "created_at": "2016-11-17T22:55:14.000Z",
+    "updated_at": "2016-11-17T22:55:14.000Z",
+    "id": 79,
+    "category_id": 2,
+    "text": "I take public transit regularly",
+    "instructions": "You can claim cost of monthly public transit passes or passes or longer duration such as an annual pass for travel within Canada on public transit.",
+    "type": "Choice",
+    "has_multiple_answers": 0
+  },
+  {
+    "question_id": 80,
+    "product_id": 10,
+    "created_at": "2016-11-17T22:55:14.000Z",
+    "updated_at": "2016-11-17T22:55:14.000Z",
+    "id": 80,
+    "category_id": 2,
+    "text": "My child(ren) is involved in the arts or sports ",
+    "instructions": "",
+    "type": "Choice",
+    "has_multiple_answers": 0
+  }
+]
 *******************************************************************************/
 exports.findByCategoryId = function (req, res) {
   req.checkParams('productId', 'Please provide a product id').isInt();
