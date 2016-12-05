@@ -64,7 +64,7 @@ var Question = {
       }
       var questionSql = 'SELECT * FROM products_questions AS pq JOIN questions AS q ON q.id = pq.question_id AND q.category_id = ? WHERE pq.product_id = ?' ;
       return db.knex.raw(questionSql, [categoryId,productId]).then(function(questionSqlResults) {
-          return questionSqlResults;
+          return questionSqlResults[0];
       });
     }
 };
