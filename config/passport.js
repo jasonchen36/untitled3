@@ -21,7 +21,7 @@ module.exports = function(passport) {
     // Deserialize the user object based on a pre-serialized token
     // which is the user id
     passport.deserializeUser(function(id, done) {
-        User.findById(id).then(function(user) {
+        User.findById(id).then(function(err, user) {
             done(err, user);
         });
     });
