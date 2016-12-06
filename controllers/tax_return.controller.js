@@ -198,54 +198,67 @@ Params:
 taxReturnId
 
 INPUT BODY:
-[
 {
-  "questionId":  33,
-  "taxReturnId": 44,
-  "text": "Yes"
+  "answers" :
+  [
+  {
+    "questionId":  33,
+    "text": "Yes"
+  },
+  {
+    "questionId":  34,
+    "text": "Yes"
+  }
+  ]
 }
-]
 
 RESPONSE:
 200 OK
 *******************************************************************************/
 exports.createAnswer = function (req, res) {
-  req.checkBody('questionId', 'Please provide a questionId').isInt();
-  req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
-  req.checkBody('text', 'Please provide an answer').notEmpty();
+  req.checkBody('answers', 'Please provide a list of answers').notEmpty();
   req.checkParams('id', 'Please provide a taxReturnId').isInt();
   var errors = req.validationErrors();
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var questionId = req.body.questionId;
-      var taxReturnId = req.body.taxReturnId;
-      var text = req.body.text;
+      var taxReturnId = req.params.id;
+      var answers = req.body.answers;
 
-      // check that questionId exists
-      Question.findById(questionId).then(function(question) {
-          if ((!question) || (question.length === 0)) {
-              res.status(404).send({ msg: 'Invalid questionID' });
+      // check that taxReturnId exists
+      TaxReturn.findById(taxReturnId).then(function(TaxReturn) {
+          if ((!TaxReturn) || (TaxReturn.length === 0)) {
+              res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
-              // check that taxReturnId exists
+              // check each element in the answers array and make sure that questionId and text exists
               TaxReturn.findById(taxReturnId).then(function(TaxReturn) {
                   if ((!TaxReturn) || (TaxReturn.length === 0)) {
                       res.status(404).send({ msg: 'Invalid TaxReturnID' });
                   } else {
-                      var answerObj = {};
-                      answerObj.questionId = questionId;
-                      answerObj.taxReturnId = taxReturnId;
-                      answerObj.text = text;
+                      var answersObj = answers;
+                      var questionId = answersObj[0].questionId;
+                      var text = answersObj[0].text;
 
-                      return Answer.create(answerObj).then(function(answerId) {
-                          var resultObj = {};
-                          resultObj.questionId = questionId;
-                          resultObj.taxReturnId = taxReturnId;
-                          resultObj.answerId = answerId;
+                      _.each(answersObj, function(answer) {
+                      if ((answer.questionId) && (answer.questionId.length > 0) && (answer.text) && ((answer.text === "Yes") || (answer.text === "No"))) {
+                         var questionIdparsed = parseInt(answer.questionId);
+                         if (!isNaN(questionIdparsed))  {
+                           var answerObj = {};
+                           answerObj.questionId = answer.questionId;
+                           answerObj.text = answer.text;
+                           answerObj.taxReturnId = taxReturnId;
 
-                          res.status(200).json(resultObj);
-                      });
-                  }
+                           return Answer.create(answerObj).then(function() {
+
+                          res.status(200).send('OK');
+                           });
+                         } else {
+                           res.status(400).send(errors);
+                         }
+                    }
+                   }
+                 );
+               }
               });
           }
       });
@@ -714,5 +727,3 @@ exports.linkExistingDependants = function (req, res) {
       });
   }
 };
-
-
