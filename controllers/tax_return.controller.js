@@ -202,11 +202,11 @@ INPUT BODY:
   "answers" :
   [
   {
-    "questionId":  33,
+    "questionId":  70,
     "text": "Yes"
   },
   {
-    "questionId":  34,
+    "questionId":  71,
     "text": "Yes"
   }
   ]
@@ -226,42 +226,34 @@ exports.createAnswer = function (req, res) {
       var answers = req.body.answers;
 
       // check that taxReturnId exists
-      TaxReturn.findById(taxReturnId).then(function(TaxReturn) {
-          if ((!TaxReturn) || (TaxReturn.length === 0)) {
+      TaxReturn.findById(taxReturnId).then(function(taxReturn) {
+          if ((!taxReturn) || (taxReturn.length === 0)) {
               res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
-              // check each element in the answers array and make sure that questionId and text exists
-              TaxReturn.findById(taxReturnId).then(function(TaxReturn) {
-                  if ((!TaxReturn) || (TaxReturn.length === 0)) {
-                      res.status(404).send({ msg: 'Invalid TaxReturnID' });
-                  } else {
                       var answersObj = answers;
                       var questionId = answersObj[0].questionId;
                       var text = answersObj[0].text;
 
                       _.each(answersObj, function(answer) {
-                      if ((answer.questionId) && (answer.questionId.length > 0) && (answer.text) && ((answer.text === "Yes") || (answer.text === "No"))) {
-                         var questionIdparsed = parseInt(answer.questionId);
-                         if (!isNaN(questionIdparsed))  {
-                           var answerObj = {};
-                           answerObj.questionId = answer.questionId;
-                           answerObj.text = answer.text;
-                           answerObj.taxReturnId = taxReturnId;
+                        if ((answer.questionId) && (answer.text) && ((answer.text === "Yes") || (answer.text === "No"))) {
+                          var questionIdparsed = parseInt(answer.questionId);
+                          if (!isNaN(questionIdparsed))  {
+                            var answerObj = {};
+                            answerObj.questionId = answer.questionId;
+                            answerObj.text = answer.text;
+                            answerObj.taxReturnId = taxReturnId;
 
-                           return Answer.create(answerObj).then(function() {
+                            return Answer.create(answerObj);
+                          } else {
+                            res.status(400).send(errors);
+                          }
+                        }
 
-                          res.status(200).send('OK');
-                           });
-                         } else {
-                           res.status(400).send(errors);
-                         }
-                    }
-                   }
-                 );
-               }
-              });
+                      });
+                      res.status(200).send('OK');
+                  }
           }
-      });
+      );
   }
 };
 
