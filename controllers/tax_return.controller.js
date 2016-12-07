@@ -245,10 +245,12 @@ exports.createAnswer = function (req, res) {
 
                             return Answer.create(answerObj);
                           } else {
-                            res.status(400).send(errors);
+                            return;
                           }
+                        } else {
+                          res.status(400).send('Invalid Entry.');
+                          process.exit();
                         }
-
                       });
                       res.status(200).send('OK');
                   }
