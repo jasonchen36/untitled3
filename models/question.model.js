@@ -66,6 +66,19 @@ var Question = {
       return db.knex.raw(questionSql, [categoryId,productId]).then(function(questionSqlResults) {
           return questionSqlResults[0];
       });
+    },
+
+    checkIdExists: function(id) {
+        if (!id) {
+            return Promise.resolve(false);
+        }
+        return this.findById(id).then(function(row) {
+            if (row) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 };
 

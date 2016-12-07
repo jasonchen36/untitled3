@@ -8,11 +8,14 @@
  * Module dependencies.
  */
 var config = require('../config/config');
+var Promise = require('bluebird');
 var logger = require('../services/logger.service');
 var Document = require('../models/document.model');
 var Quote = require('../models/quote.model');
 var Product = require('../models/product.model');
 var Account = require('../models/account.model');
+var Question = require('../models/question.model');
+var Answer = require('../models/answer.model');
 var TaxReturn = require('../models/tax_return.model');
 var Checklist = require('../models/checklist.model');
 var validator = require('express-validator');
@@ -28,25 +31,116 @@ POST /quote
 
 INPUT BODY:
 {
-  "accountId":  33,
-  "productId":  44
+  "accountId": 123,
+  "productId": 10,
+  "taxReturns": [
+    {
+      "taxReturnId": 1,
+      "answers": [
+        {
+          "questionId": 116,
+          "text": "Yes"
+        },
+        {
+          "questionId": 117,
+          "text": "No"
+        },
+        {
+          "questionId": 88,
+          "text": "No"
+        },
+        {
+          "questionId": 121,
+          "text": "No"
+        },
+        {
+          "questionId": 84,
+          "text": "No"
+        },
+        {
+          "questionId": 108,
+          "text": "No"
+        },
+        {
+          "questionId": 70,
+          "text": "No"
+        },
+        {
+          "questionId": 124,
+          "text": "No"
+        }
+      ]
+    },
+    {
+      "taxReturnId": 2,
+      "answers": [
+        {
+          "questionId": 116,
+          "text": "No"
+        },
+        {
+          "questionId": 117,
+          "text": "No"
+        },
+        {
+          "questionId": 88,
+          "text": "No"
+        },
+        {
+          "questionId": 121,
+          "text": "No"
+        },
+        {
+          "questionId": 84,
+          "text": "No"
+        },
+        {
+          "questionId": 108,
+          "text": "No"
+        },
+        {
+          "questionId": 70,
+          "text": "No"
+        } ,
+        {
+          "questionId": 124,
+          "text": "No"
+        }
+      ]
+    }
+  ]
 }
 
 RESPONSE:
 200 OK
 {
-  "quoteId": 4
+  "accountId": 123,
+  "productId": 10,
+  "quoteId": 21,
+  "lineItems": [
+    {
+      "taxReturnId": 1,
+      "price": 149.95
+    },
+    {
+      "taxReturnId": 2,
+      "price": 69.95
+    }
+  ]
 }
  ******************************************************************************/
 exports.create = function (req, res) {
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
+    req.checkBody('taxReturns', 'Please provide an taxReturns array').notEmpty();
+
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
         var accountId = req.body.accountId;
         var productId = req.body.productId;
+        var taxReturns = req.body.taxReturns;
 
         // check that accountId exists
         Account.findById(accountId).then(function(account) {
@@ -58,16 +152,62 @@ exports.create = function (req, res) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
-                        var quoteObj = {};
-                        quoteObj.accountId = accountId;
-                        quoteObj.productId = productId;
+                        var answerErrors = [];
+                        var validateQuestionIdPromises = [];
+                        _.forEach(taxReturns, function(taxReturn) {
+                            var taxReturnId = taxReturn.taxReturnId;
+                            // Validate Answers
+                            _.forEach(taxReturn.answers, function(answerObj) {
+                                if ((!answerObj.text) ||
+                                    ((answerObj.text !== 'No') && (answerObj.text !== 'Yes'))) {
+                                      // Invalid text value for answer
+                                      var questionId = answerObj.questionId;
+                                      answerErrors.push({taxReturnId: taxReturnId,
+                                                         questionID: questionId,
+                                                         error: 'Invalid text value for answer (questionId = ' + questionId + ')'})
+                                }
+                            });
 
-                        return Quote.create(quoteObj).then(function(quoteId) {
-                            var resultObj = {};
-                            resultObj.accountId = accountId;
-                            resultObj.productId = productId;
+                            var validateQuestionId = function(questionId) {
+                                return Question.checkIdExists(questionId).then(function(isValid) {
+                                    if (!isValid) {
+                                        answerErrors.push({taxReturnId: taxReturnId,
+                                                           questionID: questionId,
+                                                           error: 'questionId = ' + questionId + ' not found on questions table'});
+                                    }
+                                });
+                            }
+                            _.forEach(taxReturn.answers, function(answerObj) {
+                                validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
+                            });
+                        });
+                        Promise.all(validateQuestionIdPromises).then(function(result) {
+                            if (answerErrors.length > 0) {
+                                res.status(400).send(answerErrors);
+                            } else {
 
-                            res.status(200).json(resultObj);
+                                var quoteObj = {};
+                                quoteObj.accountId = accountId;
+                                quoteObj.productId = productId;
+                                quoteObj.quoteId = 0; // initialize to 0 (aka 'undefined')
+                                quoteObj.totalPrice = 0;
+                                quoteObj.lineItems = [];
+                                _.forEach(taxReturns, function(taxReturn) {
+                                    var tmpLineItemObj = {};
+                                    tmpLineItemObj.taxReturnId = taxReturn.taxReturnId;
+                                    tmpLineItemObj.price = calculatePrice(taxReturn.answers);
+                                    quoteObj.lineItems.push(tmpLineItemObj);
+                                });
+
+                                return Quote.create(quoteObj).then(function(quoteId) {
+                                    quoteObj.quoteId = quoteId;
+                                    _.forEach(quoteObj.lineItems, function(lineItem) {
+                                        quoteObj.totalPrice = quoteObj.totalPrice + lineItem.price;
+                                    });
+                                    quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
+                                    res.status(200).json(quoteObj);
+                                });
+                            }
                         });
                     }
                 });
@@ -76,6 +216,74 @@ exports.create = function (req, res) {
     }
 };
 
+var calculatePrice = function(answers) {
+    var isSelfEmployed = false;
+    var hasRentalProperty = false;
+    var isPostSecondaryStudent = false;
+    var hasCapitalGains = false;
+    var hasMovingOrMedicalExpenses = false;
+    var hasEmploymentRelatedExpenses = false;
+    var isImmigrantOrEmigrant = false;
+    var NoneOfTheAbove = false;
+
+    var selfEmployedId = 116;
+    var rentalPropertyId = 117;
+    var postSecondaryStudentId = 88;
+    var capitalGainsId = 121;
+    var MovingOrMedicalExpensesId = 84;
+    var EmploymentRelatedExpensesId = 108;
+    var ImmigrantEmigrantId = 5;
+    var NoneOfTheAboveId = 124;
+
+    _.forEach(answers, function(answerObj) {
+        if ((answerObj.questionId === selfEmployedId) && (answerObj.text === 'Yes')) {
+            isSelfEmployed = true;
+        }
+        if ((answerObj.questionId === rentalPropertyId) && (answerObj.text === 'Yes')) {
+            hasRentalProperty = true;
+        }
+        if ((answerObj.questionId === postSecondaryStudentId) && (answerObj.text === 'Yes')) {
+            isPostSecondaryStudent = true;
+        }
+        if ((answerObj.questionId === capitalGainsId) && (answerObj.text === 'Yes')) {
+            hasCapitalGains = true;
+        }
+        if ((answerObj.questionId === MovingOrMedicalExpensesId) && (answerObj.text === 'Yes')) {
+            hasMovingOrMedicalExpenses = true;
+        }
+        if ((answerObj.questionId === EmploymentRelatedExpensesId) && (answerObj.text === 'Yes')) {
+            hasEmploymentRelatedExpenses = true;
+        }
+        if ((answerObj.questionId === ImmigrantEmigrantId) && (answerObj.text === 'Yes')) {
+            isImmigrantOrEmigrant = true;
+        }
+        if ((answerObj.questionId === NoneOfTheAboveId) && (answerObj.text === 'Yes')) {
+            NoneOfTheAbove = true;
+        }
+    });
+
+    var price = 69.95; // default price is the same as if "None Apply" was selected
+    if ((isSelfEmployed) || (hasRentalProperty)) {
+        price = 149.95;
+    } else {
+        if ((hasCapitalGains) ||
+            (hasMovingOrMedicalExpenses) ||
+            (hasEmploymentRelatedExpenses) ||
+            (isImmigrantOrEmigrant)) {
+            price = 89.95;
+        } else {
+            if (NoneOfTheAbove) {
+                price = 69.99;
+            } else {
+                if (isPostSecondaryStudent) {
+                    price = 0.00;
+                }
+            }
+        }
+    }
+
+    return price;
+};
 /*******************************************************************************
 ENDPOINT
 POST /quote/:id/submit
@@ -359,9 +567,9 @@ exports.createDocument = function (req, res) {
                         res.writeHead(200, {'content-type': 'text/plain'});
                         res.write('received upload:\n\n');
                         res.end(util.inspect({
-                            quoteId: req.body.quoteId,
-                            taxReturnId: req.body.taxReturnId,
-                            documentTypeId: req.body.documentTypeId,
+                            quoteId: quoteId,
+                            taxReturnId: taxReturnId,
+                            checklistItemId: checklistItemId,
                             file: req.file
                         }));
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
