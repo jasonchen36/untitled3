@@ -492,6 +492,55 @@
 				"description": ""
 			},
 			"response": []
+		},
+		{
+			"name": "GET Quote Checklist by Quote ID",
+			"request": {
+				"url": "http://{{url}}/quote/1/checklist",
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "POST Create Quote",
+			"request": {
+				"url": "http://{{url}}/quote",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "accountId",
+							"value": "21",
+							"type": "text",
+							"enabled": true,
+							"warning": ""
+						},
+						{
+							"key": "productId",
+							"value": "10",
+							"type": "text",
+							"enabled": true,
+							"warning": ""
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
 		}
 	]
 }
