@@ -245,7 +245,8 @@ exports.createAnswer = function (req, res) {
 
                             return Answer.create(answerObj);
                           } else {
-                            return;
+                            res.status(400).send('Question ID is not a number.');
+                            process.exit();
                           }
                         } else {
                           res.status(400).send('Invalid Entry.');
