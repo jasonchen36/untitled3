@@ -31,7 +31,7 @@ module.exports = {
 	sessionSecret: process.env.SESSION_SECRET,
     JWTExpires: '1h',
     //We need to think about storage, possibly s3
-    uploadDir: rootPath + '/uploads',
+    uploadDir: path.join(__dirname + '/../uploads'),
     email: {
         admin: 'email@email.com',//'info@taxplancanada.ca',
         templates: {
@@ -50,5 +50,11 @@ module.exports = {
     },
     postageapp: {
         api_key: process.env.POSTAGEAPP_API_KEY
+    },
+    thumbnail: {
+        baseUploadUrl: 'http://localhost/uploads/',
+        baseThumbnailUrl: 'http://localhost/thumb/',
+        destPath: path.join(__dirname + '/../thumb'),
+        width: 100
     }
 };

@@ -55,7 +55,7 @@ module.exports = {
     thumbnail: {
         baseUploadUrl: 'http://localhost/uploads/',
         baseThumbnailUrl: 'http://localhost/thumb/',
-        destPath: './thumb',
+        destPath: path.join(__dirname + '/../thumb'),
         width: 100
     }
 };

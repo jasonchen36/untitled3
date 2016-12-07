@@ -1,5 +1,5 @@
 TAXplan API
-09 Nov 2016
+Updated 07 Dec 2016
 
 Environment Prerequisites
 
@@ -11,6 +11,10 @@ npm -v
 
 3. MySQL
 TAXplan API Installation
+
+4. Image Magick
+sudo apt-get install imagemagick
+Also create the directories ./upload and ./thumb and ensure the app as write permissions
 
 1. Clone the repository:
 https://bitbucket.org/ellefsontech/taxplan.api
