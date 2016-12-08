@@ -4,7 +4,7 @@ var logger = require('../services/logger.service');
 var fs = require('fs');
 var isWin = /^win/.test(process.platform);
 if (isWin === true) {
-    logger.info('Windows platform detected, altering defauly imagemagick convert.path');
+    logger.info('Windows platform detected, altering default imagemagick convert.path');
     im.convert.path = 'C:\\Program Files\\ImageMagick-7.0.3-Q16\\magick';
     im.identify.path = 'C:\\Program Files\\ImageMagick-7.0.3-Q16\\magick';
 }
