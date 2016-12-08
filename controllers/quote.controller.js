@@ -186,26 +186,40 @@ exports.create = function (req, res) {
                                 res.status(400).send(answerErrors);
                             } else {
 
-                                var quoteObj = {};
-                                quoteObj.accountId = accountId;
-                                quoteObj.productId = productId;
-                                quoteObj.quoteId = 0; // initialize to 0 (aka 'undefined')
-                                quoteObj.totalPrice = 0;
-                                quoteObj.lineItems = [];
+                                // save question answers
+                                var saveAnswer = function(answerObj) {
+                                    return Answer.create(answerObj);
+                                };
+                                var saveAnswersPromises = [];
                                 _.forEach(taxReturns, function(taxReturn) {
-                                    var tmpLineItemObj = {};
-                                    tmpLineItemObj.taxReturnId = taxReturn.taxReturnId;
-                                    tmpLineItemObj.price = calculatePrice(taxReturn.answers);
-                                    quoteObj.lineItems.push(tmpLineItemObj);
-                                });
-
-                                return Quote.create(quoteObj).then(function(quoteId) {
-                                    quoteObj.quoteId = quoteId;
-                                    _.forEach(quoteObj.lineItems, function(lineItem) {
-                                        quoteObj.totalPrice = quoteObj.totalPrice + lineItem.price;
+                                    _.forEach(taxReturn.answers, function(answerObj) {
+                                        var taxReturnId = taxReturn.taxReturnId;
+                                        answerObj.taxReturnId = taxReturnId;
+                                        saveAnswersPromises.push(saveAnswer(answerObj));
                                     });
-                                    quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
-                                    res.status(200).json(quoteObj);
+                                });
+                                Promise.all(saveAnswersPromises).then(function(result) {
+                                    var quoteObj = {};
+                                    quoteObj.accountId = accountId;
+                                    quoteObj.productId = productId;
+                                    quoteObj.quoteId = 0; // initialize to 0 (aka 'undefined')
+                                    quoteObj.totalPrice = 0;
+                                    quoteObj.lineItems = [];
+                                    _.forEach(taxReturns, function(taxReturn) {
+                                        var tmpLineItemObj = {};
+                                        tmpLineItemObj.taxReturnId = taxReturn.taxReturnId;
+                                        tmpLineItemObj.price = calculatePrice(taxReturn.answers);
+                                        quoteObj.lineItems.push(tmpLineItemObj);
+                                    });
+
+                                    return Quote.create(quoteObj).then(function(quoteId) {
+                                        quoteObj.quoteId = quoteId;
+                                        _.forEach(quoteObj.lineItems, function(lineItem) {
+                                            quoteObj.totalPrice = quoteObj.totalPrice + lineItem.price;
+                                        });
+                                        quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
+                                        res.status(200).json(quoteObj);
+                                    });
                                 });
                             }
                         });

@@ -27,8 +27,15 @@ var Answer = {
             return Promise.reject(new Error('No answer specified!'));
         }
 
-        var answerInsertSql = 'INSERT INTO answers (question_id, tax_return_id, text) VALUES(?, ?, ?)';
+        var answerInsertSql = 'INSERT INTO answers \
+                               (question_id, tax_return_id, text) \
+                               VALUES(?, ?, ?)\n\
+                               ON DUPLICATE KEY UPDATE \
+                               id=LAST_INSERT_ID(id), question_id = ?, tax_return_id = ?, text = ?';
         var answerInsertSqlParams = [
+            answerObj.questionId,
+            answerObj.taxReturnId,
+            answerObj.text,
             answerObj.questionId,
             answerObj.taxReturnId,
             answerObj.text
