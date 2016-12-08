@@ -25,9 +25,9 @@ module.exports = function (router) {
     router.route('/quote/:id/calculate')
         .post(quote.calculate);
     router.route('/quote/:id/document')
-        .post(quote.createDocument);
+        .post(PassportAuthMiddleware, quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
-        .delete(quote.deleteDocumentById);
+        .delete(PassportAuthMiddleware, quote.deleteDocumentById);
     router.route('/quote/:id/checklist')
         .get(quote.getChecklist);
     router.route('/quote/product/:productId/account/:accountId')
