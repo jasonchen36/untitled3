@@ -164,7 +164,7 @@ exports.create = function (req, res) {
                                       var questionId = answerObj.questionId;
                                       answerErrors.push({taxReturnId: taxReturnId,
                                                          questionID: questionId,
-                                                         error: 'Invalid text value for answer (questionId = ' + questionId + ')'})
+                                                         error: 'Invalid text value for answer (questionId = ' + questionId + ')'});
                                 }
                             });
 
@@ -176,7 +176,7 @@ exports.create = function (req, res) {
                                                            error: 'questionId = ' + questionId + ' not found on questions table'});
                                     }
                                 });
-                            }
+                            };
                             _.forEach(taxReturn.answers, function(answerObj) {
                                 validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
                             });
@@ -672,4 +672,25 @@ exports.getChecklist = function (req, res) {
             }
         });
     }
+};
+
+
+exports.findByAccountId = function (req, res) {
+  req.checkParams('productId', 'Please provide a product id').isInt();
+  req.checkParams('accountId', 'Please provide a account id').isInt();
+
+  var errors = req.validationErrors();
+  if (errors) {
+      res.status(400).send(errors);
+  } else {
+      var productId = req.params.productId;
+      var accountId = req.params.accountId;
+      Quote.findByProductIdAccountId(productId,accountId).then(function(question) {
+          if (question) {
+              res.status(200).send(question);
+          } else {
+              res.status(404).send();
+          }
+      });
+  }
 };

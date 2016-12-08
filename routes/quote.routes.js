@@ -30,4 +30,6 @@ module.exports = function (router) {
         .delete(quote.deleteDocumentById);
     router.route('/quote/:id/checklist')
         .get(quote.getChecklist);
+    router.route('/quote/product/:productId/account/:accountId')
+        .get(quote.findByAccountId);
 };

@@ -96,6 +96,19 @@ var Quote = {
                 return false;
             }
         });
+    },
+
+    findByProductIdAccountId: function(productId, accountId) {
+      if ((!productId) || (productId.length === 0)) {
+          return Promise.reject(new Error('No productId specified!'));
+      }
+      if ((!accountId) || (accountId.length === 0)) {
+          return Promise.reject(new Error('No accountId specified!'));
+      }
+      var accountSql = 'SELECT * FROM quote AS q JOIN accounts AS a ON a.id = q.account_id AND a.id = ? WHERE q.product_id = ?' ;
+      return db.knex.raw(accountSql, [accountId,productId]).then(function(accountSqlResults) {
+          return accountSqlResults[0];
+      });
     }
 };
 
