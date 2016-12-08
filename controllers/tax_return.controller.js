@@ -224,20 +224,21 @@ exports.createAnswer = function (req, res) {
   } else {
       var taxReturnId = req.params.id;
       var answers = req.body.answers;
-
       // check that taxReturnId exists
       TaxReturn.findById(taxReturnId).then(function(taxReturn) {
-          if ((!taxReturn) || (taxReturn.length === 0)) {
+          if ((!taxReturn) && (taxReturn.length === 0)) {
               res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
                       var answersObj = answers;
-                      var questionId = answersObj[0].questionId;
-                      var text = answersObj[0].text;
-
+                      var i = 0;
+                      var answerErrors = [];
                       _.each(answersObj, function(answer) {
-                        if ((answer.questionId) && (answer.text) && ((answer.text === "Yes") || (answer.text === "No"))) {
+                        var questionId = answersObj[i].questionId;
+                        var text = answersObj[i].text;
+                        i = i + 1;
+                        if ((answer.text) && ((answer.text === "Yes") || (answer.text === "No"))) {
                           var questionIdparsed = parseInt(answer.questionId);
-                          if (!isNaN(questionIdparsed))  {
+                          if (!isNaN(questionIdparsed) && (answer.questionId))  {
                             var answerObj = {};
                             answerObj.questionId = answer.questionId;
                             answerObj.text = answer.text;
@@ -245,15 +246,21 @@ exports.createAnswer = function (req, res) {
 
                             return Answer.create(answerObj);
                           } else {
-                            res.status(400).send('Question ID is not a number.');
-                            process.exit();
+                            answerErrors.push({taxReturnId: taxReturnId,
+                                               questionID: questionId,
+                                               error: 'questionId = ' + questionId + ' is not valid.'});
                           }
                         } else {
-                          res.status(400).send('Invalid Entry.');
-                          process.exit();
+                          answerErrors.push({taxReturnId: taxReturnId,
+                                             questionID: questionId,
+                                             error: 'Invalid text value for answer (questionId = ' + questionId + ').'});
                         }
                       });
-                      res.status(200).send('OK');
+                      if (answerErrors.length > 0) {
+                          res.status(400).send(answerErrors);
+                      } else {
+                          res.status(200).send('OK');
+                      }
                   }
           }
       );
