@@ -226,7 +226,7 @@ exports.createAnswer = function (req, res) {
       var answers = req.body.answers;
       // check that taxReturnId exists
       TaxReturn.findById(taxReturnId).then(function(taxReturn) {
-          if ((!taxReturn) && (taxReturn.length === 0)) {
+          if ((!taxReturn) || (taxReturn.length === 0)) {
               res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
                       var answersObj = answers;
