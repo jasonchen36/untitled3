@@ -131,7 +131,7 @@ var User = {
           throw new Error('encryptPassword() No salt specified!');
         }
         var saltBuffer = new Buffer(salt, 'base64');
-        return crypto.pbkdf2Sync(password, saltBuffer, 10000, 64).toString('base64');
+        return crypto.pbkdf2Sync(password, saltBuffer, 10000, 64, 'SHA1').toString('base64');
     },
 
     /**
