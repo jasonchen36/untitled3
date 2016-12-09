@@ -230,12 +230,10 @@ exports.createAnswer = function (req, res) {
               res.status(404).send({ msg: 'Invalid taxReturnId' });
           } else {
                       var answersObj = answers;
-                      var i = 0;
                       var answerErrors = [];
                       _.each(answersObj, function(answer) {
-                        var questionId = answersObj[i].questionId;
-                        var text = answersObj[i].text;
-                        i = i + 1;
+                        var questionId = answer.questionId;
+                        var text = answer.text;
                         if ((answer.text) && ((answer.text === "Yes") || (answer.text === "No"))) {
                           var questionIdparsed = parseInt(answer.questionId);
                           if (!isNaN(questionIdparsed) && (answer.questionId))  {
