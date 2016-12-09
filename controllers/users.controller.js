@@ -44,17 +44,14 @@ exports.createResetKey = function(req, res) {
             if (user) {
                 user.reset_key = User.createResetKey();
                 User.updateResetKey(user.id, user.reset_key).then(function() {
-                    var callback = {
-                        success: function(response, object) {},
-                        error: function(response, object) {}
-                    };
+
                     var variables = {
-                        name: user.name,
+                        name: user.first_name,
                         reset_url: config.domain + '/#!/set_password/' + user.reset_key
                     };
                     logger.info('Sending password reset email to user ' + user.email);
                     logger.debug('reset_url: ' + variables.reset_url);
-//                  mail.send(config.email.templates.password_reset, user.email, variables, callback);
+                    mail.send(config.email.templates.password_reset, user.email, variables);
                     res.status(200).send();
                 });
             } else {

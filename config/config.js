@@ -34,6 +34,7 @@ module.exports = {
     //We need to think about storage, possibly s3
     uploadDir: path.join(__dirname + '/../uploads'),
     email: {
+        enabled: process.env.TAXPLAN_API_EMAIL_ENABLED,
         admin: process.env.TAXPLAN_API_ADMIN_EMAIL,
         templates: {
             welcome: 'welcome',

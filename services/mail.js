@@ -2,23 +2,36 @@ var postageapp = null;
 var config = require('../config/config');
 var logger = require('../services/logger.service');
 
-if ((process.env.NODE_ENV == 'test') || (process.env.NODE_ENV == 'development')) {
-    logger.warn('EMAIL IS DISABLED BY NODE_ENV=%s', process.env.NODE_ENV);
+if (config.email.enabled === 'false') {
+    logger.warn('EMAIL IS DISABLED BY config.emails.enabled=false');
 } else {
+    logger.info('postageapp API KEY: ' + config.postageapp.api_key);
     postageapp = require('postageapp')(config.postageapp.api_key);
 }
 
-exports.send = function(template, recipient, variables, callback) {
+var defaultCallback = {
+    success: function(response, object) {
+        logger.info('Send Mail Success HTTP: ' + response.statusCode + ' Message UID: ' + object.response.uid);
+    },
+    error: function(response, object) {
+        logger.error('Send Mail Error HTTP: ' + response.statusCode);
+    }
+};
+
+exports.send = function(template, recipient, variables, optionalCallback) {
     if (postageapp) {
+        if (typeof(optionalCallback) === 'undefined') {
+            optionalCallback = defaultCallback;
+        }
         var onSuccess = function(response, object) {
-            if (callback && callback.success) {
-                callback.success(response, object);
+            if (optionalCallback && optionalCallback.success) {
+                optionalCallback.success(response, object);
             }
         };
 
         var onError = function(response, object) {
-            if (callback && callback.error) {
-                callback.error(response, object);
+            if (optionalCallback && optionalCallback.error) {
+                optionalCallback.error(response, object);
             }
         };
 
@@ -32,3 +45,4 @@ exports.send = function(template, recipient, variables, callback) {
         postageapp.sendMessage(options, onSuccess, onError);
     }
 };
+
