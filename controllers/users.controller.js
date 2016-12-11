@@ -211,21 +211,21 @@ function createUserAndSendEmail(userObj) {
     return User.create(userObj).then(function() {
         var sendWelcomeEmailTo = function(user) {
             var variables = {
-                name: user.name
+                name: user.first_name
             };
             mail.send(config.email.templates.welcome, user.email, variables);
         };
 
         var notifyAdminAbout = function(user) {
             var variables = {
-                name: user.name,
+                name: user.first_name,
                 email: user.email
             };
             mail.send(config.email.templates.profile_created, config.email.admin, variables);
         };
 
         return User.findByEmail(userObj.email).then(function(user) {
-//                  sendWelcomeEmailTo(user);
+                  sendWelcomeEmailTo(user);
 //                  notifyAdminAbout(user);
 
             var token = createToken(user);
