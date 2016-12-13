@@ -4,6 +4,7 @@
 
 var db = require('../services/db');
 var Promise = require('bluebird');
+var _ = require('lodash');
 
 var Account = {
     findById: function(id) {
@@ -13,7 +14,21 @@ var Account = {
 
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
         return db.knex.raw(accountSql, [id]).then(function(accountSqlResults) {
-            return(accountSqlResults[0][0]);
+            var accountId = accountSqlResults[0][0].id;
+            var name = accountSqlResults[0][0].name;
+            var resultObj = {};
+            resultObj.id = accountId;
+            resultObj.name = name;
+
+            var taxReturnsSql = 'SELECT * FROM tax_returns WHERE account_id = ?';
+            return db.knex.raw(taxReturnsSql, [accountId]).then(function(taxReturnSqlResults) {
+                var taxReturnsArr = taxReturnSqlResults[0];
+                resultObj.taxReturns = [];
+                _.forEach(taxReturnsArr, function(taxReturn) {
+                    resultObj.taxReturns.push(taxReturn);
+                });
+                return resultObj;
+            });
         });
     },
 

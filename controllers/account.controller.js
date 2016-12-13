@@ -81,6 +81,7 @@ exports.findById = function (req, res) {
                 var accountObj = {};
                 accountObj.accountId = account.id;
                 accountObj.name = account.name;
+                accountObj.taxReturns = account.taxReturns;
 
                 res.status(200).send(accountObj);
             }
