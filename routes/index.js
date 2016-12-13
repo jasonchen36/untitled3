@@ -28,4 +28,5 @@ require('./tax_return.routes')(router);
 require('./quote.routes')(router);
 require('./question.routes')(router);
 require('./categories.routes')(router);
+require('./notifications.routes')(router);
 exports.router = router;
