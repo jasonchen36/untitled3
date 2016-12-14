@@ -699,9 +699,9 @@ exports.findByAccountId = function (req, res) {
   } else {
       var productId = req.params.productId;
       var accountId = req.params.accountId;
-      Quote.findByProductIdAccountId(productId,accountId).then(function(question) {
-          if (question) {
-              res.status(200).send(question);
+      Quote.findByProductIdAccountId(productId,accountId).then(function(account) {
+          if (account) {
+              res.status(200).send(account);
           } else {
               res.status(404).send();
           }

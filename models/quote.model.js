@@ -105,7 +105,15 @@ var Quote = {
       if ((!accountId) || (accountId.length === 0)) {
           return Promise.reject(new Error('No accountId specified!'));
       }
-      var accountSql = 'SELECT * FROM quote AS q JOIN accounts AS a ON a.id = q.account_id AND a.id = ? WHERE q.product_id = ?' ;
+      var accountSql = 'SELECT q.id, \
+                               q.account_id, \
+                               q.product_id, \
+                               q.created_at, \
+                               q.updated_at, \
+                               a.name \n\
+                        FROM quote AS q \
+                        JOIN accounts AS a ON a.id = q.account_id AND a.id = ? \
+                        WHERE q.product_id = ?' ;
       return db.knex.raw(accountSql, [accountId,productId]).then(function(accountSqlResults) {
           return accountSqlResults[0];
       });
