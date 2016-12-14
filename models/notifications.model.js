@@ -6,6 +6,24 @@ var db = require('../services/db');
 var Promise = require('bluebird');
 
 var Notifications = {
+    create: function(notificationObj) {
+        if ((!notificationObj.user_id) || (notificationObj.user_id.length === 0)) {
+          return Promise.reject('No user_id specified!');
+        }
+        if ((!notificationObj.message) || (notificationObj.message.length === 0)) {
+          return Promise.reject('No message specified!');
+        }
+
+        var notificationInsertSql = 'INSERT INTO notifications (user_id, message, is_read) VALUES(?, ?, 0)';
+        var notificationInsertSqlParams = [
+          notificationObj.user_id,
+          notificationObj.message
+        ];
+        return db.knex.raw(notificationInsertSql, notificationInsertSqlParams).then(function(notificationInsertSqlResults) {
+          return notificationInsertSqlResults[0][0];
+        });
+    },
+
     listAll: function(userId) {
         var notificationsSql = 'SELECT * FROM notifications WHERE user_id = ?';
         return db.knex.raw(notificationsSql, [userId]).then(function(notificationsSqlResults) {
