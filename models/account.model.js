@@ -27,7 +27,17 @@ var Account = {
                 _.forEach(taxReturnsArr, function(taxReturn) {
                     resultObj.taxReturns.push(taxReturn);
                 });
-                return resultObj;
+
+                var quoteSql = 'SELECT * FROM quote WHERE account_id = ?';
+                return db.knex.raw(quoteSql, [id]).then(function(quoteSqlResults) {
+                    var quotesArr = quoteSqlResults[0];
+                    resultObj.quotes = [];
+                    _.forEach(quotesArr, function(quote) {
+                        resultObj.quotes.push(quote);
+                    });
+
+                    return resultObj;
+                });
             });
         });
     },
