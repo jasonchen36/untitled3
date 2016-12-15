@@ -45,15 +45,15 @@ var Message = {
           return Promise.reject('No from specified!');
         }
 
-        var messageInsertSql = 'INSERT INTO messages (status, body, subject, client_id, fromname, from_id) VALUES(?, ?, ?, ?, ?, ?)';
+        var messageInsertSql = 'INSERT INTO messages (status, body, subject, client_id, fromname, from_id, from_role) VALUES(?, ?, ?, ?, ?, ?, ?)';
         var messageInsertSqlParams = [
           messageObj.status,
           messageObj.body,
           messageObj.subject,
           messageObj.client,
           messageObj.fromname,
-          messageObj.from
-//          messageObj.date
+          messageObj.from,
+          messageObj.fromRole
         ];
         return db.knex.raw(messageInsertSql, messageInsertSqlParams).then(function(messageInsertSqlResults) {
           return messageInsertSqlResults[0][0];

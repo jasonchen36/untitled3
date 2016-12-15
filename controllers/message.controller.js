@@ -44,6 +44,7 @@ exports.create = function (req, res) {
 
     message.from = req.user.id; // logged-in user from authentication, whoever that may be
     message.fromname = req.user.first_name + ' ' + req.user.last_name;
+    message.fromRole = req.user.role;
 
     // if message is from a user, they are the client
     if (req.user.role == 'Customer') {
