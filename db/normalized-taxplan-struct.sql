@@ -100,7 +100,18 @@ CREATE TABLE `messages` (
   `client_id` int(11) unsigned DEFAULT NULL,
   `fromname` varchar(100) DEFAULT NULL,
   `from_id` int(11) unsigned DEFAULT NULL,
+  `from_role` varchar(45) DEFAULT NULL,
   `date` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `notifications` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) unsigned NOT NULL,
+  `message` varchar(255) DEFAULT NULL,
+  `is_read` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
