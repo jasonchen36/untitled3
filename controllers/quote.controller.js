@@ -447,65 +447,6 @@ exports.findById = function (req, res) {
       }
 };
 
-/*******************************************************************************
-ENDPOINT
-POST /quote/:id/calculate
-
-Params:
-quoteId
-
-INPUT BODY:
-{
-  "accountId":  33,
-  "productId":  44
-}
-
-RESPONSE:
-200 OK
-{
-  "quoteId": 4,
-  "lineItems": [],
-  "taxReturns": []
-}
- ******************************************************************************/
-exports.calculate = function (req, res) {
-      req.checkBody('accountId', 'Please provide a accountId').isInt();
-      req.checkBody('productId', 'Please provide a productId').isInt();
-      req.checkParams('id', 'Please provide a quoteId').isInt();
-      var errors = req.validationErrors();
-      if (errors) {
-          res.status(400).send(errors);
-      } else {
-          var accountId = req.body.accountId;
-          var productId = req.body.productId;
-
-          // check that accountId exists
-          Account.findById(accountId).then(function(account) {
-              if ((!account) || (account.length === 0)) {
-                  res.status(404).send({ msg: 'Invalid accountID' });
-              } else {
-                  // check that productId exists
-                  Product.findById(productId).then(function(product) {
-                      if ((!product) || (product.length === 0)) {
-                          res.status(404).send({ msg: 'Invalid productID' });
-                      } else {
-                          var quoteObj = {};
-                          quoteObj.accountId = accountId;
-                          quoteObj.productId = productId;
-
-                          return Quote.create(quoteObj).then(function(quoteId) {
-                              var resultObj = {};
-                              resultObj.accountId = accountId;
-                              resultObj.productId = productId;
-
-                              res.status(200).json(resultObj);
-                          });
-                      }
-                  });
-              }
-          });
-      }
-};
 
 /*******************************************************************************
 ENDPOINT

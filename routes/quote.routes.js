@@ -22,8 +22,6 @@ module.exports = function (router) {
         .get(quote.findById);
     router.route('/quote')
         .post(quote.create);
-    router.route('/quote/:id/calculate')
-        .post(quote.calculate);
     router.route('/quote/:id/document')
         .post(PassportAuthMiddleware, quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
