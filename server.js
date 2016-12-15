@@ -10,7 +10,7 @@ var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var compress = require('compression');
-//var fs = require('fs');
+var corsMiddleware = require('./middleware/cors.middleware')
 var passport = require('passport');
 var logger = require('./services/logger.service');
 var jwt = require('jsonwebtoken');
@@ -44,6 +44,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'local';
 require('./config/passport')(passport);
 
 var app = express();
+app.use(corsMiddleware);
 app.set('title', config.api.title);
 app.disable('x-powered-by');
 app.disable('query parser');

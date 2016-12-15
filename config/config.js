@@ -58,5 +58,6 @@ module.exports = {
         baseThumbnailUrl: 'http://localhost/thumb/',
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
-    }
+    },
+    accessControlAllowOrigin:'http://localhost:3001, https://localhost:3001'
 };
