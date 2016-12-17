@@ -321,7 +321,7 @@ exports.listAnswers = function (req, res) {
       res.status(400).send(errors);
   } else {
       var id = req.params.id;
-      Answer.findById(id).then(function(answers) {
+      Answer.listAnswers(id).then(function(answers) {
           if (answers) {
               res.status(200).send(answers);
           } else {

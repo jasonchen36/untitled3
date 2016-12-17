@@ -52,6 +52,17 @@ var Answer = {
         }
 
         return db.knex('answers').update(answerObj).where('id', id);
+    },
+
+    listAnswers: function(taxReturnId) {
+        if ((!taxReturnId) || (taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+
+        var answerSql = 'SELECT * FROM answers WHERE tax_return_id = ?';
+        return db.knex.raw(answerSql, [taxReturnId]).then(function(answerSqlSqlResults) {
+            return answerSqlSqlResults[0];
+        });
     }
 };
 
