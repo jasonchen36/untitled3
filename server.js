@@ -10,7 +10,8 @@ var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var compress = require('compression');
-var corsMiddleware = require('./middleware/cors.middleware')
+var corsMiddleware = require('./middleware/cors.middleware');
+var cacheService = require('./services/cache.service');
 var passport = require('passport');
 var logger = require('./services/logger.service');
 var jwt = require('jsonwebtoken');
@@ -139,9 +140,19 @@ var ipaddr = process.env.ipaddr || config.ipaddr || 'localhost';
 logger.info('*********************************************************************************************');
 logger.info('Starting %s API Server ...', config.api.name);
 logger.info('Server Date/Time: %s', Date(Date.now()));
-app.listen(port, ipaddr, function() {
-    logger.info('%s API Server started on %s:%d NODE_ENV=%s', config.api.name, ipaddr, port, app.get('env'));
-    logger.info('Upload Directory:        ' + config.uploadDir);
+
+//Setup services
+var servicesPromises = [
+    cacheService.init(config.cache)
+];
+
+Promise.all(servicesPromises).then(function() {
+    logger.info('All services initialized');
+
+    app.listen(port, ipaddr, function() {
+        logger.info('%s API Server started on %s:%d NODE_ENV=%s', config.api.name, ipaddr, port, app.get('env'));
+        logger.info('Upload Directory:        ' + config.uploadDir);
+    });
 });
 
 

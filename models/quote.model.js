@@ -117,6 +117,20 @@ var Quote = {
       return db.knex.raw(accountSql, [accountId,productId]).then(function(accountSqlResults) {
           return accountSqlResults[0];
       });
+    },
+
+    populateQuestions: function() {
+        var categoriesSql = 'SELECT id FROM categories WHERE name = ?';
+        var categoriesSqlParams = ["Quote"];
+        return db.knex.raw(categoriesSql, categoriesSqlParams).then(function(categoriesSqlResults) {
+            var quoteCategoryId = categoriesSqlResults[0][0].id;
+
+            var questionsSql = 'SELECT id, text FROM questions WHERE category_id = ?';
+            var questionsSqlParams = [quoteCategoryId];
+            return db.knex.raw(questionsSql, questionsSqlParams).then(function(questionsSqlResults) {
+               return questionsSqlResults[0];
+            });
+        });
     }
 };
 
