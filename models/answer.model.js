@@ -76,7 +76,7 @@ var Answer = {
                        q.has_multiple_answers AS has_multiple_answers \
                      FROM questions AS q \
                      LEFT JOIN answers AS a ON a.question_id = q.id \
-                     WHERE a.tax_return_id = ? OR ISNULL(a.tax_return_id)';
+                     WHERE (a.tax_return_id = ? OR ISNULL(a.tax_return_id))';
         answerSqlParams = [taxReturnId];
 
         if (categoryId) {
