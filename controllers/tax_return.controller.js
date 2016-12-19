@@ -384,6 +384,7 @@ exports.createAddress = function (req, res) {
   req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
   req.checkParams('id', 'Please provide a taxReturnId').isInt();
   var errors = req.validationErrors();
+
   if (errors) {
       res.status(400).send(errors);
   } else {
@@ -392,6 +393,7 @@ exports.createAddress = function (req, res) {
       var city = req.body.city;
       var province = req.body.province;
       var postalCode = req.body.postalCode;
+      var addressId = req.body.addressId;
 
       var addressObj = {};
       addressObj.addressLine1 = addressLine1;
@@ -399,14 +401,11 @@ exports.createAddress = function (req, res) {
       addressObj.city = city;
       addressObj.province = province;
       addressObj.postalCode = postalCode;
+      addressObj.addressId = addressId;
 
-      return Address.create(addressObj).then(function(addressObjId) {
+      return Address.create(addressObj).then(function(addressId) {
           var resultObj = {};
-          resultObj.addressLine1 = addressLine1;
-          resultObj.addressLine2 = addressLine2;
-          resultObj.city = city;
-          resultObj.province = province;
-          resultObj.postalCode = postalCode;
+          resultObj.addressId = addressId;
 
           res.status(200).json(resultObj);
     });
