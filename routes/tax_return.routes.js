@@ -24,7 +24,9 @@ module.exports = function (router) {
     router.route('/tax_return/:id/answers')
         .post(tax_return.createAnswer)
         .get(tax_return.listAnswers);
-    router.route('/tax_return/:id/answer/:id')
+    router.route('/tax_return/:taxReturnId/answers/category/:categoryId')
+        .get(tax_return.listAnswersFilterCategory);
+     router.route('/tax_return/:id/answer/:id')
         .get(tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
         .post(tax_return.createAddress);

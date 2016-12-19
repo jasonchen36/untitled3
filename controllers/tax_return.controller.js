@@ -313,24 +313,46 @@ RESPONSE:
    "text": "N" }
 ]
 *******************************************************************************/
-exports.listAnswers = function (req, res) {
-  req.checkParams('id', 'Please provide a taxReturnId').isInt();
+exports.listAnswers = function(req, res) {
+    req.checkParams('id', 'Please provide a taxReturnId').isInt();
 
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var id = req.params.id;
-      Answer.listAnswers(id).then(function(answers) {
-          if (answers) {
-              var answersObj = {};
-              answersObj.answers = answers;
-              res.status(200).send(answersObj);
-          } else {
-              res.status(404).send();
-          }
-      });
-  }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
+        Answer.listAnswers(id).then(function(answers) {
+            if (answers) {
+                var answersObj = {};
+                answersObj.answers = answers;
+                res.status(200).send(answersObj);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
+};
+
+exports.listAnswersFilterCategory = function(req, res) {
+    req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+   req.checkParams('categoryId', 'Please provide a categoryId').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var taxReturnId = req.params.taxReturnId;
+        var categoryId = req.params.categoryId;
+        Answer.listAnswers(taxReturnId, categoryId).then(function(answers) {
+            if (answers) {
+                var answersObj = {};
+                answersObj.answers = answers;
+                res.status(200).send(answersObj);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
 };
 
 /*******************************************************************************

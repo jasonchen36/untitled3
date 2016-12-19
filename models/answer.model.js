@@ -54,13 +54,36 @@ var Answer = {
         return db.knex('answers').update(answerObj).where('id', id);
     },
 
-    listAnswers: function(taxReturnId) {
+    listAnswers: function(taxReturnId, categoryId) {
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
 
-        var answerSql = 'SELECT * FROM answers WHERE tax_return_id = ?';
-        return db.knex.raw(answerSql, [taxReturnId]).then(function(answerSqlSqlResults) {
+        var answerSql = '';
+        var answerSqlParams = [];
+
+        answerSql = 'SELECT \
+                       a.id AS id, \
+                       a.question_id AS question_id, \
+                       a.tax_return_id AS tax_return_id, \
+                       a.text AS text, \
+                       a.created_at as created_at, \
+                       a.updated_at as updated_at, \
+                       q.category_id as category_id, \
+                       q.text AS question_text, \
+                       q.instructions AS instructions, \
+                       q.type AS type, \
+                       q.has_multiple_answers AS has_multiple_answers \
+                     FROM answers AS a \
+                     JOIN questions AS q ON a.question_id = q.id \
+                     WHERE a.tax_return_id = ?';
+        answerSqlParams = [taxReturnId];
+
+        if (categoryId) {
+            answerSql = answerSql + ' AND q.category_id = ?';
+            answerSqlParams.push(categoryId);
+        }
+        return db.knex.raw(answerSql, answerSqlParams).then(function(answerSqlSqlResults) {
             return answerSqlSqlResults[0];
         });
     }
