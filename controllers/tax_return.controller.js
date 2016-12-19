@@ -17,6 +17,7 @@ var Address = require('../models/address.model');
 var Dependant = require('../models/dependant.model');
 var Document = require('../models/document.model');
 var validator = require('express-validator');
+var cacheService = require('../services/cache.service');
 
 // boilerplate
 var _ = require('underscore');
@@ -321,21 +322,23 @@ exports.listAnswers = function(req, res) {
         res.status(400).send(errors);
     } else {
         var id = req.params.id;
-        Answer.listAnswers(id).then(function(answers) {
-            if (answers) {
-                var answersObj = {};
-                answersObj.answers = answers;
-                res.status(200).send(answersObj);
-            } else {
-                res.status(404).send();
-            }
+        cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
+            Answer.listAnswers(valuesCache, id).then(function(answers) {
+                if (answers) {
+                    var answersObj = {};
+                    answersObj.answers = answers;
+                    res.status(200).send(answersObj);
+                } else {
+                    res.status(404).send();
+                }
+            });
         });
     }
 };
 
 exports.listAnswersFilterCategory = function(req, res) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
-   req.checkParams('categoryId', 'Please provide a categoryId').isInt();
+    req.checkParams('categoryId', 'Please provide a categoryId').isInt();
 
     var errors = req.validationErrors();
     if (errors) {
@@ -343,14 +346,16 @@ exports.listAnswersFilterCategory = function(req, res) {
     } else {
         var taxReturnId = req.params.taxReturnId;
         var categoryId = req.params.categoryId;
-        Answer.listAnswers(taxReturnId, categoryId).then(function(answers) {
-            if (answers) {
-                var answersObj = {};
-                answersObj.answers = answers;
-                res.status(200).send(answersObj);
-            } else {
-                res.status(404).send();
-            }
+        cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
+            Answer.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answers) {
+                if (answers) {
+                    var answersObj = {};
+                    answersObj.answers = answers;
+                    res.status(200).send(answersObj);
+                } else {
+                    res.status(404).send();
+                }
+            });
         });
     }
 };

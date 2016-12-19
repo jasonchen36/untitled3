@@ -54,7 +54,7 @@ var Answer = {
         return db.knex('answers').update(answerObj).where('id', id);
     },
 
-    listAnswers: function(taxReturnId, categoryId) {
+    listAnswers: function(valuesCache, taxReturnId, categoryId) {
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
@@ -64,7 +64,7 @@ var Answer = {
 
         answerSql = 'SELECT \
                        a.id AS id, \
-                       a.question_id AS question_id, \
+                       q.id AS question_id, \
                        a.tax_return_id AS tax_return_id, \
                        a.text AS text, \
                        a.created_at as created_at, \
@@ -76,7 +76,7 @@ var Answer = {
                        q.has_multiple_answers AS has_multiple_answers \
                      FROM questions AS q \
                      LEFT JOIN answers AS a ON a.question_id = q.id \
-                     WHERE a.tax_return_id = ? OR ISNULL(a.tax_return_id)';
+                     WHERE (a.tax_return_id = ? OR ISNULL(a.tax_return_id))';
         answerSqlParams = [taxReturnId];
 
         if (categoryId) {
@@ -84,7 +84,36 @@ var Answer = {
             answerSqlParams.push(categoryId);
         }
         return db.knex.raw(answerSql, answerSqlParams).then(function(answerSqlSqlResults) {
-            return answerSqlSqlResults[0];
+            var resultArr = answerSqlSqlResults[0];
+
+            _.forEach(resultArr, function(row) {
+                var questionType = row.type;
+                if (questionType === 'Bool') {
+                    row.values = ['Yes', 'No'];
+                } else {
+                    if (questionType === 'Choice') {
+                        var filteredValues = _.filter(valuesCache, {question_id: row.question_id});
+                        var valuesArr = [];
+                        _.forEach(filteredValues, function(row) {
+                            valuesArr.push(row.text);
+                        });
+                        row.values = valuesArr;
+                    } else {
+                        if (questionType === 'Date') {
+                            row.values = [];
+                        }
+                    }
+                }
+            });
+
+            return resultArr;
+        });
+    },
+
+    populateValues: function() {
+        var valuesSql = 'SELECT * FROM `values`';
+        return db.knex.raw(valuesSql, []).then(function(valuesSqlResults) {
+            return valuesSqlResults[0];
         });
     }
 };
