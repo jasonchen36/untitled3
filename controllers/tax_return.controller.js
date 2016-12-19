@@ -323,7 +323,9 @@ exports.listAnswers = function (req, res) {
       var id = req.params.id;
       Answer.listAnswers(id).then(function(answers) {
           if (answers) {
-              res.status(200).send(answers);
+              var answersObj = {};
+              answersObj.answers = answers;
+              res.status(200).send(answersObj);
           } else {
               res.status(404).send();
           }
