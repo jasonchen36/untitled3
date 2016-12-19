@@ -488,7 +488,6 @@ RESPONSE:
 *******************************************************************************/
 exports.createDocument = function (req, res) {
     req.checkParams('id', 'Please provide a quote id').isInt();
-    req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkBody('checklistItemId', 'Please provide a checklistItemId').isInt();
     // NOTE: multer validates uploadFileName
     var errors = req.validationErrors();
@@ -530,7 +529,9 @@ exports.createDocument = function (req, res) {
 
                     var documentObj = {};
                     documentObj.quoteId = quoteId;
-                    documentObj.taxReturnId = taxReturnId;
+                    if ((taxReturnId) && (taxReturnId.length > 0)) {
+                        documentObj.taxReturnId = taxReturnId;
+                    }
                     documentObj.checklistItemId = checklistItemId;
                     documentObj.name = originalname;
                     documentObj.url = fileName;
@@ -538,12 +539,20 @@ exports.createDocument = function (req, res) {
                     return Document.create(documentObj).then(function(insertId) {
                         res.writeHead(200, {'content-type': 'text/plain'});
                         res.write('received upload:\n\n');
-                        res.end(util.inspect({
-                            quoteId: quoteId,
-                            taxReturnId: taxReturnId,
-                            checklistItemId: checklistItemId,
-                            file: req.file
-                        }));
+                        if ((taxReturnId) && (taxReturnId.length > 0)) {
+                            res.end(util.inspect({
+                                quoteId: quoteId,
+                                taxReturnId: taxReturnId,
+                                checklistItemId: checklistItemId,
+                                file: req.file
+                            }));
+                        } else {
+                            res.end(util.inspect({
+                                quoteId: quoteId,
+                                checklistItemId: checklistItemId,
+                                file: req.file
+                            }));
+                        }
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
                     });
 
