@@ -29,6 +29,7 @@
     "morgan": "^1.7.0",
     "multer": "^1.2.0",
     "mysql": "^2.12.0",
+    "node-cache": "^4.1.0",
     "nodelint": "^0.6.2",
     "passport": "^0.3.2",
     "passport-http-bearer": "latest",
