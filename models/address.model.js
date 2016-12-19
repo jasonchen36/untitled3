@@ -45,7 +45,7 @@ var address = {
         }
         return db.knex.raw(addressInsertSql, addressInsertSqlParams).then(function(addressInsertSqlResults) {
             var addressId = addressInsertSqlResults[0].insertId;
-            return addressId;
+            return Promise.resolve(addressId);
         });
     },
 

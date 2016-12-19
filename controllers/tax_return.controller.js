@@ -393,7 +393,6 @@ exports.createAddress = function (req, res) {
       var city = req.body.city;
       var province = req.body.province;
       var postalCode = req.body.postalCode;
-      var addressId = req.body.addressId;
 
       var addressObj = {};
       addressObj.addressLine1 = addressLine1;
@@ -401,13 +400,11 @@ exports.createAddress = function (req, res) {
       addressObj.city = city;
       addressObj.province = province;
       addressObj.postalCode = postalCode;
-      addressObj.addressId = addressId;
 
       return Address.create(addressObj).then(function(addressId) {
-          var resultObj = {};
-          resultObj.addressId = addressId;
-
-          res.status(200).json(resultObj);
+        var resultObj = {};
+        resultObj.addressId = addressId;
+        res.status(200).json(resultObj);
     });
   }
 };
@@ -593,13 +590,9 @@ exports.createDependant = function (req, res) {
       dependantObj.dateOfBirth = dateOfBirth;
       dependantObj.relationship = relationship;
 
-      return Dependant.create(dependantObj).then(function(dependantObjId) {
+      return Dependant.create(dependantObj).then(function(dependantId) {
           var resultObj = {};
-          resultObj.firstName = firstName;
-          resultObj.lastName = lastName;
-          resultObj.dateOfBirth = dateOfBirth;
-          resultObj.relationship = relationship;
-
+          resultObj.depandantId = dependantId;
           res.status(200).json(resultObj);
         });
       }
