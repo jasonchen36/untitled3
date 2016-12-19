@@ -384,6 +384,7 @@ exports.createAddress = function (req, res) {
   req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
   req.checkParams('id', 'Please provide a taxReturnId').isInt();
   var errors = req.validationErrors();
+
   if (errors) {
       res.status(400).send(errors);
   } else {
@@ -400,15 +401,10 @@ exports.createAddress = function (req, res) {
       addressObj.province = province;
       addressObj.postalCode = postalCode;
 
-      return Address.create(addressObj).then(function(addressObjId) {
-          var resultObj = {};
-          resultObj.addressLine1 = addressLine1;
-          resultObj.addressLine2 = addressLine2;
-          resultObj.city = city;
-          resultObj.province = province;
-          resultObj.postalCode = postalCode;
-
-          res.status(200).json(resultObj);
+      return Address.create(addressObj).then(function(addressId) {
+        var resultObj = {};
+        resultObj.addressId = addressId;
+        res.status(200).json(resultObj);
     });
   }
 };
@@ -594,13 +590,9 @@ exports.createDependant = function (req, res) {
       dependantObj.dateOfBirth = dateOfBirth;
       dependantObj.relationship = relationship;
 
-      return Dependant.create(dependantObj).then(function(dependantObjId) {
+      return Dependant.create(dependantObj).then(function(dependantId) {
           var resultObj = {};
-          resultObj.firstName = firstName;
-          resultObj.lastName = lastName;
-          resultObj.dateOfBirth = dateOfBirth;
-          resultObj.relationship = relationship;
-
+          resultObj.depandantId = dependantId;
           res.status(200).json(resultObj);
         });
       }
