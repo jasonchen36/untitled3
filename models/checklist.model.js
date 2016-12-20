@@ -44,7 +44,7 @@ var Checklist = {
             }
 
             var documentsSql = 'SELECT * FROM documents AS d \
-                                JOIN tax_returns AS tr ON tr.id = d.tax_return_id \
+                                LEFT JOIN tax_returns AS tr ON tr.id = d.tax_return_id \
                                 WHERE d.quote_id = ?;';
             return db.knex.raw(documentsSql, [quoteId]).then(function(documentsSqlResults) {
                 var dbDocs = documentsSqlResults[0];
@@ -91,7 +91,6 @@ var Checklist = {
                             return o.checklist_item_id === thisCheckListItemId;
                         });
                         _.forEach(checklistItem.filers, function(filerObj) {
-console.log('filerObj = ' + JSON.stringify(filerObj, null, 2));
                             delete filerObj.checklist_item_id;
                             delete filerObj.name;
                             delete filerObj.id;
@@ -101,7 +100,7 @@ console.log('filerObj = ' + JSON.stringify(filerObj, null, 2));
                     resultObj = {};
                     resultObj.checklistitems = checklistArr;
                     resultObj.additionalDocuments = _.filter(documents, function(o) {
-                        return o.checkListItemId === null; // no checklistItemId
+                        return (o.checkListItemId === null || o.checkListItemId === 0); // no checklistItemId
                     });;
                     return(resultObj);
                 });
