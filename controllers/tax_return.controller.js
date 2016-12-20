@@ -133,21 +133,31 @@ exports.updateTaxReturnById = function (req, res) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
                         var taxReturnObj = {};
-                        if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
-                        if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
-                        if (req.body.provinceOfResidence) { taxReturnObj.province_of_redidence = req.body.provinceOfResidence; }
-                        if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
-                        if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
-                        if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
+                        if ((!req.body.firstName) &&
+                            (!req.body.lastName) &&
+                            (!req.body.provinceOfResidence) &&
+                            (!req.body.dateOfBirth) &&
+                            (!req.body.canadianCitizen) &&
+                            (!req.body.authorizeCra)
+                           ) {
+                            res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
+                        } else {
+                            if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
+                            if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
+                            if (req.body.provinceOfResidence) { taxReturnObj.province_of_redidence = req.body.provinceOfResidence; }
+                            if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
+                            if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
+                            if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
 
-                        return TaxReturn.update(taxReturnId, taxReturnObj).then(function(taxReturnId) {
-                            var resultObj = {};
-                            resultObj.accountId = accountId;
-                            resultObj.productId = productId;
-                            resultObj.taxReturnId = taxReturnId;
+                            return TaxReturn.update(taxReturnId, taxReturnObj).then(function(taxReturnId) {
+                                var resultObj = {};
+                                resultObj.accountId = accountId;
+                                resultObj.productId = productId;
+                                resultObj.taxReturnId = taxReturnId;
 
-                            res.status(200).json(resultObj);
-                        });
+                                res.status(200).json(resultObj);
+                            });
+                        }
                     }
                 });
             }
