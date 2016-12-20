@@ -3,6 +3,7 @@ var Promise = require('bluebird');
 var logger = require('../services/logger.service');
 var db = require('../services/db');
 var _ = require('lodash');
+var moment = require('moment');
 
 
 
@@ -43,9 +44,10 @@ var Checklist = {
                 resultObj.additionalDocuments = [];
             }
 
-            var documentsSql = 'SELECT * FROM documents AS d \
+            var documentsSql = 'SELECT d.*, tr.product_id, tr.account_id, tr.status_id, tr.first_name, tr.last_name \
+                                FROM documents AS d \
                                 LEFT JOIN tax_returns AS tr ON tr.id = d.tax_return_id \
-                                WHERE d.quote_id = ?;';
+                                WHERE d.quote_id = ?';
             return db.knex.raw(documentsSql, [quoteId]).then(function(documentsSqlResults) {
                 var dbDocs = documentsSqlResults[0];
                 var documents = [];
@@ -59,6 +61,7 @@ var Checklist = {
                     docObj.lastName = dbDoc.last_name;
                     docObj.checkListItemId = dbDoc.checklist_item_id;
                     docObj.name = dbDoc.name;
+                    docObj.createdAt = moment(dbDoc.created_at).format('MM/DD/YY hh:ss A');
                     docObj.url = config.thumbnail.baseUploadUrl + dbDoc.url;
                     docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
                     documents.push(docObj);
