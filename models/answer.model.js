@@ -75,12 +75,11 @@ var Answer = {
                        q.type AS type, \
                        q.has_multiple_answers AS has_multiple_answers \
                      FROM questions AS q \
-                     LEFT JOIN answers AS a ON a.question_id = q.id \
-                     WHERE (a.tax_return_id = ? OR ISNULL(a.tax_return_id))';
+                     LEFT JOIN answers AS a ON a.question_id = q.id AND a.tax_return_id = ?';
         answerSqlParams = [taxReturnId];
 
         if (categoryId) {
-            answerSql = answerSql + ' AND q.category_id = ?';
+            answerSql = answerSql + ' WHERE q.category_id = ?';
             answerSqlParams.push(categoryId);
         }
         return db.knex.raw(answerSql, answerSqlParams).then(function(answerSqlSqlResults) {
