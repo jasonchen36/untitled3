@@ -54,10 +54,10 @@ module.exports = {
         api_key: process.env.TAXPLAN_API_POSTAGEAPP_API_KEY
     },
     thumbnail: {
-        baseUploadUrl: 'http://localhost/uploads/',
-        baseThumbnailUrl: 'http://localhost/thumb/',
+        baseUploadUrl: process.env.TAXPLAN_API_BASE_UPLOAD_URL,
+        baseThumbnailUrl: process.env.TAXPLAN_API_BASE_THUMB_URL,
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
     },
-    accessControlAllowOrigin:'http://localhost:3001, https://localhost:3001'
+    accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
 };
