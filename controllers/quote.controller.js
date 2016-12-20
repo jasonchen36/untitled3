@@ -206,22 +206,20 @@ exports.create = function (req, res) {
                                     quoteObj.quoteId = 0; // initialize to 0 (aka 'undefined')
                                     quoteObj.totalPrice = 0;
                                     quoteObj.lineItems = [];
-                                    cacheService.get('questions', Quote.populateQuestions()).then(function(questions) {
-                                        _.forEach(taxReturns, function(taxReturn) {
-                                            var tmpLineItemObj = {};
-                                            tmpLineItemObj.taxReturnId = taxReturn.taxReturnId;
-                                            tmpLineItemObj.price = calculatePrice(questions, taxReturn.answers);
-                                            quoteObj.lineItems.push(tmpLineItemObj);
-                                        });
+                                    _.forEach(taxReturns, function(taxReturn) {
+                                        var tmpLineItemObj = {};
+                                        tmpLineItemObj.taxReturnId = taxReturn.taxReturnId;
+                                        tmpLineItemObj.price = calculatePrice(taxReturn.answers);
+                                        quoteObj.lineItems.push(tmpLineItemObj);
+                                    });
 
-                                        return Quote.create(quoteObj).then(function(quoteId) {
-                                            quoteObj.quoteId = quoteId;
-                                            _.forEach(quoteObj.lineItems, function(lineItem) {
-                                                quoteObj.totalPrice = quoteObj.totalPrice + lineItem.price;
-                                            });
-                                            quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
-                                            res.status(200).json(quoteObj);
+                                    return Quote.create(quoteObj).then(function(quoteId) {
+                                        quoteObj.quoteId = quoteId;
+                                        _.forEach(quoteObj.lineItems, function(lineItem) {
+                                            quoteObj.totalPrice = quoteObj.totalPrice + lineItem.price;
                                         });
+                                        quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
+                                        res.status(200).json(quoteObj);
                                     });
                                 });
                             }
@@ -233,7 +231,7 @@ exports.create = function (req, res) {
     }
 };
 
-var calculatePrice = function(questions, answers) {
+var calculatePrice = function(answers) {
     var isSelfEmployed = false;
     var hasRentalProperty = false;
     var isPostSecondaryStudent = false;
@@ -243,14 +241,14 @@ var calculatePrice = function(questions, answers) {
     var isImmigrantOrEmigrant = false;
     var NoneOfTheAbove = false;
 
-    var selfEmployedId = getQuestionId(questions, 'I am self-employed/Own a Business');
-    var rentalPropertyId = getQuestionId(questions, 'I own a Rental Property');
-    var postSecondaryStudentId = getQuestionId(questions, 'I am a post-secondary student');
-    var capitalGainsId = getQuestionId(questions, 'I have capital gains');
-    var MovingOrMedicalExpensesId = getQuestionId(questions, 'I have moving and/or medical expenses');
-    var EmploymentRelatedExpensesId = getQuestionId(questions, 'I have employment related expenses');
-    var ImmigrantEmigrantId = getQuestionId(questions, 'I am an immigrant or emigrant');
-    var NoneOfTheAboveId = getQuestionId(questions, 'None Apply');
+    var selfEmployedId = 1000;
+    var rentalPropertyId = 1001;
+    var postSecondaryStudentId = 1002;
+    var capitalGainsId = 1003;
+    var MovingOrMedicalExpensesId = 1004;
+    var EmploymentRelatedExpensesId = 1005;
+    var ImmigrantEmigrantId = 1006;
+    var NoneOfTheAboveId = 1007;
 
     _.forEach(answers, function(answerObj) {
         if ((answerObj.questionId === selfEmployedId) && (answerObj.text === 'Yes')) {
@@ -302,17 +300,6 @@ var calculatePrice = function(questions, answers) {
     return price;
 };
 
-var getQuestionId = function(questions, questionStr) {
-//console.log('questions = ' + JSON.stringify(questions, null, 2));
-    var filteredQuestions = _.find(questions, {text: questionStr});
-    var foundQuestionId = filteredQuestions.id;
-    if (!foundQuestionId) {
-        logger.error('FATAL ERROR: Either no question matched or there are multiple matches for ' + questionStr);
-        return 0;
-    } else {
-        return foundQuestionId;
-    }
-};
 
 
 /*******************************************************************************
