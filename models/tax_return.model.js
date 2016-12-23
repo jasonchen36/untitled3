@@ -17,7 +17,6 @@ var TaxReturn = {
                     id: entry.id,
                     product_id: entry.product_id,
                     account_id: entry.account_id,
-                    status_id: 1,
                     first_name: entry.first_name,
                     last_name: entry.last_name,
                     province_of_residence: entry.province_of_residence,
@@ -64,7 +63,6 @@ var TaxReturn = {
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
-
         return db.knex('tax_returns').update(taxReturnObj).where('id', id);
     },
 

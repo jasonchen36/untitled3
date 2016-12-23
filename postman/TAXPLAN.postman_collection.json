@@ -357,10 +357,7 @@
 				"url": "http://{{url}}/accounts/5810d141533c18d80d02cd36/products/569432e8d4f005a004641d4d/questionnaires/56942e79d4f005a004641d4b/checklist",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
+				"body": {},
 				"description": ""
 			},
 			"response": []
@@ -439,10 +436,7 @@
 				"url": "http://{{url}}/account/70",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
+				"body": {},
 				"description": ""
 			},
 			"response": []
@@ -485,10 +479,7 @@
 				"url": "http://{{url}}/questions/product/10/category/1",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
+				"body": {},
 				"description": ""
 			},
 			"response": []
@@ -499,10 +490,7 @@
 				"url": "http://{{url}}/quote/1/checklist",
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": []
-				},
+				"body": {},
 				"description": ""
 			},
 			"response": []
@@ -535,6 +523,27 @@
 							"type": "text",
 							"enabled": true,
 							"warning": ""
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "PUT Update Tax Return Status By Id",
+			"request": {
+				"url": "http://{{url}}/tax_return/1/status",
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "statusId",
+							"value": "3",
+							"type": "text",
+							"enabled": true
 						}
 					]
 				},

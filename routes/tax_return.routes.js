@@ -14,6 +14,7 @@ var tax_return = require('../controllers/tax_return.controller');
 
 
 module.exports = function (router) {
+    //todo, require authorization
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/tax_return/:id')
@@ -30,6 +31,8 @@ module.exports = function (router) {
         .get(tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
         .post(tax_return.createAddress);
+    router.route('/tax_return/:id/status')
+        .put(tax_return.updateTaxReturnStatusById);
     router.route('/tax_return/:taxReturnId/address/:addressId')
         .get(tax_return.findAddressById)
         .put(tax_return.updateAddress)
