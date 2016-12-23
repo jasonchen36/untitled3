@@ -145,7 +145,7 @@ CREATE TABLE `questions` (
   `category_id` int(11) NOT NULL,
   `text` varchar(255) DEFAULT NULL,
   `instructions` varchar(255) DEFAULT NULL,
-  `type` enum('Bool','Choice','Text','Date') DEFAULT 'Choice',
+  `type` enum('Bool','Choice','Text','Date','NotSure','NoneApply') DEFAULT 'Choice',
   `has_multiple_answers` tinyint(1) DEFAULT '0',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
