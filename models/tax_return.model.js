@@ -10,7 +10,7 @@ var TaxReturn = {
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
             return Promise.reject(new Error('No messageId specified!'));
         }
-        var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.id = status.id WHERE tax_returns.id = ? LIMIT 1';
+        var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.id = ? LIMIT 1';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
             var data = _.map(taxReturnSqlResults[0], function(entry){
                 return {
