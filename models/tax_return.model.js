@@ -10,9 +10,30 @@ var TaxReturn = {
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
             return Promise.reject(new Error('No messageId specified!'));
         }
-        var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.id = status.id WHERE tax_returns.id = ?';
+        var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.id = status.id WHERE tax_returns.id = ? LIMIT 1';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
-            return taxReturnSqlResults[0][0];
+            var data = _.map(taxReturnSqlResults[0], function(entry){
+                return {
+                    id: entry.id,
+                    product_id: entry.product_id,
+                    account_id: entry.account_id,
+                    status_id: 1,
+                    first_name: entry.first_name,
+                    last_name: entry.last_name,
+                    province_of_redidence: entry.province_of_redidence,
+                    date_of_birth: entry.date_of_birth,
+                    canadian_citizen: entry.canadian_citizen,
+                    authorize_cra: entry.authorize_cra,
+                    status: {
+                        id: entry.status_id,
+                        name: entry.status_name,
+                        display_text: entry.status_display_text
+                    },
+                    created_at: entry.created_at,
+                    updated_at: entry.updated_at
+                }
+            });
+            return data[0];
         });
     },
 
