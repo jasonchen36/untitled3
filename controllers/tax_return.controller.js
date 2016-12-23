@@ -144,7 +144,7 @@ exports.updateTaxReturnById = function (req, res) {
                         } else {
                             if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
                             if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
-                            if (req.body.provinceOfResidence) { taxReturnObj.province_of_redidence = req.body.provinceOfResidence; }
+                            if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
                             if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
                             if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
                             if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }

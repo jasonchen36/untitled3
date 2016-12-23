@@ -20,7 +20,7 @@ var TaxReturn = {
                     status_id: 1,
                     first_name: entry.first_name,
                     last_name: entry.last_name,
-                    province_of_redidence: entry.province_of_redidence,
+                    province_of_residence: entry.province_of_residence,
                     date_of_birth: entry.date_of_birth,
                     canadian_citizen: entry.canadian_citizen,
                     authorize_cra: entry.authorize_cra,
