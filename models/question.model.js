@@ -79,6 +79,14 @@ var Question = {
                 return false;
             }
         });
+    },
+
+
+    populateQuestions: function() {
+        var questionsSql = 'SELECT * FROM `questions`';
+        return db.knex.raw(questionsSql, []).then(function(questionsSqlResults) {
+            return questionsSqlResults[0];
+        });
     }
 };
 
