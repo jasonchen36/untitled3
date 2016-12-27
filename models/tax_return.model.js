@@ -13,24 +13,7 @@ var TaxReturn = {
         var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.id = ? LIMIT 1';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
             var data = _.map(taxReturnSqlResults[0], function(entry){
-                return {
-                    id: entry.id,
-                    product_id: entry.product_id,
-                    account_id: entry.account_id,
-                    first_name: entry.first_name,
-                    last_name: entry.last_name,
-                    province_of_residence: entry.province_of_residence,
-                    date_of_birth: entry.date_of_birth,
-                    canadian_citizen: entry.canadian_citizen,
-                    authorize_cra: entry.authorize_cra,
-                    status: {
-                        id: entry.status_id,
-                        name: entry.status_name,
-                        display_text: entry.status_display_text
-                    },
-                    created_at: entry.created_at,
-                    updated_at: entry.updated_at
-                }
+                return TaxReturn.formatData(entry);
             });
             return data[0];
         });
@@ -77,6 +60,27 @@ var TaxReturn = {
                 return false;
             }
         });
+    },
+
+    formatData: function(data){
+        return {
+            id: data.id,
+            product_id: data.product_id,
+            account_id: data.account_id,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            province_of_residence: data.province_of_residence,
+            date_of_birth: data.date_of_birth,
+            canadian_citizen: data.canadian_citizen,
+            authorize_cra: data.authorize_cra,
+            status: {
+                id: data.status_id,
+                name: data.status_name,
+                display_text: data.status_display_text
+            },
+            created_at: data.created_at,
+            updated_at: data.updated_at
+        }
     }
 };
 

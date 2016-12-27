@@ -6,6 +6,8 @@ var db = require('../services/db');
 var Promise = require('bluebird');
 var _ = require('lodash');
 
+const taxReturnModel = require('./tax_return.model');
+
 var Account = {
     findById: function(id) {
         if ((!id) || (id.length === 0)) {
@@ -20,12 +22,12 @@ var Account = {
             resultObj.id = accountId;
             resultObj.name = name;
 
-            var taxReturnsSql = 'SELECT * FROM tax_returns WHERE account_id = ?';
+            var taxReturnsSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.account_id = ?';
             return db.knex.raw(taxReturnsSql, [accountId]).then(function(taxReturnSqlResults) {
                 var taxReturnsArr = taxReturnSqlResults[0];
                 resultObj.taxReturns = [];
                 _.forEach(taxReturnsArr, function(taxReturn) {
-                    resultObj.taxReturns.push(taxReturn);
+                    resultObj.taxReturns.push(taxReturnModel.formatData(taxReturn));
                 });
 
                 var quoteSql = 'SELECT * FROM quote WHERE account_id = ?';
