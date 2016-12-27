@@ -282,53 +282,59 @@ exports.createAnswer = function(req, res) {
                             _.each(answersObj, function(answer) {
                                 var questionId = answer.questionId;
                                 var question = _.find(questionsCache, {id: questionId});
-                                var filteredValues = _.filter(valuesCache, {question_id: questionId});
-                                var answerText = answer.text;
-                                var questionType = question.type;
-                                var foundValue = _.find(filteredValues, {text: answerText});
-                                var validBool = ((questionType === 'Bool') && ((answerText === 'Yes') || (answerText === 'No')));
-                                var validChoice = ((questionType === 'Choice') && (foundValue));
-                                var validDate = false;
-                                if (questionType === 'Date') {
-                                    var isValidDate = moment(answerText, dateFormat, true).isValid();
-                                    validDate = ((questionType === 'Date') && (isValidDate));
-                                }
-                                var validNotSure = ((questionType === 'NotSure') && (answerText === question.text));
-                                var validNoneApply = ((questionType === 'NoneApply') && (answerText === question.text));
-
-                                if ((answer.text) &&
-                                    (validBool ||
-                                     validChoice ||
-                                     validDate ||
-                                     validNotSure ||
-                                     validNoneApply)
-                                   ) {
-                                    var questionIdparsed = parseInt(questionId);
-                                    if (!isNaN(questionIdparsed) && (questionId)) {
-                                        var answerObj = {};
-                                        answerObj.questionId = questionIdparsed;
-                                        answerObj.text = answerText;
-                                        answerObj.taxReturnId = taxReturnId;
-
-                                        answerPromises.push(Answer.create(answerObj));
-                                    } else {
-                                        answerErrors.push({taxReturnId: taxReturnId,
-                                            questionID: questionId,
-                                            error: 'questionId = ' + questionId + ' is not valid.'});
-                                    }
-                                } else {
-                                    var msg = '';
-                                    if (questionType === 'Date') {
-                                        msg = 'Invalid text value for answer (questionId=' + questionId +
-                                          ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + dateFormat;
-                                    } else {
-                                        msg = 'Invalid text value for answer (questionId=' + questionId +
-                                          ', questionType=' + questionType + ', answer.text=' + answerText + ')';
-
-                                    }
+                                if (!question) {
                                     answerErrors.push({taxReturnId: taxReturnId,
                                         questionID: questionId,
-                                        error: msg});
+                                        error: 'questionId = ' + questionId + ' is not valid.'});
+                                } else {
+                                    var filteredValues = _.filter(valuesCache, {question_id: questionId});
+                                    var answerText = answer.text;
+                                    var questionType = question.type;
+                                    var foundValue = _.find(filteredValues, {text: answerText});
+                                    var validBool = ((questionType === 'Bool') && ((answerText === 'Yes') || (answerText === 'No')));
+                                    var validChoice = ((questionType === 'Choice') && (foundValue));
+                                    var validDate = false;
+                                    if (questionType === 'Date') {
+                                        var isValidDate = moment(answerText, dateFormat, true).isValid();
+                                        validDate = ((questionType === 'Date') && (isValidDate));
+                                    }
+                                    var validNotSure = ((questionType === 'NotSure') && (answerText === question.text));
+                                    var validNoneApply = ((questionType === 'NoneApply') && (answerText === question.text));
+
+                                    if ((answer.text) &&
+                                        (validBool ||
+                                         validChoice ||
+                                         validDate ||
+                                         validNotSure ||
+                                         validNoneApply)
+                                       ) {
+                                        var questionIdparsed = parseInt(questionId);
+                                        if (!isNaN(questionIdparsed) && (questionId)) {
+                                            var answerObj = {};
+                                            answerObj.questionId = questionIdparsed;
+                                            answerObj.text = answerText;
+                                            answerObj.taxReturnId = taxReturnId;
+
+                                            answerPromises.push(Answer.create(answerObj));
+                                        } else {
+                                            answerErrors.push({taxReturnId: taxReturnId,
+                                                questionID: questionId,
+                                                error: 'questionId = ' + questionId + ' is not valid.'});
+                                        }
+                                    } else {
+                                        var msg = '';
+                                        if (questionType === 'Date') {
+                                            msg = 'Invalid text value for answer (questionId=' + questionId +
+                                              ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + dateFormat;
+                                        } else {
+                                            msg = 'Invalid text value for answer (questionId=' + questionId +
+                                              ', questionType=' + questionType + ', answer.text=' + answerText + ')';
+
+                                        }
+                                        answerErrors.push({taxReturnId: taxReturnId,
+                                            questionID: questionId,
+                                            error: msg});
+                                    }
                                 }
                             });
                             if (answerErrors.length > 0) {
