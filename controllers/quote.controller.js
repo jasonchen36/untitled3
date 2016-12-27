@@ -568,9 +568,10 @@ exports.deleteDocumentById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var quoteId = req.params.quoteId;
-        Document.findById(quoteId).then(function(document) {
+        var documentId = req.params.documentId;
+        Document.findById(documentId).then(function(document) {
             if (document) {
-                Document.deleteById(quoteId).then(function() {
+                Document.deleteById(quoteId, documentId).then(function() {
                     res.status(200).send('Ok');
                 });
             } else {

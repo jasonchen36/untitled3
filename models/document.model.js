@@ -61,7 +61,20 @@ var document = {
         }
 
         return db.knex('documents').update(documentObj).where('id', id);
+    },
+
+    deleteById: function(quoteId, documentId) {
+        if ((!quoteId) || (quoteId.length === 0)) {
+            return Promise.reject(new Error('No quoteId specified!'));
+        }
+        if ((!documentId) || (documentId.length === 0)) {
+            return Promise.reject(new Error('No documentId specified!'));
+        }
+
+        var quoteSql = 'DELETE FROM documents WHERE id = ? AND quote_id = ?';
+        return db.knex.raw(quoteSql, [documentId, quoteId]);
     }
+
 };
 
 module.exports = document;
