@@ -280,7 +280,7 @@ exports.createAnswer = function(req, res) {
                             var answerErrors = [];
                             var answerPromises = [];
                             _.each(answersObj, function(answer) {
-                                var questionId = answer.questionId;
+                                var questionId = parseInt(answer.questionId);
                                 var question = _.find(questionsCache, {id: questionId});
                                 if (!question) {
                                     answerErrors.push({taxReturnId: taxReturnId,
