@@ -28,6 +28,8 @@ module.exports = function (router) {
         .delete(PassportAuthMiddleware, quote.deleteDocumentById);
     router.route('/quote/:id/checklist')
         .get(quote.getChecklist);
+    router.route('/quote/:id/checklist/PDF')
+        .get(quote.getChecklistPDF);
     router.route('/quote/product/:productId/account/:accountId')
         .get(quote.findByAccountId);
 };

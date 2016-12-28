@@ -24,7 +24,7 @@ var util = require('util');
 var path = require('path');
 var _ = require('underscore');
 var thumbnailService = require('../services/thumbnailService');
-
+var PDFDocument = require('pdfkit');
 
 /*******************************************************************************
 ENDPOINT
@@ -643,6 +643,73 @@ exports.getChecklist = function (req, res) {
     }
 };
 
+/*******************************************************************************
+ENDPOINT
+GET /quote/:id/checklist/PDF
+
+Params:
+quoteId
+
+RESPONSE:
+Streamed PDF document
+
+*******************************************************************************/
+exports.getChecklistPDF = function(req, res) {
+    req.checkParams('id', 'Please provide an integer quote id').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = req.params.id;
+        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+            if (checklist) {
+                var doc = new PDFDocument({
+                    Title: 'Export'
+                });
+
+                res.writeHead(200, {
+                    'Content-Type': 'application/pdf',
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Disposition': 'attachment; filename=checklist.pdf'
+                });
+
+                doc.pipe(res);
+                doc.fontSize(14);
+                doc.moveDown();
+                doc.text('My TAXitem Checklist', {align: 'center'});
+                doc.moveDown();
+                doc.fontSize(12);
+                doc.text('This checklist is a guide based on the answers from your TAXprofile.  If there are other items you feel are relevant please send them as well.  You can upload and send us the items that apply to you by attaching them along with a comment on My Dasboard.');
+                doc.moveDown();
+                var indent = doc.x + 20;
+
+                _.forEach(checklist.checklistitems, function(item) {
+                    doc.fontSize(12);
+                    var r = Math.round((doc._font.ascender / 1000 * doc._fontSize) / 3);
+                    doc.rect(indent + r - 20, doc.y, 10, 10).stroke();
+                    doc.text(item.name, indent);
+                    doc.fontSize(10);
+console.log('item.filers = ' + JSON.stringify(item.filers, null, 2));
+                    _.forEach(item.filers, function(filer) {
+                        var fullname = filer.first_name + ' ' + filer.last_name;
+console.log('fullname: ' + fullname);
+                        doc.text(fullname);
+                        doc.moveDown();
+                    });
+
+                    doc.moveDown();
+                });
+
+
+                doc.end();
+//                res.end();
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
+};
 
 exports.findByAccountId = function (req, res) {
   req.checkParams('productId', 'Please provide a product id').isInt();

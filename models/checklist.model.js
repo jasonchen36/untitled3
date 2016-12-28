@@ -73,7 +73,7 @@ var Checklist = {
                     docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
                     documents.push(docObj);
                 });
-                var filerSql = 'SELECT \
+                var filerSql = 'SELECT DISTINCT\
                                   cr.checklist_item_id, \
                                   ci.name, tr.id, \
                                   tr.first_name, \
