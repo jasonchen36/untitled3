@@ -4,6 +4,12 @@
 
 var db = require('../services/db');
 var Promise = require('bluebird');
+var moment =require('moment');
+var momentTz = require('moment-timezone');
+var config = require('../config/config');
+
+var API_TIMEZONE = config.api.timezone;
+var API_DATE_OUTPUT_FORMAT = config.api.dateOutputFormat;
 
 var Message = {
     findAllById: function(id) {
@@ -12,6 +18,10 @@ var Message = {
         }
         var messageSql = 'SELECT * FROM messages WHERE client_id = ? or from_id = ?';
         return db.knex.raw(messageSql, [id, id]).then(function(messageSqlResults) {
+            _.forEach(messageSqlResults[0], function(messageObj) {
+                var utcDate = messageObj.date;
+                messageObj.date = momentTz(utcDate, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
+            });
             return(messageSqlResults[0]);
         });
     },
@@ -33,6 +43,8 @@ var Message = {
             messageSqlParams = [messageId, clientId];
         }
         return db.knex.raw(messageSql, messageSqlParams).then(function(messageSqlResults) {
+            var utcDate = messageSqlResults[0][0].date;
+            messageSqlResults[0][0].date = momentTz(utcDate, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
             return(messageSqlResults[0][0]);
         });
     },
