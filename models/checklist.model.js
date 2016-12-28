@@ -4,8 +4,10 @@ var logger = require('../services/logger.service');
 var db = require('../services/db');
 var _ = require('lodash');
 var moment = require('moment');
+var momentTz = require('moment-timezone');
 
-
+var API_TIMEZONE = config.api.timezone;
+var API_DATE_OUTPUT_FORMAT = config.api.dateOutputFormat;
 
 var Checklist = {
     findById: function(id) {
@@ -13,8 +15,12 @@ var Checklist = {
             return Promise.reject(new Error('No id specified!'));
         }
 
-        var quoteSql = 'SELECT * FROM checklist_items WHERE id = ?';
-        return db.knex.raw(quoteSql, [id]).then(function(quoteSqlResults) {
+        var checklistSql = 'SELECT * FROM checklist_items WHERE id = ?';
+        return db.knex.raw(checklistSql, [id]).then(function(checklistSqlResults) {
+            if ((checklistSqlResults[0][0]) && (checklistSqlResults[0][0].date)) {
+                var utcCreatedAt = checklistSqlResults[0][0].created_at;
+                checklistSqlResults[0][0].createdAt = momentTz(utcCreatedAt, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
+            }
             return(quoteSqlResults[0][0]);
         });
     },
@@ -61,7 +67,8 @@ var Checklist = {
                     docObj.lastName = dbDoc.last_name;
                     docObj.checkListItemId = dbDoc.checklist_item_id;
                     docObj.name = dbDoc.name;
-                    docObj.createdAt = moment(dbDoc.created_at).format('MM/DD/YY hh:ss A');
+                    var utcCreatedAt = dbDoc.created_at;
+                    docObj.createdAt = momentTz(utcCreatedAt, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
                     docObj.url = config.thumbnail.baseUploadUrl + dbDoc.url;
                     docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
                     documents.push(docObj);

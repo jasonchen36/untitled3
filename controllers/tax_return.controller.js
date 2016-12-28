@@ -22,8 +22,8 @@ var cacheService = require('../services/cache.service');
 // boilerplate
 var _ = require('underscore');
 var moment = require('moment');
-var dateFormat = "YYYY-MM-DD";
 var config = require('../config/config');
+var API_DATE_INPUT_FORMAT = config.api.dateInputFormat;
 
 /*******************************************************************************
  ENDPOINT
@@ -295,7 +295,7 @@ exports.createAnswer = function(req, res) {
                                     var validChoice = ((questionType === 'Choice') && (foundValue));
                                     var validDate = false;
                                     if (questionType === 'Date') {
-                                        var isValidDate = moment(answerText, dateFormat, true).isValid();
+                                        var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
                                         validDate = ((questionType === 'Date') && (isValidDate));
                                     }
                                     var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
@@ -325,7 +325,7 @@ exports.createAnswer = function(req, res) {
                                         var msg = '';
                                         if (questionType === 'Date') {
                                             msg = 'Invalid text value for answer (questionId=' + questionId +
-                                              ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + dateFormat;
+                                              ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
                                         } else {
                                             msg = 'Invalid text value for answer (questionId=' + questionId +
                                               ', questionType=' + questionType + ', answer.text=' + answerText + ')';
@@ -730,9 +730,9 @@ exports.updateDependant = function (req, res) {
         var relationship = req.body.relationship;
         var dependantId = req.params.dependantId;
         var taxReturnId = req.params.taxReturnId;
-        var isValidDate = moment(dateOfBirth, dateFormat, true).isValid();
+        var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
         if(!isValidDate){
-            res.status(400).send({msg: "Invalid date format. Expected date format is " + dateFormat});
+            res.status(400).send({msg: "Invalid date format. Expected date format is " + API_DATE_INPUT_FORMAT});
             res.end();
             return;
         }

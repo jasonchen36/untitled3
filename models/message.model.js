@@ -43,8 +43,10 @@ var Message = {
             messageSqlParams = [messageId, clientId];
         }
         return db.knex.raw(messageSql, messageSqlParams).then(function(messageSqlResults) {
-            var utcDate = messageSqlResults[0][0].date;
-            messageSqlResults[0][0].date = momentTz(utcDate, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
+            if ((messageSqlResults[0][0]) && (messageSqlResults[0][0].date)) {
+                var utcDate = messageSqlResults[0][0].date;
+                messageSqlResults[0][0].date = momentTz(utcDate, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
+            }
             return(messageSqlResults[0][0]);
         });
     },
