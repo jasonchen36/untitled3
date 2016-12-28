@@ -160,22 +160,8 @@ exports.read = function (req, res) {
         if (!message) {
             res.status(404).send();
             return;
-        }
-
-        // change status of message if this user is intended recipient
-        // i.e. admins can read messages for others without updating status
-        if ((!isAdmin) && (message.status === 'new') && (client === req.user.id)) {
-            Message.setReadStatusById(id).then(function() {
-                res.status(200).send(message);
-            });
         } else {
-            if ((isAdmin) && (message.status === 'new') && (req.user.id === message.client_id)) {
-                Message.setReadStatusById(id).then(function() {
-                    res.status(200).send(message);
-                });
-            } else {
-                res.status(200).send(message);
-            }
+            res.status(200).send(message);
         }
     });
 };
@@ -185,4 +171,16 @@ exports.emailtest = function (req, res) {
     console.log('controller emailtest function');
     var whatsit = mailclient.emailTest();
     res.status(200).send('emailtest done');
+};
+
+exports.markRead = function(req, res) {
+    if (!req.user) {
+        res.status(409).send('no user in request!');
+    }
+
+    var id = req.params.id;
+    var client = req.user.id; // user comes from authentication
+    Message.setReadStatusById(id, client).then(function() {
+        res.status(200).send();
+    });
 };

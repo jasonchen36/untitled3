@@ -75,13 +75,15 @@ var Message = {
     },
 
 
-    setReadStatusById: function(id) {
+    setReadStatusById: function(id, clientId) {
         if ((!id) || (id.length === 0)) {
           return Promise.reject('No id specified!');
         }
-
-        var messageSql = 'UPDATE messages SET status="read" WHERE id = ?';
-        return db.knex.raw(messageSql, [id]);
+        if ((!clientId) || (clientId.length === 0)) {
+          return Promise.reject('No clientId specified!');
+        }
+        var messageSql = 'UPDATE messages SET status="read" WHERE id = ? AND client_id = ?';
+        return db.knex.raw(messageSql, [id, clientId]);
     }
 };
 

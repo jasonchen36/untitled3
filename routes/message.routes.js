@@ -46,6 +46,8 @@ module.exports = function (router) {
 
     router.route('/messages/:id')
         .get(PassportAuthMiddleware, message.read);
+    router.route('/messages/:id/read')
+        .post(PassportAuthMiddleware, message.markRead);
     router.route('/messages')
         .post(PassportAuthMiddleware, message.create)
         .get(PassportAuthMiddleware, message.getMessageListForUser);
