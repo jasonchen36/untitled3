@@ -690,10 +690,8 @@ exports.getChecklistPDF = function(req, res) {
                     doc.rect(indent + r - 20, doc.y, 10, 10).stroke();
                     doc.text(item.name, indent);
                     doc.fontSize(10);
-console.log('item.filers = ' + JSON.stringify(item.filers, null, 2));
                     _.forEach(item.filers, function(filer) {
                         var fullname = filer.first_name + ' ' + filer.last_name;
-console.log('fullname: ' + fullname);
                         doc.text(fullname);
                         doc.moveDown();
                     });
@@ -703,7 +701,6 @@ console.log('fullname: ' + fullname);
 
 
                 doc.end();
-//                res.end();
             } else {
                 res.status(404).send();
             }
