@@ -291,15 +291,15 @@ exports.createAnswer = function(req, res) {
                                     var answerText = answer.text;
                                     var questionType = question.type;
                                     var foundValue = _.find(filteredValues, {text: answerText});
-                                    var validBool = ((questionType === 'Bool') && ((answerText === 'Yes') || (answerText === 'No')));
+                                    var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
                                     var validChoice = ((questionType === 'Choice') && (foundValue));
                                     var validDate = false;
                                     if (questionType === 'Date') {
                                         var isValidDate = moment(answerText, dateFormat, true).isValid();
                                         validDate = ((questionType === 'Date') && (isValidDate));
                                     }
-                                    var validNotSure = ((questionType === 'NotSure') && (answerText === question.text));
-                                    var validNoneApply = ((questionType === 'NoneApply') && (answerText === question.text));
+                                    var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
+                                    var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
 
                                     if ((answer.text) &&
                                         (validBool ||
@@ -352,6 +352,13 @@ exports.createAnswer = function(req, res) {
     }
 };
 
+var isYesNoAnswer = function(answerText) {
+  if ((answerText === 'Yes') || (answerText === 'No')) {
+      return true;
+  } else {
+      return false;
+  }
+};
 /*******************************************************************************
  ENDPOINT
  GET /tax_return/:id/answer/:id
