@@ -35,7 +35,7 @@ var document = {
         }
         var documentInsertSql = '';
         if (documentObj.taxReturnId) {
-            documentInsertSql = 'INSERT INTO documents (quote_id, tax_return_id, checklist_item_id, name, url, thumbnail_url) VALUES(?, ?, ?, ?, ?, ?)';
+            documentInsertSql = 'INSERT INTO documents (quote_id, checklist_item_id, name, url, thumbnail_url, tax_return_id) VALUES(?, ?, ?, ?, ?, ?)';
         } else {
             documentInsertSql = 'INSERT INTO documents (quote_id, checklist_item_id, name, url, thumbnail_url) VALUES(?, ?, ?, ?, ?)';
         }

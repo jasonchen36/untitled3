@@ -474,8 +474,11 @@ RESPONSE:
 200 OK
 *******************************************************************************/
 exports.createDocument = function (req, res) {
-    req.checkParams('id', 'Please provide a quote id').isInt();
-    req.checkBody('checklistItemId', 'Please provide a checklistItemId').isInt();
+    req.checkParams('id', 'Please provide an integer quote id').isInt();
+    req.checkBody('checklistItemId', 'Please provide an integer checklistItemId').isInt();
+    if (req.body.taxReturnId) {
+        req.checkBody('taxReturnId', 'Please provide an integer taxReturnId').isInt();
+    }
     // NOTE: multer validates uploadFileName
     var errors = req.validationErrors();
     if (errors) {
@@ -486,8 +489,8 @@ exports.createDocument = function (req, res) {
         logger.debug(req.file);
 
         var quoteId = req.params.id;
-        var taxReturnId = req.body.taxReturnId;
-        var checklistItemId = req.body.checklistItemId;
+        var taxReturnId = parseInt(req.body.taxReturnId);
+        var checklistItemId = parseInt(req.body.checklistItemId);
         var originalname = req.file.originalname;
         var sourcePath = req.file.path;
         var fileName = path.basename(sourcePath);
@@ -516,7 +519,7 @@ exports.createDocument = function (req, res) {
 
                     var documentObj = {};
                     documentObj.quoteId = quoteId;
-                    if ((taxReturnId) && (taxReturnId.length > 0)) {
+                    if (taxReturnId) {
                         documentObj.taxReturnId = taxReturnId;
                     }
                     documentObj.checklistItemId = checklistItemId;
