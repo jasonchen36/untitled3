@@ -21,7 +21,7 @@ var Checklist = {
                 var utcCreatedAt = checklistSqlResults[0][0].created_at;
                 checklistSqlResults[0][0].createdAt = momentTz(utcCreatedAt, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
             }
-            return(quoteSqlResults[0][0]);
+            return(checklistSqlResults[0][0]);
         });
     },
 
