@@ -765,6 +765,49 @@ exports.updateDependant = function (req, res) {
 
 /*******************************************************************************
  ENDPOINT
+ GET /tax_return/:id/dependants
+
+ Params:
+ taxReturnId
+
+ RESPONSE:
+ [
+ {
+   "taxReturnId":  44,
+   "firstName": "Jason",
+   "lastName": "Chen",
+   "dateOfBirth": "08/07/1988",
+   "relationship": "son"
+ },
+ {
+  "taxReturnId":  44,
+  "firstName": "Jason",
+  "lastName": "Chen",
+  "dateOfBirth": "08/07/1988",
+  "relationship": "son"
+},
+ ]
+ *******************************************************************************/
+exports.getDependantsById = function (req, res) {
+    req.checkParams('id', 'Please provide a taxReturn Id').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var taxReturnId = req.params.id;
+        Dependant.getAllById(taxReturnId).then(function(dependant) {
+            if (dependant) {
+                res.status(200).send(dependant);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
+};
+
+/*******************************************************************************
+ ENDPOINT
  GET /tax_return/:id/dependant/:id
 
  Params:

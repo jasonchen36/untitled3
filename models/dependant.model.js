@@ -16,6 +16,16 @@ var dependant = {
         });
     },
 
+    getAllById: function(taxReturnId) {
+        if ((!taxReturnId) || (taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        var dependantSql = 'SELECT * FROM dependants WHERE tax_return_id = ?';
+        return db.knex.raw(dependantSql, [taxReturnId]).then(function(dependantSqlResults) {
+            return dependantSqlResults[0];
+        });
+    },
+
     create: function(dependantObj) {
         if ((!dependantObj.firstName) || (dependantObj.firstName.length === 0)) {
             return Promise.reject(new Error('No firstName specified!'));
@@ -44,8 +54,8 @@ var dependant = {
     },
 
     update: function(id, dependantObj) {
-      console.log('this is the start');
-      console.log(JSON.stringify(dependantObj));
+        console.log('this is the start');
+        console.log(JSON.stringify(dependantObj));
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No dependantId specified!'));
         }
@@ -64,8 +74,8 @@ var dependant = {
         return db.knex.raw(dependantTaxReturnInsertSql, [dependantTaxReturnObj.taxReturnId,dependantTaxReturnObj.dependantId]).then(function(dependantTaxReturnInsertSqlResults) {
             var dependantId = dependantTaxReturnInsertSqlResults[0].insertId;
             return Promise.resolve(dependantId);
-          });
-      }
+        });
+    }
 };
 
 module.exports = dependant;
