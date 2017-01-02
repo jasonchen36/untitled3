@@ -690,7 +690,7 @@ exports.createDependant = function (req, res) {
 
         return Dependant.create(dependantObj).then(function(dependantId) {
             var resultObj = {};
-            resultObj.depandantId = dependantId;
+            resultObj.dependantId = dependantId;
             res.status(200).json(resultObj);
         });
     }
