@@ -48,6 +48,8 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, message.read);
     router.route('/messages/:id/read')
         .post(PassportAuthMiddleware, message.markRead);
+    router.route('/messages/markAllRead')
+        .post(PassportAuthMiddleware, message.markAllRead);
     router.route('/messages')
         .post(PassportAuthMiddleware, message.create)
         .get(PassportAuthMiddleware, message.getMessageListForUser);

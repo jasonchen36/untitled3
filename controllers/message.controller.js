@@ -184,3 +184,14 @@ exports.markRead = function(req, res) {
         res.status(200).send();
     });
 };
+
+exports.markAllRead = function(req, res) {
+    if (!req.user) {
+        res.status(409).send('no user in request!');
+    }
+
+    var client = req.user.id; // user comes from authentication
+    Message.setAllReadStatusByUserId(client).then(function() {
+        res.status(200).send();
+    });
+};
