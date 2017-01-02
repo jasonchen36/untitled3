@@ -49,6 +49,10 @@ module.exports = {
             document_uploaded: 'document_uploaded'
         }
     },
+    onesignal: {
+        restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
+        appId: process.env.TAXPLAN_API_ONESIGNAL_APP_ID
+    },
     stripe: {
         secret: process.env.TAXPLAN_API_STRIPE_SECRET_KEY,
         key: process.env.TAXPLAN_API_STRIPE_PUBLIC_KEY
