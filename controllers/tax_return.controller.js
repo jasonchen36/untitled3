@@ -657,7 +657,7 @@ exports.linkExistingAddresses = function (req, res) {
  {
    "firstName": "Jason",
    "lastName": "Chen",
-   "dateOfBirth": "08/07/1988",
+   "dateOfBirth": "YYYY-MM-DD",
    "relationship": "son"
  }
 
@@ -706,7 +706,7 @@ exports.createDependant = function (req, res) {
  {
    "firstName": "Jason",    Optional
    "lastName": "Chen",       Optional
-   "dateOfBirth": "08/07/1988",    Optional
+   "dateOfBirth": "YYYY-MM-DD",    Optional
    "relationship": "son"        Optional
  }
 
