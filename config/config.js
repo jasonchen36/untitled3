@@ -7,7 +7,7 @@ var path = require('path');
 var rootPath = path.join(__dirname + '/..');
 
 module.exports = {
-    domain: process.env.DOMAIN,
+    domain: process.env.TAXPLAN_API_DOMAIN,
     api: {
         name: 'TAXplan',
         timezone: 'America/Toronto',
