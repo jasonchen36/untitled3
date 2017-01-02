@@ -27,7 +27,7 @@ module.exports = function (router) {
         .get(tax_return.listAnswers);
     router.route('/tax_return/:taxReturnId/answers/category/:categoryId')
         .get(tax_return.listAnswersFilterCategory);
-     router.route('/tax_return/:id/answer/:id')
+    router.route('/tax_return/:id/answer/:id')
         .get(tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
         .post(tax_return.createAddress);
@@ -44,5 +44,6 @@ module.exports = function (router) {
     router.route('/tax_return/:taxReturnId/dependant/:dependantId')
         .get(tax_return.findDependantById)
         .put(tax_return.updateDependant)
-        .post(tax_return.linkExistingDependants);
+        .post(tax_return.linkExistingDependants)
+        .delete(tax_return.deleteDependant);
 };

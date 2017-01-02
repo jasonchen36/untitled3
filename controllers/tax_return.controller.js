@@ -303,11 +303,11 @@ exports.createAnswer = function(req, res) {
 
                                     if ((answer.text) &&
                                         (validBool ||
-                                         validChoice ||
-                                         validDate ||
-                                         validNotSure ||
-                                         validNoneApply)
-                                       ) {
+                                        validChoice ||
+                                        validDate ||
+                                        validNotSure ||
+                                        validNoneApply)
+                                    ) {
                                         var questionIdparsed = parseInt(questionId);
                                         if (!isNaN(questionIdparsed) && (questionId)) {
                                             var answerObj = {};
@@ -325,10 +325,10 @@ exports.createAnswer = function(req, res) {
                                         var msg = '';
                                         if (questionType === 'Date') {
                                             msg = 'Invalid text value for answer (questionId=' + questionId +
-                                              ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
+                                                ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
                                         } else {
                                             msg = 'Invalid text value for answer (questionId=' + questionId +
-                                              ', questionType=' + questionType + ', answer.text=' + answerText + ')';
+                                                ', questionType=' + questionType + ', answer.text=' + answerText + ')';
 
                                         }
                                         answerErrors.push({taxReturnId: taxReturnId,
@@ -353,11 +353,11 @@ exports.createAnswer = function(req, res) {
 };
 
 var isYesNoAnswer = function(answerText) {
-  if ((answerText === 'Yes') || (answerText === 'No')) {
-      return true;
-  } else {
-      return false;
-  }
+    if ((answerText === 'Yes') || (answerText === 'No')) {
+        return true;
+    } else {
+        return false;
+    }
 };
 /*******************************************************************************
  ENDPOINT
@@ -760,6 +760,36 @@ exports.updateDependant = function (req, res) {
                 });
             }
         });
+    }
+};
+
+/*******************************************************************************
+ ENDPOINT
+ DELETE /tax_return/:taxReturnId/dependant/:dependantId
+
+ Params:
+ taxReturnId and dependantId
+
+ RESPONSE:
+ 200 OK
+ *******************************************************************************/
+exports.deleteDependant = function (req, res) {
+    req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+    req.checkParams('dependantId', 'Please provide a dependantId').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        const dependantId = req.params.dependantId,
+            taxReturnId = req.params.taxReturnId;
+        // check that dependantId exists
+        Dependant.deleteById(dependantId, taxReturnId).then(function() {
+            res.status(200).send('OK');
+        })
+            .catch(function(error){
+                res.status(400).send(error);
+            });
     }
 };
 

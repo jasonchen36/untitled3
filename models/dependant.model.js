@@ -26,6 +26,19 @@ var dependant = {
         });
     },
 
+    deleteById: function(dependantId, taxReturnId){
+        if ((!taxReturnId) || (taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        if ((!dependantId) || (dependantId.length === 0)) {
+            return Promise.reject(new Error('No dependantId specified!'));
+        }
+        var dependantSql = 'DELETE FROM dependants WHERE tax_return_id = ? AND id = ? LIMIT 1';
+        return db.knex.raw(dependantSql, [taxReturnId, dependantId]).then(function(dependantSqlResults) {
+            return dependantSqlResults[0];
+        });
+    },
+
     create: function(dependantObj) {
         if ((!dependantObj.firstName) || (dependantObj.firstName.length === 0)) {
             return Promise.reject(new Error('No firstName specified!'));
