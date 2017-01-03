@@ -7,7 +7,7 @@ var path = require('path');
 var rootPath = path.join(__dirname + '/..');
 
 module.exports = {
-    domain: process.env.TAXPLAN_API_DOMAIN,
+    domain: process.env.DOMAIN,
     api: {
         name: 'TAXplan',
         timezone: 'America/Toronto',
@@ -49,10 +49,6 @@ module.exports = {
             document_uploaded: 'document_uploaded'
         }
     },
-    onesignal: {
-        restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
-        appId: process.env.TAXPLAN_API_ONESIGNAL_APP_ID
-    },
     stripe: {
         secret: process.env.TAXPLAN_API_STRIPE_SECRET_KEY,
         key: process.env.TAXPLAN_API_STRIPE_PUBLIC_KEY
@@ -66,5 +62,5 @@ module.exports = {
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
     },
-    accessControlAllowOrigin: 'staging.taxplancanada.ca/api'
+    accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
 };
