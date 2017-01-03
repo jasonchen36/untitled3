@@ -38,6 +38,7 @@
     "pdfkit": "^0.8.0",
     "postageapp": "^1.1.5",
     "proxyquire": "^1.7.3",
+    "request": "^2.79.0",
     "serve-favicon": "^2.3.0",
     "stripe": "latest",
     "underscore": "^1.8.3",

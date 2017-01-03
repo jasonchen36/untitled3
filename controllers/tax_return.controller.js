@@ -601,6 +601,47 @@ exports.findAddressById = function (req, res) {
 
 /*******************************************************************************
  ENDPOINT
+ GET /tax_return/:id/addresses
+
+ Params:
+ taxReturnId
+
+ INPUT BODY:
+ None. req.params.id is the only input (no body)
+
+ RESPONSE:
+[
+ {
+   "addressLine1":  "34 Wellington Street",
+   "addressLine2": "Suite 504",
+   "city": "Toronto",
+   "province": "Ontario",
+   "postalCode": "L4D 5D7"
+ }
+]
+ *******************************************************************************/
+exports.listAddresses = function (req, res) {
+console.log('req.params = ' + JSON.stringify(req.params, null, 2));
+    req.checkParams('id', 'Please provide a tax return id').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var taxReturnId = req.params.id;
+console.log('taxReturnId: ' + taxReturnId);
+        Address.findAll(taxReturnId).then(function(addressArr) {
+            if (addressArr) {
+                res.status(200).send(addressArr);
+            } else {
+                res.status(404).send();
+            }
+        });
+    }
+};
+
+/*******************************************************************************
+ ENDPOINT
  POST /tax_return/:id/address/:id
 
  Params:

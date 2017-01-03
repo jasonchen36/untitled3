@@ -7,7 +7,7 @@ var path = require('path');
 var rootPath = path.join(__dirname + '/..');
 
 module.exports = {
-    domain: process.env.DOMAIN,
+    domain: process.env.TAXPLAN_API_DOMAIN,
     api: {
         name: 'TAXplan',
         timezone: 'America/Toronto',
@@ -48,6 +48,10 @@ module.exports = {
             profile_created: 'profile_created',
             document_uploaded: 'document_uploaded'
         }
+    },
+    onesignal: {
+        restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
+        appId: process.env.TAXPLAN_API_ONESIGNAL_APP_ID
     },
     stripe: {
         secret: process.env.TAXPLAN_API_STRIPE_SECRET_KEY,
