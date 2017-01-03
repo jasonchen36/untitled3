@@ -79,7 +79,8 @@ var TaxReturn = {
                 display_text: data.status_display_text
             },
             created_at: data.created_at,
-            updated_at: data.updated_at
+            updated_at: data.updated_at,
+            filer_type: data.filer_type
         }
     }
 };

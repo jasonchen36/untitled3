@@ -62,5 +62,5 @@ module.exports = {
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
     },
-    accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
+    accessControlAllowOrigin: 'staging.taxplancanada.ca/api'
 };
