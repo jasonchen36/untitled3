@@ -495,6 +495,7 @@ exports.createAddress = function (req, res) {
         var city = req.body.city;
         var province = req.body.province;
         var postalCode = req.body.postalCode;
+        var country = req.body.country;
 
         var addressObj = {};
         addressObj.addressLine1 = addressLine1;
@@ -502,7 +503,10 @@ exports.createAddress = function (req, res) {
         addressObj.city = city;
         addressObj.province = province;
         addressObj.postalCode = postalCode;
-
+        if ((country) && country.length > 0){
+          addressObj.country = country;
+        }
+        console.log("it is working", addressObj.country);
         return Address.create(addressObj).then(function(addressId) {
             var resultObj = {};
             resultObj.addressId = addressId;

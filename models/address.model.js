@@ -28,6 +28,7 @@ console.log('taxReturnId: ' + taxReturnId);
     },
 
     create: function(addressObj) {
+      console.log("entire address object", addressObj);
         if ((!addressObj.addressLine1) || (addressObj.addressLine1.length === 0)) {
             return Promise.reject(new Error('No addressLine1 specified!'));
         }
@@ -41,7 +42,14 @@ console.log('taxReturnId: ' + taxReturnId);
             return Promise.reject(new Error('No postalCode specified!'));
         }
         if (addressObj.addressLine2){
-          var addressInsertSql = 'INSERT INTO addresses (address_line1, address_line2, city, providence, postal_code) VALUES(?, ?, ?, ?, ?)';
+          var addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code, address_line2) VALUES(?, ?, ?, ?, ?)';
+          if (addressObj.country){
+            console.log(addressObj.country);
+            addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code, address_line2, country) VALUES(?, ?, ?, ?, ?, ?)';
+          }
+        } else if (addressObj.country){
+          console.log(addressObj.country);
+          var addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code, country) VALUES(?, ?, ?, ?, ?)';
         } else {
           var addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code) VALUES(?, ?, ?, ?)';
         }
@@ -53,6 +61,9 @@ console.log('taxReturnId: ' + taxReturnId);
         ];
         if (addressObj.addressLine2) {
           addressInsertSqlParams.push(addressObj.addressLine2);
+        }
+        if (addressObj.country) {
+          addressInsertSqlParams.push(addressObj.country);
         }
         return db.knex.raw(addressInsertSql, addressInsertSqlParams).then(function(addressInsertSqlResults) {
             var addressId = addressInsertSqlResults[0].insertId;
