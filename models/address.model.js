@@ -16,6 +16,17 @@ var address = {
         });
     },
 
+    findAll: function(taxReturnId) {
+console.log('taxReturnId: ' + taxReturnId);
+        if ((!taxReturnId) || (taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        var addressSql = 'SELECT * FROM addresses WHERE id IN(SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?)';
+        return db.knex.raw(addressSql, [taxReturnId]).then(function(addressSqlResults) {
+            return addressSqlResults[0];
+        });
+    },
+
     create: function(addressObj) {
         if ((!addressObj.addressLine1) || (addressObj.addressLine1.length === 0)) {
             return Promise.reject(new Error('No addressLine1 specified!'));

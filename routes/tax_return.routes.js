@@ -31,6 +31,8 @@ module.exports = function (router) {
         .get(tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
         .post(tax_return.createAddress);
+    router.route('/tax_return/:id/addresses')
+        .get(tax_return.listAddresses);
     router.route('/tax_return/:id/status')
         .put(tax_return.updateTaxReturnStatusById);
     router.route('/tax_return/:id/dependants')
