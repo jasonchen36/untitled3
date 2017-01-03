@@ -16,6 +16,7 @@ var Account = {
 
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
         return db.knex.raw(accountSql, [id]).then(function(accountSqlResults) {
+          console.log("what is account sql results", JSON.stringify(accountSqlResults[0]));
             var accountId = accountSqlResults[0][0].id;
             var name = accountSqlResults[0][0].name;
             var resultObj = {};

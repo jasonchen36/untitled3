@@ -9,10 +9,7 @@ var rootPath = path.join(__dirname + '/..');
 module.exports = {
     domain: process.env.DOMAIN,
     api: {
-        name: 'TAXplan',
-        timezone: 'America/Toronto',
-        dateOutputFormat: 'MM/DD/YY hh:ss A',
-        dateInputFormat: 'YYYY-MM-DD'
+        name: 'TAXplan'
     },
     api_root_path: process.env.TAXPLAN_API_ROOT,
     root: rootPath,
@@ -62,5 +59,5 @@ module.exports = {
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
     },
-    accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
+    accessControlAllowOrigin: 'http://localhost:3000'
 };

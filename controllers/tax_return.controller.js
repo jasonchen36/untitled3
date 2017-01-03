@@ -53,6 +53,7 @@ exports.createTaxReturn = function (req, res) {
         var accountId = req.body.accountId;
         var productId = req.body.productId;
         var firstName = req.body.firstName;
+        var filerType = req.body.filerType;
 
         // check that accountId exists
         Account.findById(accountId).then(function(account) {
@@ -68,12 +69,14 @@ exports.createTaxReturn = function (req, res) {
                         taxReturnObj.accountId = accountId;
                         taxReturnObj.productId = productId;
                         taxReturnObj.firstName = firstName;
+                        taxReturnObj.filerType = filerType;
 
                         return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                             var resultObj = {};
                             resultObj.accountId = accountId;
                             resultObj.productId = productId;
                             resultObj.taxReturnId = taxReturnId;
+                            resultObj.filerType = filerType;
 
                             res.status(200).json(resultObj);
                         });
@@ -138,7 +141,8 @@ exports.updateTaxReturnById = function (req, res) {
                             (!req.body.provinceOfResidence) &&
                             (!req.body.dateOfBirth) &&
                             (!req.body.canadianCitizen) &&
-                            (!req.body.authorizeCra)
+                            (!req.body.authorizeCra) &&
+                            (!req.body.filerType)
                         ) {
                             res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
                         } else {
@@ -148,7 +152,7 @@ exports.updateTaxReturnById = function (req, res) {
                             if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
                             if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
                             if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
-
+                            if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
                             return TaxReturn.update(taxReturnId, taxReturnObj).then(function(taxReturnId) {
                                 var resultObj = {};
                                 resultObj.accountId = accountId;
