@@ -547,9 +547,11 @@ exports.updateAddress = function (req, res) {
     } else {
         var addressLine1 = req.body.addressLine1;
         var addressLine2 = req.body.addressLine2;
+        var addressId = req.params.addressId;
         var city = req.body.city;
         var province = req.body.province;
         var postalCode = req.body.postalCode;
+        var country = req.body.country;
 
         var addressObj = {};
         if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
@@ -557,8 +559,10 @@ exports.updateAddress = function (req, res) {
         if (req.body.city) { addressObj.city = req.body.city; }
         if (req.body.province) { addressObj.providence = req.body.province; }
         if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
+        if (req.body.country) { addressObj.country = req.body.country; }
+        console.log("this is the country", addressObj.country);
 
-        return Address.update(addressLine1, addressObj).then(function(addressObjId) {
+        return Address.update(addressId, addressObj).then(function(addressObjId) {
             var resultObj = {};
             resultObj.addressLine1 = addressLine1;
             resultObj.addressLine2 = addressLine2;

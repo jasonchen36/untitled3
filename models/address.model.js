@@ -75,7 +75,8 @@ console.log('taxReturnId: ' + taxReturnId);
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No addressId specified!'));
         }
-
+        console.log(addressObj);
+        console.log(id);
         return db.knex('addresses').update(addressObj).where('id', id);
     },
 
