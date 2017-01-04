@@ -99,11 +99,18 @@ exports.getMessageListForUser = function (req, res) {
 
     var client = req.user.id; // user comes from authentication
 
-    if (req.user.role != 'Customer') { // Admins must specify client to message
+    if (req.user.role != 'Customer') { // Admins must specify client
         if (!req.params.client) {
             res.status(409).send('no client parameter in request!');
+            return;
         }
         client = req.params.client;
+
+    } else {
+        if (req.params.client) { // Non admin user specified a client id param - illegal
+            res.status(401).send(); // not authorized
+            return;
+        }
     }
 
     Message.findAllById(client).then(function(messages) {
