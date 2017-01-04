@@ -42,7 +42,6 @@ module.exports = function(passport) {
             if (!isMatch) {
                 return done(null, false, { message: 'Invalid password' });
             }
-            console.log('passport - verified as ' + user.email);
             return done(null, user);
         });
     })),

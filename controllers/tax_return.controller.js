@@ -509,7 +509,6 @@ exports.createAddress = function (req, res) {
         if ((country) && country.length > 0){
           addressObj.country = country;
         }
-        console.log("it is working", addressObj.country);
         return Address.create(addressObj).then(function(addressId) {
             var resultObj = {};
             resultObj.addressId = addressId;
@@ -563,7 +562,6 @@ exports.updateAddress = function (req, res) {
         if (req.body.province) { addressObj.providence = req.body.province; }
         if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
         if (req.body.country) { addressObj.country = req.body.country; }
-        console.log("this is the country", addressObj.country);
 
         return Address.update(addressId, addressObj).then(function(addressObjId) {
             var resultObj = {};
@@ -636,7 +634,6 @@ exports.findAddressById = function (req, res) {
 ]
  *******************************************************************************/
 exports.listAddresses = function (req, res) {
-console.log('req.params = ' + JSON.stringify(req.params, null, 2));
     req.checkParams('id', 'Please provide a tax return id').isInt();
 
     var errors = req.validationErrors();
@@ -644,7 +641,6 @@ console.log('req.params = ' + JSON.stringify(req.params, null, 2));
         res.status(400).send(errors);
     } else {
         var taxReturnId = req.params.id;
-console.log('taxReturnId: ' + taxReturnId);
         Address.findAll(taxReturnId).then(function(addressArr) {
             if (addressArr) {
                 res.status(200).send(addressArr);

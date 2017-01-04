@@ -438,13 +438,14 @@ Admins can update role for other users.
 exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var user = req.body;
+
     if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
         var keys = ['first_name', 'last_name', 'email', 'phone']; //v2
         if (User.isAdmin(req.user)) {
             keys.push('role');
         }
-        if ((user.role) && ((user.role1=== 'Admin') || (user.role !== 'Customer'))) {
+        if ((user.role) && ((user.role !== 'Admin') && (user.role !== 'Customer'))) {
             return res.status(409).json(new Error('Invalid role'));
         }
         var params = _.pick(user, keys);

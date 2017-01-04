@@ -17,7 +17,6 @@ var address = {
     },
 
     findAll: function(taxReturnId) {
-console.log('taxReturnId: ' + taxReturnId);
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
@@ -28,7 +27,6 @@ console.log('taxReturnId: ' + taxReturnId);
     },
 
     create: function(addressObj) {
-      console.log("entire address object", addressObj);
         if ((!addressObj.addressLine1) || (addressObj.addressLine1.length === 0)) {
             return Promise.reject(new Error('No addressLine1 specified!'));
         }
@@ -44,11 +42,9 @@ console.log('taxReturnId: ' + taxReturnId);
         if (addressObj.addressLine2){
           var addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code, address_line2) VALUES(?, ?, ?, ?, ?)';
           if (addressObj.country){
-            console.log(addressObj.country);
             addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code, address_line2, country) VALUES(?, ?, ?, ?, ?, ?)';
           }
         } else if (addressObj.country){
-          console.log(addressObj.country);
           var addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code, country) VALUES(?, ?, ?, ?, ?)';
         } else {
           var addressInsertSql = 'INSERT INTO addresses (address_line1, city, providence, postal_code) VALUES(?, ?, ?, ?)';
@@ -75,8 +71,6 @@ console.log('taxReturnId: ' + taxReturnId);
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No addressId specified!'));
         }
-        console.log(addressObj);
-        console.log(id);
         return db.knex('addresses').update(addressObj).where('id', id);
     },
 
@@ -89,7 +83,6 @@ console.log('taxReturnId: ' + taxReturnId);
         }
         var addressTaxReturnInsertSql = 'INSERT IGNORE INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES(?, ?)';
         return db.knex.raw(addressTaxReturnInsertSql, [addressTaxReturnObj.taxReturnId,addressTaxReturnObj.addressId]).then(function(addressTaxReturnInsertSqlResults) {
-            console.log(JSON.stringify(addressTaxReturnInsertSql));
             var addressId = addressTaxReturnInsertSqlResults[0].insertId;
             return Promise.resolve(addressId);
         });

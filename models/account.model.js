@@ -53,9 +53,9 @@ var Account = {
             return Promise.reject(new Error('No name specified!'));
         }
 
-        var accountInsertSql = 'INSERT INTO accounts (name, push_notifications, email_notifications) VALUES(?, ?, ?)';
+        var accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
 
-        return db.knex.raw(accountInsertSql, [accountObj.name, accountObj.pushNotifications, accountObj.emailNotifications]).then(function(messageInsertSqlResults) {
+        return db.knex.raw(accountInsertSql, [accountObj.name]).then(function(messageInsertSqlResults) {
             return messageInsertSqlResults[0].insertId;
         });
     }
