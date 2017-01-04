@@ -7,7 +7,7 @@ var path = require('path');
 var rootPath = path.join(__dirname + '/..');
 
 module.exports = {
-    domain: process.env.DOMAIN,
+    domain: process.env.TAXPLAN_API_DOMAIN,
     api: {
         name: 'TAXplan',
         timezone: 'America/Toronto',
@@ -19,16 +19,16 @@ module.exports = {
     port: process.env.TAXPLAN_API_SERVER_PORT,
     ipaddr : '127.0.0.1',
     database: {
-      debugSQL: false,
-      client:'mysql',
-      connection: {
-        host: process.env.TAXPLAN_API_MYSQL_HOST,
-        port: process.env.TAXPLAN_API_MYSQL_PORT,
-        user: process.env.TAXPLAN_API_MYSQL_USER,
-        password: process.env.TAXPLAN_API_MYSQL_PASSWORD,
-        database: process.env.TAXPLAN_API_MYSQL_DATABASE,
-        charset: 'utf8'
-      }
+        debugSQL: false,
+        client:'mysql',
+        connection: {
+            host: process.env.TAXPLAN_API_MYSQL_HOST,
+            port: process.env.TAXPLAN_API_MYSQL_PORT,
+            user: process.env.TAXPLAN_API_MYSQL_USER,
+            password: process.env.TAXPLAN_API_MYSQL_PASSWORD,
+            database: process.env.TAXPLAN_API_MYSQL_DATABASE,
+            charset: 'utf8'
+        }
     },
     // The secret should be set to a non-guessable string that
     // is used to compute a session hash
@@ -49,6 +49,10 @@ module.exports = {
             document_uploaded: 'document_uploaded'
         }
     },
+    onesignal: {
+        restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
+        appId: process.env.TAXPLAN_API_ONESIGNAL_APP_ID
+    },
     stripe: {
         secret: process.env.TAXPLAN_API_STRIPE_SECRET_KEY,
         key: process.env.TAXPLAN_API_STRIPE_PUBLIC_KEY
@@ -62,5 +66,5 @@ module.exports = {
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
     },
-    accessControlAllowOrigin: 'http://localhost:3000'
+    accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
 };
