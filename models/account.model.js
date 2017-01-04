@@ -18,9 +18,13 @@ var Account = {
         return db.knex.raw(accountSql, [id]).then(function(accountSqlResults) {
             var accountId = accountSqlResults[0][0].id;
             var name = accountSqlResults[0][0].name;
+            var pushNotifications = accountSqlResults[0][0].push_notifications;
+            var emailNotifications = accountSqlResults[0][0].email_notifications;
             var resultObj = {};
             resultObj.id = accountId;
             resultObj.name = name;
+            resultObj.pushNotifications = pushNotifications;
+            resultObj.emailNotifications = emailNotifications;
 
             var taxReturnsSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.account_id = ?';
             return db.knex.raw(taxReturnsSql, [accountId]).then(function(taxReturnSqlResults) {
@@ -49,9 +53,9 @@ var Account = {
             return Promise.reject(new Error('No name specified!'));
         }
 
-        var accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
+        var accountInsertSql = 'INSERT INTO accounts (name, push_notifications, email_notifications) VALUES(?, ?, ?)';
 
-        return db.knex.raw(accountInsertSql, [accountObj.name]).then(function(messageInsertSqlResults) {
+        return db.knex.raw(accountInsertSql, [accountObj.name, accountObj.pushNotifications, accountObj.emailNotifications]).then(function(messageInsertSqlResults) {
             return messageInsertSqlResults[0].insertId;
         });
     }

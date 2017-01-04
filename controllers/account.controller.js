@@ -37,6 +37,8 @@ exports.create = function (req, res) {
     } else {
         var accountObj = {};
         accountObj.name = req.body.name;
+        accountObj.pushNotifications = req.body.pushNotifications;
+        accountObj.emailNotifications = req.body.emailNotifications;
         account.create(accountObj).then(function(insertId) {
             account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
@@ -44,7 +46,9 @@ exports.create = function (req, res) {
                 } else {
                     var jsonData = {
                         accountId: account.id,
-                        name: account.name
+                        name: account.name,
+                        pushNotifications: account.pushNotifications,
+                        emailNotifications: account.emailNotifications
                     };
                     res.status(200).send(jsonData);
                 }
@@ -83,6 +87,8 @@ exports.findById = function (req, res) {
                 accountObj.name = account.name;
                 accountObj.taxReturns = account.taxReturns;
                 accountObj.quotes = account.quotes;
+                accountObj.pushNotifications = account.pushNotifications;
+                accountObj.emailNotifications = account.emailNotifications;
 
                 res.status(200).send(accountObj);
             }
