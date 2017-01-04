@@ -33,12 +33,13 @@ var TaxReturn = {
           return Promise.reject(new Error('No  filerType specified!'));
         }
 
-        var taxReturnInsertSql = 'INSERT INTO tax_returns (account_id, product_id, first_name, filer_type) VALUES(?, ?, ?, ?)';
+        var taxReturnInsertSql = 'INSERT INTO tax_returns (account_id, product_id, first_name, filer_type, status_id) VALUES(?, ?, ?, ?, ?)';
         var taxReturnInsertSqlParams = [
             taxReturnObj.accountId,
             taxReturnObj.productId,
             taxReturnObj.firstName,
-            taxReturnObj.filerType
+            taxReturnObj.filerType,
+            taxReturnObj.status
         ];
         return db.knex.raw(taxReturnInsertSql, taxReturnInsertSqlParams).then(function(taxReturnInsertSqlResults) {
             var taxReturnId = taxReturnInsertSqlResults[0].insertId;

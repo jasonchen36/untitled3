@@ -54,6 +54,7 @@ exports.createTaxReturn = function (req, res) {
         var productId = req.body.productId;
         var firstName = req.body.firstName;
         var filerType = req.body.filerType;
+        var status = req.body.status;
 
         // check that accountId exists
         Account.findById(accountId).then(function(account) {
@@ -70,6 +71,7 @@ exports.createTaxReturn = function (req, res) {
                         taxReturnObj.productId = productId;
                         taxReturnObj.firstName = firstName;
                         taxReturnObj.filerType = filerType;
+                        taxReturnObj.status = status;
 
                         return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                             var resultObj = {};
@@ -77,6 +79,7 @@ exports.createTaxReturn = function (req, res) {
                             resultObj.productId = productId;
                             resultObj.taxReturnId = taxReturnId;
                             resultObj.filerType = filerType;
+                            resultObj.status = status;
 
                             res.status(200).json(resultObj);
                         });
