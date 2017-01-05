@@ -53,8 +53,6 @@ module.exports = function (router) {
     router.route('/messages')
         .post(PassportAuthMiddleware, message.create)
         .get(PassportAuthMiddleware, message.getMessageListForUser);
-    router.route('/messages/admin/:client')
-        .get(PassportAuthMiddleware, message.getMessageListForUser);
 
 //    // pages
 //    app.get('/messages/page', function (req, res) {
