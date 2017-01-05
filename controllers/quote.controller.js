@@ -705,6 +705,7 @@ exports.getChecklistPDF = function(req, res) {
 
 
                 doc.end();
+                res.end();
             } else {
                 res.status(404).send();
             }
