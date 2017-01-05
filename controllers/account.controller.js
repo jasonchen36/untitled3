@@ -39,6 +39,7 @@ exports.create = function (req, res) {
         accountObj.name = req.body.name;
         accountObj.pushNotifications = req.body.pushNotifications;
         accountObj.emailNotifications = req.body.emailNotifications;
+        accountObj.taxProId = req.body.taxProId;
         account.create(accountObj).then(function(insertId) {
             account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
@@ -48,7 +49,8 @@ exports.create = function (req, res) {
                         accountId: account.id,
                         name: account.name,
                         pushNotifications: account.pushNotifications,
-                        emailNotifications: account.emailNotifications
+                        emailNotifications: account.emailNotifications,
+                        taxProId: account.taxProId
                     };
                     res.status(200).send(jsonData);
                 }
@@ -89,6 +91,7 @@ exports.findById = function (req, res) {
                 accountObj.quotes = account.quotes;
                 accountObj.pushNotifications = account.pushNotifications;
                 accountObj.emailNotifications = account.emailNotifications;
+                accountObj.taxProId = account.taxProId;
 
                 res.status(200).send(accountObj);
             }
@@ -119,6 +122,7 @@ exports.update = function (req, res) {
     } else {
         var accountObj = {};
         accountObj.name = req.body.name;
+        accountObj.taxProId = req.body.taxProId;
         account.create(accountObj).then(function(insertId) {
             account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
@@ -126,7 +130,8 @@ exports.update = function (req, res) {
                 } else {
                     var jsonData = {
                         accountId: account.id,
-                        name: account.name
+                        name: account.name,
+                        taxProId: account.taxProId
                     };
                     res.status(200).send(jsonData);
                 }

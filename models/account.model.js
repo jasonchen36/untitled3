@@ -52,12 +52,17 @@ var Account = {
         if ((!accountObj.name) || (accountObj.name.length === 0)) {
             return Promise.reject(new Error('No name specified!'));
         }
-
+        if (accountObj.taxProId){
+        var accountInsertSql = 'INSERT INTO accounts (name, taxpro_id) VALUES(?, ?)';
+        return db.knex.raw(accountInsertSql, [accountObj.name, accountObj.taxProId]).then(function(messageInsertSqlResults) {
+            return messageInsertSqlResults[0].insertId;
+        });
+      } else {
         var accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
-
         return db.knex.raw(accountInsertSql, [accountObj.name]).then(function(messageInsertSqlResults) {
             return messageInsertSqlResults[0].insertId;
         });
+      }
     }
 };
 
