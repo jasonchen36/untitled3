@@ -102,14 +102,14 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
     var code = err.status || 500;
     if (code !== 404) {
-        logger.error('500 - Internal Server Error: ');
+        logger.error(code + ' ' + err.message);
         logger.error(err.stack);
     }
     res.status(code);
     if (process.env.NODE_ENV === 'development') {
         res.json({ message: err.message, error: err });
     } else {
-        res.json({ message: 'Internal Server Error'});
+        res.json({ message: err.message});
     }
 });
 
