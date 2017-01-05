@@ -16,6 +16,6 @@ var message = require('../controllers/message.controller');
 module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
-    router.route('/admin/user/:client/messages')
+    router.route('/admin/users/:client/messages')
         .get(PassportAuthMiddleware, message.getMessageListForUser);
 };
