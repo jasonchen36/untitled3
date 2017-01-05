@@ -674,7 +674,8 @@ exports.getChecklistPDF = function(req, res) {
                 res.writeHead(200, {
                     'Content-Type': 'application/pdf',
                     'Access-Control-Allow-Origin': '*',
-                    'Content-Disposition': 'attachment; filename=checklist.pdf'
+                    'Content-Disposition': 'attachment; filename=checklist.pdf',
+                    'Transfer-Encoding': 'chunked'
                 });
 
                 doc.pipe(res);
