@@ -94,7 +94,7 @@ exports.resetPassword = function(req, res) {
             }
         });
     } else {
-        res.status(400).send();
+        res.status(400).send({ msg: 'No password provided' });
     }
 };
 
