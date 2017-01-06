@@ -53,22 +53,22 @@ var dependant = {
             return Promise.reject(new Error('No relationship specified!'));
         }
         if (dependantObj.isShared){
-        var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship, is_shared) VALUES(?, ?, ?, ?, ?)';
-        var dependantInsertSqlParams = [
-            dependantObj.firstName,
-            dependantObj.lastName,
-            dependantObj.dateOfBirth,
-            dependantObj.relationship,
-            dependantObj.isShared
-          ];
+            var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship, is_shared) VALUES(?, ?, ?, ?, ?)';
+            var dependantInsertSqlParams = [
+                dependantObj.firstName,
+                dependantObj.lastName,
+                dependantObj.dateOfBirth,
+                dependantObj.relationship,
+                dependantObj.isShared
+            ];
         } else {
-        var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?)';
-        var dependantInsertSqlParams = [
-            dependantObj.firstName,
-            dependantObj.lastName,
-            dependantObj.dateOfBirth,
-            dependantObj.relationship
-          ];
+            var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?)';
+            var dependantInsertSqlParams = [
+                dependantObj.firstName,
+                dependantObj.lastName,
+                dependantObj.dateOfBirth,
+                dependantObj.relationship
+            ];
         }
         return db.knex.raw(dependantInsertSql, dependantInsertSqlParams).then(function(dependantInsertSqlResults) {
             var dependantId = dependantInsertSqlResults[0].insertId;
