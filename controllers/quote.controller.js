@@ -325,12 +325,19 @@ exports.submit = function (req, res) {
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkParams('id', 'Please provide a quoteId').isInt();
+
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
         var accountId = req.body.accountId;
         var productId = req.body.productId;
+        var quoteId = req.params.id;
+
+        if (accountId !== req.user.account_id) {
+            res.status(401).send();
+            return;
+        }
 
         // check that accountId exists
         Account.findById(accountId).then(function(account) {
@@ -342,17 +349,10 @@ exports.submit = function (req, res) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
-                        var quoteObj = {};
-                        quoteObj.accountId = accountId;
-                        quoteObj.productId = productId;
-
-                        return Quote.create(quoteObj).then(function(quoteId) {
-                            var resultObj = {};
-                            resultObj.accountId = accountId;
-                            resultObj.productId = productId;
-
-                            res.status(200).json(resultObj);
+                        return TaxReturn.setAllsubmittedForAccountId(accountId, productId).then(function() {
+                            res.status(200).send();
                         });
+
                     }
                 });
             }

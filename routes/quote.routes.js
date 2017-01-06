@@ -17,19 +17,19 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/quote/:id/submit')
-        .post(quote.submit);
+        .post(PassportAuthMiddleware, quote.submit);
     router.route('/quote/:id')
-        .get(quote.findById);
+        .get(PassportAuthMiddleware, quote.findById);
     router.route('/quote')
-        .post(quote.create);
+        .post(PassportAuthMiddleware, quote.create);
     router.route('/quote/:id/document')
         .post(PassportAuthMiddleware, quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
         .delete(PassportAuthMiddleware, quote.deleteDocumentById);
     router.route('/quote/:id/checklist')
-        .get(quote.getChecklist);
+        .get(PassportAuthMiddleware, quote.getChecklist);
     router.route('/quote/:id/checklist/PDF')
-        .get(quote.getChecklistPDF);
+        .get(PassportAuthMiddleware, quote.getChecklistPDF);
     router.route('/quote/product/:productId/account/:accountId')
-        .get(quote.findByAccountId);
+        .get(PassportAuthMiddleware, quote.findByAccountId);
 };

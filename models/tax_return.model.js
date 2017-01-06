@@ -52,6 +52,17 @@ var TaxReturn = {
         return db.knex('tax_returns').update(taxReturnObj).where('id', id);
     },
 
+    setAllsubmittedForAccountId: function(accountId, productId) {
+        if ((!accountId) || (accountId.length === 0)) {
+            return Promise.reject(new Error('No accountId specified!'));
+        }
+        var updateStatusSql = 'UPDATE tax_returns SET status_id = 0 WHERE account_id = ? AND product_id = ?';
+        return db.knex.raw(updateStatusSql, [accountId, productId]).then(function(updateStatusSqlResults) {
+            var affectedRows = updateStatusSqlResults[0].affectedRows;
+            return Promise.resolve(affectedRows);
+        });
+    },
+
     checkIdExists: function(id) {
         if (!id) {
             return Promise.resolve(false);
