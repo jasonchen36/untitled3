@@ -61,7 +61,7 @@ var dependant = {
             dependantObj.relationship,
             dependantObj.isShared
         ];
-      } else {
+        } else {
         var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?)';
         var dependantInsertSqlParams = [
             dependantObj.firstName,
@@ -69,7 +69,7 @@ var dependant = {
             dependantObj.dateOfBirth,
             dependantObj.relationship
         ];
-      }
+        }
         return db.knex.raw(dependantInsertSql, dependantInsertSqlParams).then(function(dependantInsertSqlResults) {
             var dependantId = dependantInsertSqlResults[0].insertId;
             return Promise.resolve(dependantId);
