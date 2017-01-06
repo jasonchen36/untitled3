@@ -65,7 +65,7 @@ var Account = {
        return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(messageInsertSqlResults) {
            return messageInsertSqlResults[0].insertId;
        });
-   }
+    }
 };
 
 module.exports = Account;
