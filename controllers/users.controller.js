@@ -47,7 +47,7 @@ exports.createResetKey = function(req, res) {
 
                     var variables = {
                         name: user.first_name,
-                        reset_url: config.domain + '/set-password/' + user.reset_key
+                        reset_url: config.domain + '/password-reset/' + user.reset_key
                     };
                     logger.info('Sending password reset email to user ' + user.email);
                     logger.debug('reset_url: ' + variables.reset_url);
