@@ -733,12 +733,14 @@ exports.createDependant = function (req, res) {
         var lastName = req.body.lastName;
         var dateOfBirth = req.body.dateOfBirth;
         var relationship = req.body.relationship;
+        var isShared = req.body.isShared;
 
         var dependantObj = {};
         dependantObj.firstName = firstName;
         dependantObj.lastName = lastName;
         dependantObj.dateOfBirth = dateOfBirth;
         dependantObj.relationship = relationship;
+        dependantObj.isShared = isShared;
 
         return Dependant.create(dependantObj).then(function(dependantId) {
             var resultObj = {};
@@ -782,6 +784,7 @@ exports.updateDependant = function (req, res) {
         var relationship = req.body.relationship;
         var dependantId = req.params.dependantId;
         var taxReturnId = req.params.taxReturnId;
+        var isShared = req.body.isShared;
         var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
         if(!isValidDate){
             res.status(400).send({msg: "Invalid date format. Expected date format is " + API_DATE_INPUT_FORMAT});
@@ -799,6 +802,7 @@ exports.updateDependant = function (req, res) {
                 if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
                 if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
                 if (req.params.taxReturnId) { dependantObj.tax_return_id = req.params.taxReturnId; }
+                if (req.body.isShared) { dependantObj.is_shared = req.body.isShared; }
 
                 return Dependant.update(dependantId,dependantObj).then(function() {
                     var resultObj = {};
@@ -807,6 +811,7 @@ exports.updateDependant = function (req, res) {
                     resultObj.dateOfBirth = dateOfBirth;
                     resultObj.relationship = relationship;
                     resultObj.taxReturnId = taxReturnId;
+                    resultObj.isShared = isShared;
 
                     res.status(200).json(resultObj);
                 });

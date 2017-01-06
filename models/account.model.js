@@ -49,15 +49,22 @@ var Account = {
     },
 
     create: function(accountObj) {
-        if ((!accountObj.name) || (accountObj.name.length === 0)) {
-            return Promise.reject(new Error('No name specified!'));
-        }
+       if ((!accountObj.name) || (accountObj.name.length === 0)) {
+           return Promise.reject(new Error('No name specified!'));
+       }
+       var accountInsertSql = '';
+       var accountInsertSqlParams = [];
 
-        var accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
-
-        return db.knex.raw(accountInsertSql, [accountObj.name]).then(function(messageInsertSqlResults) {
-            return messageInsertSqlResults[0].insertId;
-        });
+       if (accountObj.taxProId) {
+           accountInsertSql = 'INSERT INTO accounts (name, taxpro_id) VALUES(?, ?)';
+           accountInsertSqlParams = [accountObj.name, accountObj.taxProId];
+       } else {
+           accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
+           accountInsertSqlParams = [accountObj.name];
+       }
+       return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(messageInsertSqlResults) {
+           return messageInsertSqlResults[0].insertId;
+       });
     }
 };
 
