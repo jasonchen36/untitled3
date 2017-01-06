@@ -21,7 +21,7 @@ module.exports = function (router) {
     router.route('/quote/:id')
         .get(PassportAuthMiddleware, quote.findById);
     router.route('/quote')
-        .post(PassportAuthMiddleware, quote.create);
+        .post(quote.create); // Create quote does not requite Auth!
     router.route('/quote/:id/document')
         .post(PassportAuthMiddleware, quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
