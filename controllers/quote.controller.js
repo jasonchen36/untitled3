@@ -588,8 +588,11 @@ exports.deleteDocumentById = function (req, res) {
 ENDPOINT
 GET /quote/:id/checklist
 
-Params:
-quoteId
+INPUT BODY:
+ {
+   "accountId": 104,    MANDATORY (ID MUST EXIST if specified)
+   "productId": 10      MANDATORY (ID MUST EXIST if specified)
+ }
 
 RESPONSE:
 {
@@ -629,14 +632,16 @@ RESPONSE:
 *******************************************************************************/
 
 exports.getChecklist = function (req, res) {
-    req.checkParams('id', 'Please provide an integer quote id').isInt();
+    req.checkBody('accountId', 'Please provide an integer account id').isInt();
+    req.checkBody('productId', 'Please provide an integer product id').isInt();
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
-        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+        var account_id = req.body.accountId;
+        var product_id = req.body.productId;
+        Checklist.getCheckListForAccountIdProductId(account_id, product_id).then(function(checklist) {
             if (checklist) {
                 res.status(200).send(checklist);
             } else {
@@ -650,22 +655,27 @@ exports.getChecklist = function (req, res) {
 ENDPOINT
 GET /quote/:id/checklist/PDF
 
-Params:
-quoteId
+ INPUT BODY:
+ {
+   "accountId": 104,    MANDATORY (ID MUST EXIST if specified)
+   "productId": 10      MANDATORY (ID MUST EXIST if specified)
+ }
 
 RESPONSE:
 Streamed PDF document
 
 *******************************************************************************/
 exports.getChecklistPDF = function(req, res) {
-    req.checkParams('id', 'Please provide an integer quote id').isInt();
+    req.checkBody('accountId', 'Please provide an integer account id').isInt();
+    req.checkBody('productId', 'Please provide an integer product id').isInt();
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
-        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+        var account_id = req.body.accountId;
+        var product_id = req.body.productId;
+        Checklist.getCheckListForAccountIdProductId(account_id, product_id).then(function(checklist) {
             if (checklist) {
                 var doc = new PDFDocument({
                     Title: 'Export'

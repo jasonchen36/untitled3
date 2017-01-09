@@ -25,9 +25,13 @@ var Checklist = {
         });
     },
 
-    getCheckListForQuoteId: function(quoteId) {
-        if ((!quoteId) || (quoteId.length === 0)) {
-            return Promise.reject('No quoteId specified!');
+    getCheckListForAccountIdProductId: function(accountId, productId) {
+        if ((!accountId) || (accountId.length === 0)) {
+            return Promise.reject('No accountId specified!');
+        }
+
+        if ((!productId) || (productId.length === 0)) {
+            return Promise.reject('No productId specified!');
         }
 
         var checklistSQL = 'SELECT DISTINCT cr.checklist_item_id, ci.name FROM answers AS a \
@@ -37,9 +41,9 @@ var Checklist = {
                             JOIN checklist_items AS ci \
                                  ON ci.id = cr.checklist_item_id \
                             WHERE a.tax_return_id IN( \
-                                 SELECT tax_return_id FROM quotes_tax_returns \
-                                 WHERE quote_id = ?);';
-        return db.knex.raw(checklistSQL, [quoteId]).then(function(checklistSQLResults) {
+                                 SELECT id FROM tax_returns \
+                                 WHERE account_id = ? and product_id = ?);';
+        return db.knex.raw(checklistSQL, [accountId, productId]).then(function(checklistSQLResults) {
             var checklistArr = [];
             if (checklistSQLResults[0]) { // allow for undefined
                 checklistArr = checklistSQLResults[0];
