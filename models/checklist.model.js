@@ -25,9 +25,13 @@ var Checklist = {
         });
     },
 
-    getCheckListForQuoteId: function(quoteId) {
-        if ((!quoteId) || (quoteId.length === 0)) {
-            return Promise.reject('No quoteId specified!');
+    getCheckListForAccountIdProductId: function(accountId, productId) {
+        if ((!accountId) || (accountId.length === 0)) {
+            return Promise.reject('No accountId specified!');
+        }
+
+        if ((!productId) || (productId.length === 0)) {
+            return Promise.reject('No productId specified!');
         }
 
         var checklistSQL = 'SELECT DISTINCT cr.checklist_item_id, ci.name FROM answers AS a \
@@ -37,9 +41,9 @@ var Checklist = {
                             JOIN checklist_items AS ci \
                                  ON ci.id = cr.checklist_item_id \
                             WHERE a.tax_return_id IN( \
-                                 SELECT tax_return_id FROM quotes_tax_returns \
-                                 WHERE quote_id = ?);';
-        return db.knex.raw(checklistSQL, [quoteId]).then(function(checklistSQLResults) {
+                                 SELECT id FROM tax_returns \
+                                 WHERE account_id = ? and product_id = ?);';
+        return db.knex.raw(checklistSQL, [accountId, productId]).then(function(checklistSQLResults) {
             var checklistArr = [];
             if (checklistSQLResults[0]) { // allow for undefined
                 checklistArr = checklistSQLResults[0];
@@ -51,10 +55,12 @@ var Checklist = {
             }
 
             var documentsSql = 'SELECT d.*, tr.product_id, tr.account_id, tr.status_id, tr.first_name, tr.last_name \
-                                FROM documents AS d \
+                                    FROM documents AS d \
                                 LEFT JOIN tax_returns AS tr ON tr.id = d.tax_return_id \
-                                WHERE d.quote_id = ?';
-            return db.knex.raw(documentsSql, [quoteId]).then(function(documentsSqlResults) {
+                                WHERE d.tax_return_id IN( \
+                                    SELECT id FROM tax_returns \
+                                    WHERE account_id = ? and product_id = ?)';
+            return db.knex.raw(documentsSql, [accountId, productId]).then(function(documentsSqlResults) {
                 var dbDocs = documentsSqlResults[0];
                 var documents = [];
                 var docObj = {};
@@ -87,9 +93,9 @@ var Checklist = {
                                 JOIN tax_returns AS tr \
                                   ON tr.id = a.tax_return_id \
                                 WHERE a.tax_return_id IN( \
-                                   SELECT tax_return_id FROM quotes_tax_returns \
-                                   WHERE quote_id = ?)';
-                return db.knex.raw(filerSql, [quoteId]).then(function(filerSqlResults) {
+                                   SELECT id FROM tax_returns \
+                                    WHERE account_id = ? and product_id = ?)';
+                return db.knex.raw(filerSql, [accountId, productId]).then(function(filerSqlResults) {
                     var dbFilers = filerSqlResults[0];
 
                     _.forEach(checklistArr, function(checklistItem) {
@@ -111,7 +117,7 @@ var Checklist = {
                     resultObj.checklistitems = checklistArr;
                     resultObj.additionalDocuments = _.filter(documents, function(o) {
                         return (o.checkListItemId === null || o.checkListItemId === 0); // no checklistItemId
-                    });;
+                    });
                     return(resultObj);
                 });
             });
