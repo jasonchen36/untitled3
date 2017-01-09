@@ -22,6 +22,8 @@ module.exports = function (router) {
         .put(tax_return.updateTaxReturnById);
     router.route('/tax_return')
         .post(tax_return.createTaxReturn);
+    router.route('/tax_returns')
+        .post(tax_return.createTaxReturns);
     router.route('/tax_return/:id/answers')
         .post(tax_return.createAnswer)
         .get(tax_return.listAnswers);
