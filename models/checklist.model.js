@@ -54,7 +54,7 @@ var Checklist = {
             var documentsSql = 'SELECT d.*, tr.product_id, tr.account_id, tr.status_id, tr.first_name, tr.last_name \
                                     FROM documents AS d \
                                 LEFT JOIN tax_returns AS tr ON tr.id = d.tax_return_id \
-                                WHERE d.tax_return_id IN( \
+                                WHERE ISNULL(d.tax_return_id) OR d.tax_return_id IN( \
                                     SELECT DISTINCT tr.id FROM quote AS q \
                                     JOIN tax_returns AS tr ON tr.account_id = q.account_id AND tr.product_id = q.product_id \
                                     WHERE q.id = ?);';
