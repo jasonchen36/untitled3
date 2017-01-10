@@ -4,6 +4,7 @@
 
 var db = require('../services/db');
 var crypto = require('crypto');
+var _ = require('lodash');
 
 var User = {
     findAllCustomers: function() {
@@ -12,7 +13,33 @@ var User = {
             return(usersSqlResults[0]);
         });
     },
+    findAllCustomersFiltered: function(filters, taxProId) {
 
+        // if taxpro not included, take from filter
+        taxProId = taxProId ? taxProId : filters['taxPro'];
+
+        if(!filters) {
+          return findAllCustomers();
+        }
+
+        var sql = {sql:'SELECT * FROM users',params:[]};
+     
+        sql = concatenateSql(sql,joinUserPermissions(taxProId));
+
+        sql = concatenateSql(sql,{sql:' WHERE 1=1',params:[]});
+
+        sql = concatenateSql(sql, filterbyEmailAndName(filters));
+
+        sql = concatenateSql(sql, filterByRole(filters));
+      
+        var possibleOrderByValues=[{key:'lastName',val:'last_name'},{key:'lastUpdated',val:'user_updated_at'}];
+
+        sql = concatenateSql(sql, getOrderBySQL(filters,possibleOrderByValues));
+
+        return db.knex.raw(sql.sql, sql.params).then(function(usersSqlResults) {
+            return(usersSqlResults[0]);
+        });
+    },
     findById: function(id) {
         if ((!id) || (id.length === 0)) {
           return Promise.reject(new Error('findById() No id specified!'));
@@ -187,6 +214,80 @@ var User = {
 //        }
 //
 //    }
+};
+
+/// Get OrderBySQL
+/// filters = {orderBy:'lastName',orderAscending:'true'}
+/// possibleOrderByValues = [{key:'lastName',val:'last_name'},{key:'updatedOn',val:'updated_'on}]
+/// orderBy = 'key passed in with value to translate to a query on table
+/// key = passed in key. val = column name
+/// orderAscending = order by ascending or descending if ordered by.
+var getOrderBySQL = function(filters,possibleOrderByValues) {
+  var result = {sql:'',params:[],hasSql:false};
+
+  var orderByVal = _.find(possibleOrderByValues, function(vals) { return vals.key===filters['orderBy']; });
+
+  if ( filters['orderBy'] && orderByVal) {
+      result.hasSql=true;
+      result.sql+=' ORDER BY '+orderByVal.val;
+ 
+      if ( filters['orderAscending'] ) {
+          if(filters['orderAscending'] === 'false') {
+              result.sql+=' DESC';
+          } else {
+              result.sql+=' ASC';
+          }
+      }
+  }
+
+  return result;
+};
+
+var joinUserPermissions = function(taxProId) {
+    var result = {sql:'',params:[]};
+
+    if(taxProId) {
+      result.sql+=' JOIN users_taxpros ON customer_details.taxpro_id=users.id AND customer_details.taxpro_id=?'
+      result.params = _.concat(result.params,taxProId);
+      // show all users with all roles
+    } else {
+      result.sql+=' LEFT JOIN users_taxpros ON customer_details.taxpro_id=users.id'
+    }
+
+    return result;
+};
+
+var filterbyEmailAndName = function(filters) {
+    var result = { sql:'',params:[]};
+
+    // Filter email & last name on Q.
+    if( filters['q'] ) {
+        result.sql+=' AND ( email LIKE CONCAT("%",?,"%") OR last_name LIKE CONCAT("%",?,"%") OR first_name LIKE CONCAT("%",?,"%") OR CONCAT(first_name," ",last_name) LIKE CONCAT("%",?,"%")) ';
+        results.params = _.concat(result.params,filters['q'],filters['q']);
+    }
+
+    return result;
+};
+
+var filterByRole = function(filters) {
+    var result = { sql:'',params:[]};
+
+    if( filters['role'] ) {
+        result.sql+=' AND role = ?';
+        result.params = _.concat(result.params,filters['role']);
+    }
+
+    return result;
+};
+
+/// concatenates the sql and params for sql results in format:
+// {sql:'initial sql', params:['array of params']
+var concatenateSql = function(initial,second) {
+    var result = { sql:'',params:[]};
+
+    result.sql+=initial.sql+second.sql;
+    result.params = _.concat(initial.params, second.params);
+    return result;
 };
 
 module.exports = User;

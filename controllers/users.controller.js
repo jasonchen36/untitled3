@@ -291,9 +291,23 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.list = function(req, res) {
+    var queryParams = req.query ? req.query: {};
+    var userRole = req.user.role;
+
     // TODO look into passport and roles
     if (req.user.role === 'Admin') {
-        User.findAllCustomers().then(function(users) {
+        User.findAllCustomersFiltered(queryParams, userRole).then(function(users) {
+            _.forEach(users, function(user) {
+                delete user.hashed_password;
+                delete user.salt;
+            });
+            res.status(200).send(users);
+        });
+    } else if(req.user.role === 'TaxPro') {
+        // filter out for users with this taxpro's id.
+        queryParams.taxPro=req.user.id;
+
+        User.findAllCustomersFiltered(queryParams, userRole).then(function(users) {
             _.forEach(users, function(user) {
                 delete user.hashed_password;
                 delete user.salt;
