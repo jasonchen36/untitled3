@@ -27,7 +27,7 @@ var Checklist = {
 
     getCheckListForQuoteId: function(quoteId) {
         if ((!quoteId) || (quoteId.length === 0)) {
-            return Promise.reject('No quoteId specified!');
+            return Promise.reject(new Error('No quoteId specified!'));
         }
 
         var checklistSQL = 'SELECT DISTINCT cr.checklist_item_id, ci.name FROM answers AS a \

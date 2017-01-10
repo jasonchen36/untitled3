@@ -14,7 +14,7 @@ var API_DATE_OUTPUT_FORMAT = config.api.dateOutputFormat;
 var Message = {
     findAllById: function(id) {
         if ((!id) || (id.length === 0)) {
-          return Promise.reject('No id specified!');
+          return Promise.reject(new Error('No id specified!'));
         }
         var messageSql = 'SELECT * FROM messages WHERE client_id = ? or from_id = ?';
         return db.knex.raw(messageSql, [id, id]).then(function(messageSqlResults) {
@@ -28,10 +28,10 @@ var Message = {
 
     findOneById: function(messageId, clientId, isAdmin) {
         if ((!messageId) || (messageId.length === 0)) {
-          return Promise.reject('No messageId specified!');
+          return Promise.reject(new Error('No messageId specified!'));
         }
         if ((!isAdmin) && ((!clientId) || (clientId.length === 0))) {
-          return Promise.reject('No clientId specified!');
+          return Promise.reject(new Error('No clientId specified!'));
         }
         var messageSql = '';
         var messageSqlParams = [];
@@ -53,10 +53,10 @@ var Message = {
 
     create: function(messageObj) {
         if ((!messageObj.client) || (messageObj.client.length === 0)) {
-          return Promise.reject('No client specified!');
+          return Promise.reject(new Error('No client specified!'));
         }
-        if ((!messageObj.from) || (messageObj.from.length === 0)) {
-          return Promise.reject('No from specified!');
+        if (((!messageObj.from) || (messageObj.from.length === 0)) && (messageObj.from !== 0)) {
+          return Promise.reject(new Error('No from specified!'));
         }
 
         var messageInsertSql = 'INSERT INTO messages (status, body, subject, client_id, fromname, from_id, from_role) VALUES(?, ?, ?, ?, ?, ?, ?)';
@@ -77,10 +77,10 @@ var Message = {
 
     setReadStatusById: function(id, clientId) {
         if ((!id) || (id.length === 0)) {
-          return Promise.reject('No id specified!');
+          return Promise.reject(new Error('No id specified!'));
         }
         if ((!clientId) || (clientId.length === 0)) {
-          return Promise.reject('No clientId specified!');
+          return Promise.reject(new Error('No clientId specified!'));
         }
         var messageSql = 'UPDATE messages SET status="read" WHERE id = ? AND client_id = ?';
         return db.knex.raw(messageSql, [id, clientId]);
