@@ -30,7 +30,6 @@ var sendNotification = function( user, notificationType, data) {
             var message = config.email.welcomeMessage;
 
             notificationPromises.push(mailService.send(user, emailTemplate, data));
-            notificationPromises.push(pushService.send(user, message));
             notificationPromises.push(systemMessageService.create(user.id, subject, message));
             break;
         case NotificationType.PASSWORD_RESET:
