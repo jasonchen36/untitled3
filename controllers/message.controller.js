@@ -16,7 +16,7 @@ var Message = require('../models/message.model');
 var _ = require('underscore');
 var config = require('../config/config');
 var async = require("async");
-var mail = require('../services/mail');
+var mailService = require('../services/mail.service');
 var mailclient = require('../services/mailclient2'); // just here for initiaL TEST
 
 /*******************************************************************************

@@ -42,12 +42,17 @@ module.exports = {
         templates: {
             welcome: 'welcome',
             password_reset: 'password_reset',
+            tax_return_submitted: 'tax_return_submitted',
             comment: 'comment',
             finish_questionnaire: 'questionnaire_finished',
             payment: 'payment',
             profile_created: 'profile_created',
             document_uploaded: 'document_uploaded'
-        }
+        },
+        submittedMessage: 'This is an automated message to let you know your taxpro will be assigned to you shortly.  In the meantime you can access your customized tax checklist by going to MY DOCUMENTS.  Once you have your documents ready you can easily upload them into MY DOCUMENTS for your taxpro to process.  If at any time you have a question for us simply leave us a message or call 1-855…..to be connected with a TAXplan Customer Service Rep.',
+        submittedSubject: 'Tax return submitted',
+        welcomeMessage: 'Thank you for choosing TAXplan--welcome to the TAXplanning Revolution!',
+        welcomeSubject: 'Thank you for choosing TAXplan--welcome to the TAXplanning Revolution!'
     },
     onesignal: {
         restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,

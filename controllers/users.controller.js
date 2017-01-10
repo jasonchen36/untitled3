@@ -9,13 +9,14 @@ var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var _ = require('underscore');
 var config = require('../config/config');
-var mail = require('../services/mail');
+var mailService = require('../services/mail.service');
 var async = require("async");
 var db = require('../services/db');
 var validator = require('express-validator');
 var User = require('../models/user.model');
 var Account = require('../models/account.model');
 var logger = require('../services/logger.service');
+var notificationService = require('../services/notification.service');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -51,7 +52,7 @@ exports.createResetKey = function(req, res) {
                     };
                     logger.info('Sending password reset email to user ' + user.email);
                     logger.debug('reset_url: ' + variables.reset_url);
-                    mail.send(config.email.templates.password_reset, user.email, variables);
+                    notificationService.sendNotification(user, notificationService.NotificationType.PASSWORD_RESET, variables)
                     res.status(200).send();
                 });
             } else {
@@ -213,7 +214,7 @@ function createUserAndSendEmail(userObj) {
             var variables = {
                 name: user.first_name
             };
-            mail.send(config.email.templates.welcome, user.email, variables);
+            return notificationService.sendNotification(user, notificationService.NotificationType.WELCOME, variables);
         };
 
         var notifyAdminAbout = function(user) {
@@ -221,15 +222,16 @@ function createUserAndSendEmail(userObj) {
                 name: user.first_name,
                 email: user.email
             };
-            mail.send(config.email.templates.profile_created, config.email.admin, variables);
+            return mailService.send(user, config.email.templates.profile_created, config.email.admin, variables);
         };
 
         return User.findByEmail(userObj.email).then(function(user) {
-                  sendWelcomeEmailTo(user);
-//                  notifyAdminAbout(user);
+            return sendWelcomeEmailTo(user).then(function() {
+//              return notifyAdminAbout(user);
 
-            var token = createToken(user);
-            return token;
+                var token = createToken(user);
+                return token;
+            });
         });
     });
 }
