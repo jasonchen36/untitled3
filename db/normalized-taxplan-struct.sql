@@ -175,14 +175,6 @@ CREATE TABLE `quotes_line_items` (
   UNIQUE KEY `UNIQUE_ROW` (`quote_id`,`tax_return_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `quotes_tax_returns` (
-  `quote_id` int(11) NOT NULL,
-  `tax_return_id` int(11) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`quote_id`,`tax_return_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
