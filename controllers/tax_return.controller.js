@@ -18,12 +18,107 @@ var Dependant = require('../models/dependant.model');
 var Document = require('../models/document.model');
 var validator = require('express-validator');
 var cacheService = require('../services/cache.service');
+var Promise = require('bluebird');
 
 // boilerplate
 var _ = require('underscore');
 var moment = require('moment');
 var config = require('../config/config');
 var API_DATE_INPUT_FORMAT = config.api.dateInputFormat;
+
+/*******************************************************************************
+ ENDPOINT
+ POST /tax_returns
+
+ INPUT BODY:
+ {
+   taxReturns: [
+     {
+       "accountId": 8,                      MANDATORY
+       "productId": 1,                      MANDATORY
+       "firstName": "Carmela"               MANDATORY
+     },
+     {
+       "accountId": 8,                      MANDATORY
+       "productId": 1,                      MANDATORY
+       "firstName": "Pier"                  MANDATORY
+     }
+   ]
+ }
+
+ RESPONSE:
+ 200 OK
+ [
+   {
+     "taxReturnId": 101
+   },
+   {
+     "taxReturnId": 102
+   }
+ ]
+
+ ******************************************************************************/
+exports.createTaxReturns = function (req, res) {
+    req.checkBody('taxReturns', 'Please provide array of taxReturns').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+
+        var createTaxReturnPromise = function(taxReturn) {
+            var accountId = taxReturn.accountId;
+            var productId = taxReturn.productId;
+            var firstName = taxReturn.firstName;
+            var filerType = taxReturn.filerType;
+            var status = taxReturn.status;
+
+            // check that accountId exists
+            return Account.findById(accountId).then(function(account) {
+                if ((!account) || (account.length === 0)) {
+                    res.status(404).send({ msg: 'Invalid accountID' });
+                } else {
+                    // check that productId exists
+                    return Product.findById(productId).then(function(product) {
+                        if ((!product) || (product.length === 0)) {
+                            res.status(404).send({ msg: 'Invalid productID' });
+                        } else {
+                            var taxReturnObj = {};
+                            taxReturnObj.accountId = accountId;
+                            taxReturnObj.productId = productId;
+                            taxReturnObj.firstName = firstName;
+                            taxReturnObj.filerType = filerType;
+                            taxReturnObj.status = status;
+
+                            return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
+                                var resultObj = {};
+                                resultObj.accountId = accountId;
+                                resultObj.productId = productId;
+                                resultObj.taxReturnId = taxReturnId;
+                                resultObj.filerType = filerType;
+                                resultObj.status = status;
+                                return Promise.resolve(resultObj);
+
+                            });
+                        }
+                    });
+                }
+            });
+        };
+
+
+        var resultArr = [];
+        var createTaxReturnPromises = [];
+        _.forEach(req.body.taxReturns, function(taxReturn) {
+            createTaxReturnPromises.push(createTaxReturnPromise(taxReturn))
+        });
+
+        Promise.each(createTaxReturnPromises, function(taxReturnResult) {
+            resultArr.push(taxReturnResult);
+        }).then(function() {
+            res.status(200).json(resultArr);
+        });
+    }
+};
 
 /*******************************************************************************
  ENDPOINT

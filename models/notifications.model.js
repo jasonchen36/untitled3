@@ -8,10 +8,10 @@ var Promise = require('bluebird');
 var Notifications = {
     create: function(notificationObj) {
         if ((!notificationObj.user_id) || (notificationObj.user_id.length === 0)) {
-          return Promise.reject('No user_id specified!');
+          return Promise.reject(new Error('No user_id specified!'));
         }
         if ((!notificationObj.message) || (notificationObj.message.length === 0)) {
-          return Promise.reject('No message specified!');
+          return Promise.reject(new Error('No message specified!'));
         }
 
         var notificationInsertSql = 'INSERT INTO notifications (user_id, message, is_read) VALUES(?, ?, 0)';
@@ -59,7 +59,7 @@ var Notifications = {
 
     setReadStatusById: function(id) {
         if ((!id) || (id.length === 0)) {
-          return Promise.reject('No id specified!');
+          return Promise.reject(new Error('No id specified!'));
         }
 
         var notificationsSql = 'UPDATE notifications SET is_read = 1 WHERE id = ?';

@@ -11,6 +11,7 @@ var config = require('../config/config');
 var Promise = require('bluebird');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
+var notificationService = require('../services/notification.service');
 var Document = require('../models/document.model');
 var Quote = require('../models/quote.model');
 var Product = require('../models/product.model');
@@ -350,7 +351,12 @@ exports.submit = function (req, res) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
                         return TaxReturn.setAllsubmittedForAccountId(accountId, productId).then(function() {
-                            res.status(200).send();
+                            var data = {};
+                            data.name = req.user.first_name;
+                            notificationService.sendNotification(notificationService.NotificationType.TAX_RETURN_SUBMITTED, req.user, data).then(function() {
+console.log('resolved');
+                                res.status(200).send();
+                            });
                         });
 
                     }
@@ -588,7 +594,7 @@ exports.deleteDocumentById = function (req, res) {
 ENDPOINT
 GET /quote/:id/checklist
 
-Params:
+PARAMS
 quoteId
 
 RESPONSE:
@@ -650,7 +656,7 @@ exports.getChecklist = function (req, res) {
 ENDPOINT
 GET /quote/:id/checklist/PDF
 
-Params:
+PARAMS
 quoteId
 
 RESPONSE:
