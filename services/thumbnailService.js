@@ -40,7 +40,7 @@ function fileExists(path) {
             return false;
         }
 
-        console.log("Exception fs.statSync (" + path + "): " + e);
+        logger.error("Exception fs.statSync (" + path + "): " + e);
         throw e; // something else went wrong, we don't have rights, ...
     }
 }
