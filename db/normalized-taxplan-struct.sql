@@ -240,8 +240,10 @@ CREATE TABLE `users` (
   `birthday` varchar(45) DEFAULT NULL,
   `reset_key` varchar(100) DEFAULT NULL,
   `account_id` int(11) unsigned DEFAULT NULL,
+  `profile_picture` varchar(255) DEFAULT NULL,
+  `taxpro_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=223 DEFAULT CHARSET=latin1;
 
 CREATE TABLE `values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
