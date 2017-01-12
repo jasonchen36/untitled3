@@ -82,7 +82,7 @@ var User = {
         }
 
         return db.knex.raw(userInsertSql, userInsertSqlParams).then(function(userInsertSqlResults) {
-          return userInsertSqlResults[0][0];
+          return userInsertSqlResults[0].insertId;
         });
     },
 

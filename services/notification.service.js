@@ -20,8 +20,13 @@ var NotificationType = {
 };
 
 
-var sendNotification = function( user, notificationType, data) {
-    var emailTemplate = NotificationType.emailTemplates[notificationType].name;
+var sendNotification = function(user, notificationType, data) {
+    if ((notificationType > 0) || (notificationType <= NotificationType.emailTemplates.length)) {
+        var emailTemplate = NotificationType.emailTemplates[notificationType].name;
+    } else {
+        logger.error('Invalid Notification type = ' + notificationType + ' notifications cannot be sent!');
+        return Promise.resolve();
+    }
 
     notificationPromises = [];
     switch(notificationType) {
@@ -30,21 +35,21 @@ var sendNotification = function( user, notificationType, data) {
             var message = config.email.welcomeMessage;
 
             notificationPromises.push(mailService.send(user, emailTemplate, data));
-            notificationPromises.push(systemMessageService.create(user.id, subject, message));
+            notificationPromises.push(systemMessageService.create(user, subject, message));
             break;
         case NotificationType.PASSWORD_RESET:
             var message = config.email.passwordResetMessage;
-            notificationPromises.push(mailService.send(user, emailTemplate, data));
+            var overrideUserPreferences = true; // password reset email is sent regardless of user notification settings
+            notificationPromises.push(mailService.send(user, emailTemplate, data, overrideUserPreferences));
             notificationPromises.push(pushService.send(user, message));
             break;
         case NotificationType.TAX_RETURN_SUBMITTED:
             var subject = config.email.submittedSubject;
             var message = config.email.submittedMessage;
-            var deviceId = user.id;
 
             return mailService.send(user, emailTemplate, data);
             notificationPromises.push(pushService.send(user, message));
-            notificationPromises.push(systemMessageService.create(user.id, subject, config.email.submittedMessage));
+            notificationPromises.push(systemMessageService.create(user, subject, config.email.submittedMessage));
             break;
         default:
             logger.error('Unknown notification type: ' + notificationType);

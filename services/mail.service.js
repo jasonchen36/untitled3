@@ -2,6 +2,7 @@ var postageapp = null;
 var config = require('../config/config');
 var logger = require('../services/logger.service');
 var Promise = require('bluebird');
+var Account = require('../models/account.model');
 
 if (config.email.enabled === 'false') {
     logger.warn('EMAIL IS DISABLED BY config.emails.enabled=false');
@@ -11,10 +12,25 @@ if (config.email.enabled === 'false') {
     var postageapp = new PostageApp(config.postageapp.api_key);
 }
 
+exports.send = function(user, template, variables, overrideUserPreferences=false) {
+    if (!PostageApp) {
+        logger.warn('mail.service: emails disabled by API config.');
+        return Promise.resolve();
+    }
+    var accountId = user.account_id;
+    return Account.findById(accountId).then(function(account) {
+        if ((account.emailNotifications === 'Yes') || (overrideUserPreferences)) {
+            internalSend(user, template, variables);
+        } else {
+            logger.error('mail.service: email notifications disabled by user preferences.');
+            return Promise.resolve();
+        }
+    });
+};
 
-exports.send = function(user, template, variables) {
+
+var internalSend = function(user, template, variables) {
     var recipient = user.email;
-    var accountId = user.accountId;
 
     if (postageapp) {
         var options = {
