@@ -7,7 +7,7 @@
  */
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
-var _ = require('underscore');
+var _ = require('lodash');
 var config = require('../config/config');
 var mailService = require('../services/mail.service');
 var async = require("async");
@@ -261,9 +261,9 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.me = function(req, res) {
-    delete req.user.hashed_password;
-    delete req.user.salt;
-    res.jsonp(req.user || null);
+  var user = req.user;
+
+  res.jsonp(user ? cleanUserData(user) : null);
 };
 
 /*******************************************************************************
@@ -298,23 +298,17 @@ exports.list = function(req, res) {
 
     // TODO look into passport and roles
     if (req.user.role === 'Admin') {
-        User.findAllCustomersFiltered(queryParams, userRole).then(function(users) {
-            _.forEach(users, function(user) {
-                delete user.hashed_password;
-                delete user.salt;
-            });
-            res.status(200).send(users);
+        User.findAllCustomersFiltered(queryParams).then(function(users) {
+
+            res.status(200).send(cleanUsersData(users));
         });
     } else if(req.user.role === 'TaxPro') {
         // filter out for users with this taxpro's id.
         queryParams.taxPro=req.user.id;
 
-        User.findAllCustomersFiltered(queryParams, userRole).then(function(users) {
-            _.forEach(users, function(user) {
-                delete user.hashed_password;
-                delete user.salt;
-            });
-            res.status(200).send(users);
+        User.findAllCustomersFiltered(queryParams, req.user.id).then(function(users) {
+
+            res.status(200).send(cleanUsersData(users));
         });
     } else {
         res.status(404).send();
@@ -360,9 +354,7 @@ exports.find = function(req, res, err) {
         // TODO need service for this
         User.findById(userId).then(function(user) {
             if (user) {
-                delete user.hashed_password;
-                delete user.salt;
-                res.status(200).send(user);
+                res.status(200).send(cleanUserData(user));
             } else {
                 res.status(404).send();
             }
@@ -455,9 +447,11 @@ exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var user = req.body;
 
+
     if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
-        var keys = ['first_name', 'last_name', 'email', 'phone']; //v2
+        var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id']; //v2
+        
         if (User.isAdmin(req.user)) {
             keys.push('role');
         }
@@ -470,10 +464,10 @@ exports.update = function(req, res, next) {
             _.each(params, function(value, key) {
                 user[key] = value;
             });
-            db.knex('users').update(user).where('id', userId).then(function(userResult) {
-                delete user.hashed_password;
-                delete user.salt;
-                return res.json(user);
+
+            return User.updateById(userId,params)
+            .then(function(userResult) {
+                return res.json(cleanUserData(userResult));
               });
         });
     } else {
@@ -503,4 +497,19 @@ var createToken = function (user) {
     payloadObj.id = user.id;
 
     return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: config.JWTExpires });
+};
+
+var cleanUsersData = function (users) {
+  return _.map(users, function(ul) {
+    return cleanUserData(ul);
+  });
+};
+
+var cleanUserData = function (user) {
+  var cleanedUser = _.merge({},user);
+
+  delete cleanedUser.hashed_password;
+  delete cleanedUser.salt;
+
+  return cleanedUser;
 };

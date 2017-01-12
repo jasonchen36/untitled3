@@ -22,11 +22,12 @@ var User = {
           return findAllCustomers();
         }
 
-        var sql = {sql:'SELECT * FROM users',params:[]};
+        var sql = {sql:'SELECT users.* FROM users', params:[]};
      
-        sql = concatenateSql(sql,joinUserPermissions(taxProId));
+        sql = concatenateSql(sql, {sql:' WHERE 1=1',params:[]});
 
-        sql = concatenateSql(sql,{sql:' WHERE 1=1',params:[]});
+        sql = concatenateSql(sql, filterUserPermissions(taxProId));
+
 
         sql = concatenateSql(sql, filterbyEmailAndName(filters));
 
@@ -40,12 +41,14 @@ var User = {
             return(usersSqlResults[0]);
         });
     },
-    findById: function(id) {
+    findById: function(id,trx) {
         if ((!id) || (id.length === 0)) {
           return Promise.reject(new Error('findById() No id specified!'));
         }
-        var userSql = 'SELECT * FROM users WHERE id = ?';
-        return db.knex.raw(userSql, [id]).then(function(userSqlResults) {
+        var userSql = 'SELECT users.* FROM users WHERE id = ?';
+        var knexConnection = trx ? trx : db.knex;
+
+        return knexConnection.raw(userSql, [id]).then(function(userSqlResults) {
             return(userSqlResults[0][0]);
         });
     },
@@ -111,6 +114,26 @@ var User = {
         return db.knex.raw(userInsertSql, userInsertSqlParams).then(function(userInsertSqlResults) {
           return userInsertSqlResults[0][0];
         });
+    },
+
+  updateById: function(userId, userObj) {
+    return db.knex.transaction(function(trx) {
+        return db.knex('users').transacting(trx).update(userObj).where('id',userId)
+          .then(function(results) {
+            return User.findById(userId,trx);
+          })
+          .then(function(results) {
+            return Promise.all([Promise.resolve(results),trx.commit(results)]);
+          })
+          .catch(function(err) {
+            return trx.rollback(err)
+              .then(function() {
+                return Promise.reject(err);
+              });
+          });
+      }).then(function(results) {
+        return results;
+      });
     },
 
     /**
@@ -216,6 +239,8 @@ var User = {
 //    }
 };
 
+
+
 /// Get OrderBySQL
 /// filters = {orderBy:'lastName',orderAscending:'true'}
 /// possibleOrderByValues = [{key:'lastName',val:'last_name'},{key:'updatedOn',val:'updated_'on}]
@@ -243,17 +268,15 @@ var getOrderBySQL = function(filters,possibleOrderByValues) {
   return result;
 };
 
-var joinUserPermissions = function(taxProId) {
+var filterUserPermissions = function(taxProId) {
     var result = {sql:'',params:[]};
 
     if(taxProId) {
-      result.sql+=' JOIN users_taxpros ON customer_details.taxpro_id=users.id AND customer_details.taxpro_id=?'
+      result.sql+=' AND users.taxpro_id = ?'
       result.params = _.concat(result.params,taxProId);
       // show all users with all roles
-    } else {
-      result.sql+=' LEFT JOIN users_taxpros ON customer_details.taxpro_id=users.id'
-    }
-
+    } 
+   
     return result;
 };
 
@@ -263,7 +286,7 @@ var filterbyEmailAndName = function(filters) {
     // Filter email & last name on Q.
     if( filters['q'] ) {
         result.sql+=' AND ( email LIKE CONCAT("%",?,"%") OR last_name LIKE CONCAT("%",?,"%") OR first_name LIKE CONCAT("%",?,"%") OR CONCAT(first_name," ",last_name) LIKE CONCAT("%",?,"%")) ';
-        results.params = _.concat(result.params,filters['q'],filters['q']);
+        results.params = _.concat(result.params, filters['q'], filters['q'], filters['q'], filters['q']);
     }
 
     return result;
