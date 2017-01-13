@@ -70,7 +70,6 @@ CREATE TABLE `checklist_rules` (
 
 CREATE TABLE `dependants` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `tax_return_id` int(11) NOT NULL,
   `first_name` varchar(255) DEFAULT NULL,
   `last_name` varchar(255) DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
