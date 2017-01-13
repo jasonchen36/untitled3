@@ -21,7 +21,7 @@ var dependant = {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
         var dependantSql = 'SELECT DISTINCT(dependants.id), dependants.first_name, dependants.last_name, dependants.date_of_birth, dependants.relationship, dependants.created_at, dependants.updated_at, dependants.is_shared  FROM dependants JOIN tax_returns_dependants ON dependants.id = tax_returns_dependants.dependant_id WHERE tax_returns_dependants.tax_return_id = ?';
-        return db.knex.raw(dependantSql, [taxReturnId,taxReturnId]).then(function(dependantSqlResults) {
+        return db.knex.raw(dependantSql, [taxReturnId]).then(function(dependantSqlResults) {
             return dependantSqlResults[0];
         });
     },
@@ -31,7 +31,7 @@ var dependant = {
             return Promise.reject(new Error('No dependantId specified!'));
         }
         var dependantSql = 'DELETE FROM dependants WHERE id = ? LIMIT 1';
-        return db.knex.raw(dependantSql, [taxReturnId, dependantId]).then(function(dependantSqlResults) {
+        return db.knex.raw(dependantSql, [dependantId]).then(function(dependantSqlResults) {
             return dependantSqlResults[0];
         });
     },
