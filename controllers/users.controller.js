@@ -7,15 +7,16 @@
  */
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
-var _ = require('underscore');
+var _ = require('lodash');
 var config = require('../config/config');
-var mail = require('../services/mail');
+var mailService = require('../services/mail.service');
 var async = require("async");
 var db = require('../services/db');
 var validator = require('express-validator');
 var User = require('../models/user.model');
 var Account = require('../models/account.model');
 var logger = require('../services/logger.service');
+var notificationService = require('../services/notification.service');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -51,7 +52,7 @@ exports.createResetKey = function(req, res) {
                     };
                     logger.info('Sending password reset email to user ' + user.email);
                     logger.debug('reset_url: ' + variables.reset_url);
-                    mail.send(config.email.templates.password_reset, user.email, variables);
+                    notificationService.sendNotification(user, notificationService.NotificationType.PASSWORD_RESET, variables)
                     res.status(200).send();
                 });
             } else {
@@ -192,7 +193,7 @@ exports.create = function(req, res, next) {
                     var accountObj = {};
                     accountObj.name = userObj.first_name;
                     Account.create(accountObj).then(function(accountResult) {
-                        userObj.accountId = accountResult.insertId;
+                        userObj.accountId = accountResult;
                         createUserAndSendEmail(userObj).then(function(token) {
                             res.json({ token : token });
                         });
@@ -208,12 +209,13 @@ exports.create = function(req, res, next) {
 };
 
 function createUserAndSendEmail(userObj) {
-    return User.create(userObj).then(function() {
+    return User.create(userObj).then(function(userInsertResult) {
+        //userObj.id = userInsertResult;
         var sendWelcomeEmailTo = function(user) {
             var variables = {
                 name: user.first_name
             };
-            mail.send(config.email.templates.welcome, user.email, variables);
+            return notificationService.sendNotification(user, notificationService.NotificationType.WELCOME, variables);
         };
 
         var notifyAdminAbout = function(user) {
@@ -221,15 +223,16 @@ function createUserAndSendEmail(userObj) {
                 name: user.first_name,
                 email: user.email
             };
-            mail.send(config.email.templates.profile_created, config.email.admin, variables);
+            return mailService.send(user, config.email.templates.profile_created, config.email.admin, variables);
         };
 
         return User.findByEmail(userObj.email).then(function(user) {
-                  sendWelcomeEmailTo(user);
-//                  notifyAdminAbout(user);
+            return sendWelcomeEmailTo(user).then(function() {
+//              return notifyAdminAbout(user);
 
-            var token = createToken(user);
-            return token;
+                var token = createToken(user);
+                return token;
+            });
         });
     });
 }
@@ -259,9 +262,9 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.me = function(req, res) {
-    delete req.user.hashed_password;
-    delete req.user.salt;
-    res.jsonp(req.user || null);
+  var user = req.user;
+
+  res.jsonp(user ? cleanUserData(user) : null);
 };
 
 /*******************************************************************************
@@ -291,14 +294,22 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.list = function(req, res) {
+    var queryParams = req.query ? req.query: {};
+    var userRole = req.user.role;
+
     // TODO look into passport and roles
     if (req.user.role === 'Admin') {
-        User.findAllCustomers().then(function(users) {
-            _.forEach(users, function(user) {
-                delete user.hashed_password;
-                delete user.salt;
-            });
-            res.status(200).send(users);
+        User.findAllCustomersFiltered(queryParams).then(function(users) {
+
+            res.status(200).send(cleanUsersData(users));
+        });
+    } else if(req.user.role === 'TaxPro') {
+        // filter out for users with this taxpro's id.
+        queryParams.taxPro=req.user.id;
+
+        User.findAllCustomersFiltered(queryParams, req.user.id).then(function(users) {
+
+            res.status(200).send(cleanUsersData(users));
         });
     } else {
         res.status(404).send();
@@ -344,9 +355,7 @@ exports.find = function(req, res, err) {
         // TODO need service for this
         User.findById(userId).then(function(user) {
             if (user) {
-                delete user.hashed_password;
-                delete user.salt;
-                res.status(200).send(user);
+                res.status(200).send(cleanUserData(user));
             } else {
                 res.status(404).send();
             }
@@ -439,9 +448,11 @@ exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var user = req.body;
 
+
     if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
-        var keys = ['first_name', 'last_name', 'email', 'phone']; //v2
+        var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id']; //v2
+        
         if (User.isAdmin(req.user)) {
             keys.push('role');
         }
@@ -454,10 +465,10 @@ exports.update = function(req, res, next) {
             _.each(params, function(value, key) {
                 user[key] = value;
             });
-            db.knex('users').update(user).where('id', userId).then(function(userResult) {
-                delete user.hashed_password;
-                delete user.salt;
-                return res.json(user);
+
+            return User.updateById(userId,params)
+            .then(function(userResult) {
+                return res.json(cleanUserData(userResult));
               });
         });
     } else {
@@ -487,4 +498,19 @@ var createToken = function (user) {
     payloadObj.id = user.id;
 
     return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: config.JWTExpires });
+};
+
+var cleanUsersData = function (users) {
+  return _.map(users, function(ul) {
+    return cleanUserData(ul);
+  });
+};
+
+var cleanUserData = function (user) {
+  var cleanedUser = _.merge({},user);
+
+  delete cleanedUser.hashed_password;
+  delete cleanedUser.salt;
+
+  return cleanedUser;
 };

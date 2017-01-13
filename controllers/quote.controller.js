@@ -11,6 +11,7 @@ var config = require('../config/config');
 var Promise = require('bluebird');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
+var notificationService = require('../services/notification.service');
 var Document = require('../models/document.model');
 var Quote = require('../models/quote.model');
 var Product = require('../models/product.model');
@@ -350,7 +351,11 @@ exports.submit = function (req, res) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
                         return TaxReturn.setAllsubmittedForAccountId(accountId, productId).then(function() {
-                            res.status(200).send();
+                            var data = {};
+                            data.name = req.user.first_name;
+                            notificationService.sendNotification(notificationService.NotificationType.QUOTE_SUBMITTED, req.user, data).then(function() {
+                                res.status(200).send();
+                            });
                         });
 
                     }
