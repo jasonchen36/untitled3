@@ -62,8 +62,19 @@ var Question = {
       if ((!categoryId) || (categoryId.length === 0)) {
           return Promise.reject(new Error('No categoryId specified!'));
       }
-      var questionSql = 'SELECT * FROM products_questions AS pq JOIN questions AS q ON q.id = pq.question_id AND q.category_id = ? WHERE pq.product_id = ?' ;
-      return db.knex.raw(questionSql, [categoryId,productId]).then(function(questionSqlResults) {
+
+
+      var questionSql = 'SELECT \
+                           pq.*, \
+                           q.*, \
+                           c.name AS category_name, \
+                           c.displaytext AS category_displaytext, \
+                           c.secondarytext AS category_secondarytext \
+                         FROM products_questions AS pq \
+                         JOIN questions AS q ON q.id = pq.question_id AND q.category_id = ? \
+                         JOIN categories AS c ON c.id = q.category_id \
+                         WHERE pq.product_id = ?';
+      return db.knex.raw(questionSql, [categoryId, productId]).then(function(questionSqlResults) {
           return questionSqlResults[0];
       });
     },
