@@ -896,7 +896,6 @@ exports.updateDependant = function (req, res) {
                 if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
                 if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
                 if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
-                if (req.params.taxReturnId) { dependantObj.tax_return_id = req.params.taxReturnId; }
                 if (req.body.isShared) { dependantObj.is_shared = req.body.isShared; }
 
                 return Dependant.update(dependantId,dependantObj).then(function() {
@@ -905,7 +904,6 @@ exports.updateDependant = function (req, res) {
                     resultObj.lastName = lastName;
                     resultObj.dateOfBirth = dateOfBirth;
                     resultObj.relationship = relationship;
-                    resultObj.taxReturnId = taxReturnId;
                     resultObj.isShared = isShared;
 
                     res.status(200).json(resultObj);
