@@ -1066,3 +1066,43 @@ exports.linkExistingDependants = function (req, res) {
         });
     }
 };
+
+
+/*******************************************************************************
+ ENDPOINT
+ POST admin/tax_returns/statuses
+
+ Params:
+ none
+
+ RESPONSE:
+ [
+  {
+    "id": 0,
+    "name": "To Be Assigned",
+    "display_text": "TAXpro To Be Assigned",
+    "created_at": "2016-12-23T20:42:50.000Z",
+    "updated_at": "2016-12-23T21:37:15.000Z"
+  },
+  {
+    "id": 1,
+    "name": "Assigned",
+    "display_text": "In Progress",
+    "created_at": "2016-11-30T22:57:58.000Z",
+    "updated_at": "2016-12-23T21:37:41.000Z"
+  }]
+
+ *******************************************************************************/
+exports.getAvailableTaxReturnStatuses = function (req, res) {
+  var errors = req.validationErrors();
+  if (errors) {
+    res.status(400).send(errors);
+  } else {
+
+    // check that dependantId exists
+    TaxReturn.getTaxReturnStatuses()
+      .then(function(results) {
+        return res.status(200).json(results);
+    });
+  }
+};
