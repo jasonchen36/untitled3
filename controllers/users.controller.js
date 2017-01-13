@@ -193,7 +193,7 @@ exports.create = function(req, res, next) {
                     var accountObj = {};
                     accountObj.name = userObj.first_name;
                     Account.create(accountObj).then(function(accountResult) {
-                        userObj.accountId = accountResult.insertId;
+                        userObj.accountId = accountResult;
                         createUserAndSendEmail(userObj).then(function(token) {
                             res.json({ token : token });
                         });
@@ -209,7 +209,8 @@ exports.create = function(req, res, next) {
 };
 
 function createUserAndSendEmail(userObj) {
-    return User.create(userObj).then(function() {
+    return User.create(userObj).then(function(userInsertResult) {
+        //userObj.id = userInsertResult;
         var sendWelcomeEmailTo = function(user) {
             var variables = {
                 name: user.first_name
