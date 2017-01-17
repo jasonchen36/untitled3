@@ -23,6 +23,7 @@ exports.resize = function(sourcePath, destinationPath, newWidth) {
             });
         }).catch(function(err) {
             // not a supported image format
+            logger.error(err.stack)
             return Promise.resolve();
         });
     } else {
