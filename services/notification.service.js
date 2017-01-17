@@ -33,6 +33,7 @@ var sendNotification = function(user, notificationType, data) {
         case NotificationType.WELCOME:
             var subject = config.email.welcomeSubject;
             var message = config.email.welcomeMessage;
+            message = message.replace('{{firstName}}', user.first_name);
 
             notificationPromises.push(mailService.send(user, emailTemplate, data));
             notificationPromises.push(systemMessageService.create(user, subject, message));
