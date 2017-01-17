@@ -21,7 +21,10 @@ var document = {
         if ((!documentObj.quoteId) || (documentObj.quoteId.length === 0)) {
             return Promise.reject(new Error('No quoteId specified!'));
         }
-        if ((!documentObj.checklistItemId) || (documentObj.checklistItemId.length === 0)) {
+        var checklistItemIdExists = (documentObj.hasOwnProperty('checklistItemId'));
+        var checklistItemIdIsZero = (checklistItemIdExists) && (documentObj.checklistItemId === 0);
+        var checklistItemIdNotSpecified = (!checklistItemIdExists) || (documentObj.checklistItemId.length === 0);
+        if ((!checklistItemIdIsZero) && checklistItemIdNotSpecified) {
             return Promise.reject(new Error('No checklistItemId specified!'));
         }
         if ((!documentObj.name) || (documentObj.name.length === 0)) {
