@@ -61,7 +61,8 @@ var Checklist = {
                                 FROM documents as d \
                                 JOIN quote as q on d.quote_id = q.id \
                                 JOIN tax_returns AS tr ON tr.account_id = q.account_id AND tr.product_id = q.product_id \
-                                WHERE q.id = ? AND d.tax_return_id is null;';
+                                WHERE q.id = ? AND d.tax_return_id is null \
+                                group by d.checklist_item_id, q.id, d.created_at;';
             return db.knex.raw(documentsSql, [quoteId, quoteId]).then(function(documentsSqlResults) {
                 var dbDocs = documentsSqlResults[0];
                 var documents = [];
