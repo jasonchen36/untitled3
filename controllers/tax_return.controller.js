@@ -70,6 +70,9 @@ exports.createTaxReturns = function (req, res) {
             var firstName = taxReturn.firstName;
             var filerType = taxReturn.filerType;
             var status = taxReturn.status;
+            var sin = taxReturn.sin;
+            var prefix = taxReturn.prefix;
+            var middleInitial = taxReturn.middleInitial;
 
             // check that accountId exists
             return Account.findById(accountId).then(function(account) {
@@ -87,6 +90,9 @@ exports.createTaxReturns = function (req, res) {
                             taxReturnObj.firstName = firstName;
                             taxReturnObj.filerType = filerType;
                             taxReturnObj.status = status;
+                            taxReturnObj.sin = sin;
+                            taxReturnObj.prefix = prefix;
+                            taxReturnObj.middleInitial = middleInitial;
 
                             return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                                 var resultObj = {};
@@ -95,6 +101,9 @@ exports.createTaxReturns = function (req, res) {
                                 resultObj.taxReturnId = taxReturnId;
                                 resultObj.filerType = filerType;
                                 resultObj.status = status;
+                                resultObj.sin = sin;
+                                resultObj.prefix = prefix;
+                                resultObj.middleInitial = middleInitial;
                                 return Promise.resolve(resultObj);
                             }).catch(function(err) {
                                 logger.error(err.message);
@@ -119,7 +128,7 @@ exports.createTaxReturns = function (req, res) {
         var resultArr = [];
         var createTaxReturnPromises = [];
         _.forEach(req.body.taxReturns, function(taxReturn) {
-            createTaxReturnPromises.push(createTaxReturnPromise(taxReturn))
+            createTaxReturnPromises.push(createTaxReturnPromise(taxReturn));
         });
 
         return Promise.each(createTaxReturnPromises, function(taxReturnResult) {
@@ -164,6 +173,9 @@ exports.createTaxReturn = function (req, res) {
         var firstName = req.body.firstName;
         var filerType = req.body.filerType;
         var status = req.body.status;
+        var sin = req.body.sin;
+        var prefix = req.body.prefix;
+        var middleInitial = req.body.middleInitial;
 
         // check that accountId exists
         return Account.findById(accountId).then(function(account) {
@@ -181,6 +193,9 @@ exports.createTaxReturn = function (req, res) {
                         taxReturnObj.firstName = firstName;
                         taxReturnObj.filerType = filerType;
                         taxReturnObj.status = status;
+                        taxReturnObj.sin = sin;
+                        taxReturnObj.prefix = prefix;
+                        taxReturnObj.middleInitial = middleInitial;
 
                         return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                             var resultObj = {};
@@ -189,6 +204,9 @@ exports.createTaxReturn = function (req, res) {
                             resultObj.taxReturnId = taxReturnId;
                             resultObj.filerType = filerType;
                             resultObj.status = status;
+                            resultObj.sin = sin;
+                            resultObj.prefix = prefix;
+                            resultObj.middleInitial = middleInitial;
 
                             res.status(200).json(resultObj);
                         }).catch(function(err) {
@@ -253,7 +271,11 @@ exports.updateTaxReturnById = function (req, res) {
             (!req.body.dateOfBirth) &&
             (!req.body.canadianCitizen) &&
             (!req.body.authorizeCra) &&
-            (!req.body.filerType)
+            (!req.body.filerType) &&
+            (!req.body.status) &&
+            (!req.body.sin) &&
+            (!req.body.prefix) &&
+            (!req.body.middleInitial)
         ) {
             res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
         } else {
@@ -264,6 +286,10 @@ exports.updateTaxReturnById = function (req, res) {
           if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
           if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
           if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
+          if (req.body.status) {taxReturnObj.status = req.body.status; }
+          if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
+          if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
+          if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
 
           return TaxReturn.update(taxReturnId, taxReturnObj)
             .then(function(taxReturnId) {
