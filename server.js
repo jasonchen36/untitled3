@@ -56,7 +56,9 @@ app.enable('jsonp callback');
 app.use(compress());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(expressValidator([])); // this line must be immediately after express.bodyParser()!
+
+app.use(expressValidator({})); // this line must be immediately after express.bodyParser()!
+
 // Using multer for file upload as bodyParser file uploads are depricated in Express 4.x
 // see: http://stackoverflow.com/questions/23340548/how-to-upload-files-use-expressjs-4
 // 'uploadFileName' below needs to be a field name on the upload form
