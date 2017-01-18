@@ -140,8 +140,8 @@ exports.create = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountId = req.body.accountId;
-        var productId = req.body.productId;
+        var accountId = parseInt(req.body.accountId);
+        var productId = parseInt(req.body.productId);
         var taxReturns = req.body.taxReturns;
 
         // check that accountId exists
@@ -323,17 +323,17 @@ RESPONSE:
 }
  ******************************************************************************/
 exports.submit = function (req, res) {
-    req.checkBody('accountId', 'Please provide a accountId').isInt();
-    req.checkBody('productId', 'Please provide a productId').isInt();
+    req.checkBody('accountId', 'Please provide an integer accountId').isInt();
+    req.checkBody('productId', 'Please provide an integer productId').isInt();
     req.checkParams('id', 'Please provide a quoteId').isInt();
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountId = req.body.accountId;
-        var productId = req.body.productId;
-        var quoteId = req.params.id;
+        var accountId = parseInt(req.body.accountId);
+        var productId = parseInt(req.body.productId);
+        var quoteId = parseInt(req.params.id);
 
         if (accountId !== req.user.account_id) {
             res.status(401).send();
@@ -445,7 +445,7 @@ exports.findById = function (req, res) {
       if (errors) {
           res.status(400).send(errors);
       } else {
-          var id = req.params.id;
+          var id = parseInt(req.params.id);
           Quote.findById(id).then(function(quote) {
               if (quote) {
                   res.status(200).send(quote);
@@ -493,7 +493,7 @@ exports.createDocument = function (req, res) {
         logger.debug('req.body = ' + JSON.stringify(req.body, null, 2));
         logger.debug(req.file);
 
-        var quoteId = req.params.id;
+        var quoteId = parseInt(req.params.id);
         var taxReturnId = parseInt(req.body.taxReturnId);
         var checklistItemId = parseInt(req.body.checklistItemId);
         var originalname = req.file.originalname;
@@ -575,8 +575,8 @@ exports.deleteDocumentById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var quoteId = req.params.quoteId;
-        var documentId = req.params.documentId;
+        var quoteId = parseInt(req.params.quoteId);
+        var documentId = parseInt(req.params.documentId);
         Document.findById(documentId).then(function(document) {
             if (document) {
                 Document.deleteById(quoteId, documentId).then(function() {
@@ -640,7 +640,7 @@ exports.getChecklist = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
+        var id = parseInt(req.params.id);
         Checklist.getCheckListForQuoteId(id).then(function(checklist) {
             if (checklist) {
                 res.status(200).send(checklist);
@@ -669,7 +669,7 @@ exports.getChecklistPDF = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
+        var id = parseInt(req.params.id);
         Checklist.getCheckListForQuoteId(id).then(function(checklist) {
             if (checklist) {
                 var doc = new PDFDocument({
@@ -724,8 +724,8 @@ exports.findByAccountId = function (req, res) {
   if (errors) {
       res.status(400).send(errors);
   } else {
-      var productId = req.params.productId;
-      var accountId = req.params.accountId;
+      var productId = parseInt(req.params.productId);
+      var accountId = parseInt(req.params.accountId);
       Quote.findByProductIdAccountId(productId,accountId).then(function(account) {
           if (account) {
               res.status(200).send(account);
