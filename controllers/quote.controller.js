@@ -353,7 +353,7 @@ exports.submit = function (req, res) {
                         return TaxReturn.setAllsubmittedForAccountId(accountId, productId).then(function() {
                             var data = {};
                             data.name = req.user.first_name;
-                            notificationService.sendNotification(notificationService.NotificationType.QUOTE_SUBMITTED, req.user, data).then(function() {
+                            notificationService.sendNotification(notificationService.NotificationType.TAX_RETURN_SUBMITTED, req.user, data).then(function() {
                                 res.status(200).send();
                             });
                         });
