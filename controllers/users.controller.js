@@ -15,6 +15,7 @@ var db = require('../services/db');
 var validator = require('express-validator');
 var User = require('../models/user.model');
 var Account = require('../models/account.model');
+var Quote = require('../models/quote.model');
 var logger = require('../services/logger.service');
 var notificationService = require('../services/notification.service');
 
@@ -182,6 +183,8 @@ exports.create = function(req, res, next) {
         if (req.body.accountId) {
             userObj.accountId = req.body.accountId; // link account to user
         }
+        userObj.productId = config.api.currentProductId;
+
         User.findByEmail(userObj.email).then(function(existingUser) {
             if (existingUser) {
                 res.status(400).send({ 'message': 'User exists!' });
@@ -215,6 +218,15 @@ function createUserAndSendEmail(userObj) {
             var variables = {
                 name: user.first_name
             };
+            var i = 1;
+            var total = 0;
+            _.forEach(user.quote, function(quoteLineItem) {
+                variables['quote_text' + i] = quoteLineItem.text;
+                variables['quote_value' + i] = quoteLineItem.value;
+                total = total + quoteLineItem.value;
+                i = i + 1;
+            });
+            variables.total_value = total;
             return notificationService.sendNotification(user, notificationService.NotificationType.WELCOME, variables);
         };
 
@@ -227,11 +239,14 @@ function createUserAndSendEmail(userObj) {
         };
 
         return User.findByEmail(userObj.email).then(function(user) {
-            return sendWelcomeEmailTo(user).then(function() {
-//              return notifyAdminAbout(user);
+            return Quote.getEmailFieldsByProductIdAccountId(userObj.productId, userObj.accountId).then(function(quote) {
+                user.quote = quote;
+                return sendWelcomeEmailTo(user).then(function() {
+//                  return notifyAdminAbout(user);
 
-                var token = createToken(user);
-                return token;
+                    var token = createToken(user);
+                    return token;
+                });
             });
         });
     });
@@ -452,7 +467,7 @@ exports.update = function(req, res, next) {
     if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
         var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id']; //v2
-        
+
         if (User.isAdmin(req.user)) {
             keys.push('role');
         }

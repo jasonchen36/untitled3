@@ -119,6 +119,28 @@ var Quote = {
       });
     },
 
+    getEmailFieldsByProductIdAccountId: function(productId, accountId) {
+      if ((!productId) || (productId.length === 0)) {
+          return Promise.reject(new Error('No productId specified!'));
+      }
+      if ((!accountId) || (accountId.length === 0)) {
+          return Promise.reject(new Error('No accountId specified!'));
+      }
+      var quoteSql = 'SELECT \
+                          q.id, \
+                          q.account_id, \
+                          q.product_id, \
+                          qli.tax_return_id, \
+                          qli.text, \
+                          qli.value \
+                        FROM quote AS q \
+                        RIGHT JOIN quotes_line_items AS qli ON qli.quote_id = q.id \
+                        WHERE q.account_id = ? AND q.product_id = ?';
+      return db.knex.raw(quoteSql, [accountId, productId]).then(function(quoteSqlResults) {
+          return quoteSqlResults[0];
+      });
+    },
+
     populateQuestions: function() {
         var categoriesSql = 'SELECT id FROM categories WHERE name = ?';
         var categoriesSqlParams = ["Quote"];

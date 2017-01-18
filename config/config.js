@@ -12,7 +12,8 @@ module.exports = {
         name: 'TAXplan',
         timezone: 'America/Toronto',
         dateOutputFormat: 'MM/DD/YY hh:ss A',
-        dateInputFormat: 'YYYY-MM-DD'
+        dateInputFormat: 'YYYY-MM-DD',
+        currentProductId: 10
     },
     api_root_path: process.env.TAXPLAN_API_ROOT,
     root: rootPath,
