@@ -18,4 +18,6 @@ module.exports = function (router) {
 
     router.route('/categories')
         .get(categories.list);
+    router.route('/categories/:id')
+        .get(categories.getCategoryById);
 };
