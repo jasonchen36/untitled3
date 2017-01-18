@@ -73,8 +73,12 @@ exports.create = function (req, res) {
 
 
     // if message OK, save it
-    Message.create(message).then(function() {
-      res.status(200).send('OK');
+    return Message.create(message).then(function() {
+        res.status(200).send('OK');
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 
 };
@@ -113,7 +117,7 @@ exports.getMessageListForUser = function (req, res) {
         }
     }
 
-    Message.findAllById(client).then(function(messages) {
+    return Message.findAllById(client).then(function(messages) {
         if (!messages) {
             res.status(404).send();
             return;
@@ -121,6 +125,10 @@ exports.getMessageListForUser = function (req, res) {
 
         var out = { "messages": messages };
         res.status(200).send(out);
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 
 };
@@ -163,13 +171,17 @@ exports.read = function (req, res) {
     } else {
         isAdmin = false;
     }
-    Message.findOneById(id, client, isAdmin).then(function(message) {
+    return Message.findOneById(id, client, isAdmin).then(function(message) {
         if (!message) {
             res.status(404).send();
             return;
         } else {
             res.status(200).send(message);
         }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 };
 
@@ -187,8 +199,12 @@ exports.markRead = function(req, res) {
 
     var id = req.params.id;
     var client = req.user.id; // user comes from authentication
-    Message.setReadStatusById(id, client).then(function() {
+    return Message.setReadStatusById(id, client).then(function() {
         res.status(200).send();
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 };
 
@@ -198,7 +214,11 @@ exports.markAllRead = function(req, res) {
     }
 
     var client = req.user.id; // user comes from authentication
-    Message.setAllReadStatusByUserId(client).then(function() {
+    return Message.setAllReadStatusByUserId(client).then(function() {
         res.status(200).send();
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 };

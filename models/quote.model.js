@@ -145,7 +145,11 @@ var Quote = {
         var categoriesSql = 'SELECT id FROM categories WHERE name = ?';
         var categoriesSqlParams = ["Quote"];
         return db.knex.raw(categoriesSql, categoriesSqlParams).then(function(categoriesSqlResults) {
-            var quoteCategoryId = categoriesSqlResults[0][0].id;
+            if ((accountSqlResults[0]) && (accountSqlResults[0].length > 0)) {
+                var quoteCategoryId = categoriesSqlResults[0][0].id;
+            } else {
+                return Promise.resolve([]);
+            }
 
             var questionsSql = 'SELECT id, text FROM questions WHERE category_id = ?';
             var questionsSqlParams = [quoteCategoryId];

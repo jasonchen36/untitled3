@@ -145,12 +145,12 @@ exports.create = function (req, res) {
         var taxReturns = req.body.taxReturns;
 
         // check that accountId exists
-        Account.findById(accountId).then(function(account) {
+        return Account.findById(accountId).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send({msg: 'Invalid accountID'});
             } else {
                 // check that productId exists
-                Product.findById(productId).then(function(product) {
+                return Product.findById(productId).then(function(product) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
@@ -177,13 +177,17 @@ exports.create = function (req, res) {
                                                            questionID: questionId,
                                                            error: 'questionId = ' + questionId + ' not found on questions table'});
                                     }
+                                }).catch(function(err) {
+                                    logger.error(err.message);
+                                    res.status(400).send({ msg: err.message });
+                                    return;
                                 });
                             };
                             _.forEach(taxReturn.answers, function(answerObj) {
                                 validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
                             });
                         });
-                        Promise.all(validateQuestionIdPromises).then(function(result) {
+                        return Promise.all(validateQuestionIdPromises).then(function(result) {
                             if (answerErrors.length > 0) {
                                 res.status(400).send(answerErrors);
                             } else {
@@ -200,7 +204,7 @@ exports.create = function (req, res) {
                                         saveAnswersPromises.push(saveAnswer(answerObj));
                                     });
                                 });
-                                Promise.all(saveAnswersPromises).then(function(result) {
+                                return Promise.all(saveAnswersPromises).then(function(result) {
                                     var quoteObj = {};
                                     quoteObj.accountId = accountId;
                                     quoteObj.productId = productId;
@@ -221,13 +225,33 @@ exports.create = function (req, res) {
                                         });
                                         quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
                                         res.status(200).json(quoteObj);
+                                    }).catch(function(err) {
+                                        logger.error(err.message);
+                                        res.status(400).send({ msg: err.message });
+                                        return;
                                     });
+                                }).catch(function(err) {
+                                    logger.error(err.message);
+                                    res.status(400).send({ msg: err.message });
+                                    return;
                                 });
                             }
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(400).send({ msg: err.message });
+                            return;
                         });
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(400).send({ msg: err.message });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -341,12 +365,12 @@ exports.submit = function (req, res) {
         }
 
         // check that accountId exists
-        Account.findById(accountId).then(function(account) {
+        return Account.findById(accountId).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send({ msg: 'Invalid accountID' });
             } else {
                 // check that productId exists
-                Product.findById(productId).then(function(product) {
+                return Product.findById(productId).then(function(product) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
@@ -356,11 +380,22 @@ exports.submit = function (req, res) {
                             notificationService.sendNotification(notificationService.NotificationType.TAX_RETURN_SUBMITTED, req.user, data).then(function() {
                                 res.status(200).send();
                             });
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(400).send({ msg: err.message });
+                            return;
                         });
-
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(400).send({ msg: err.message });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -439,21 +474,25 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
-      req.checkParams('id', 'Please provide a quoteId').isInt();
+    req.checkParams('id', 'Please provide a quoteId').isInt();
 
-      var errors = req.validationErrors();
-      if (errors) {
-          res.status(400).send(errors);
-      } else {
-          var id = parseInt(req.params.id);
-          Quote.findById(id).then(function(quote) {
-              if (quote) {
-                  res.status(200).send(quote);
-              } else {
-                  res.status(404).send();
-              }
-          });
-      }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = parseInt(req.params.id);
+        return Quote.findById(id).then(function(quote) {
+            if (quote) {
+                res.status(200).send(quote);
+            } else {
+                res.status(404).send();
+            }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({msg: err.message});
+            return;
+        });
+    }
 };
 
 
@@ -549,10 +588,25 @@ exports.createDocument = function (req, res) {
                             }));
                         }
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                    }).catch(function(err) {
+                        logger.error(err.message);
+                        res.status(400).send({ msg: err.message });
+                        return;
                     });
-
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(400).send({ msg: err.message });
+                    return;
                 });
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
             });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -577,14 +631,22 @@ exports.deleteDocumentById = function (req, res) {
     } else {
         var quoteId = parseInt(req.params.quoteId);
         var documentId = parseInt(req.params.documentId);
-        Document.findById(documentId).then(function(document) {
+        return Document.findById(documentId).then(function(document) {
             if (document) {
-                Document.deleteById(quoteId, documentId).then(function() {
+                return Document.deleteById(quoteId, documentId).then(function() {
                     res.status(200).send('Ok');
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(400).send({ msg: err.message });
+                    return;
                 });
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -641,12 +703,16 @@ exports.getChecklist = function (req, res) {
         res.status(400).send(errors);
     } else {
         var id = parseInt(req.params.id);
-        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+        return Checklist.getCheckListForQuoteId(id).then(function(checklist) {
             if (checklist) {
                 res.status(200).send(checklist);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -670,7 +736,7 @@ exports.getChecklistPDF = function(req, res) {
         res.status(400).send(errors);
     } else {
         var id = parseInt(req.params.id);
-        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+        return Checklist.getCheckListForQuoteId(id).then(function(checklist) {
             if (checklist) {
                 var doc = new PDFDocument({
                     Title: 'Export'
@@ -712,26 +778,34 @@ exports.getChecklistPDF = function(req, res) {
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
 
-exports.findByAccountId = function (req, res) {
-  req.checkParams('productId', 'Please provide a product id').isInt();
-  req.checkParams('accountId', 'Please provide a account id').isInt();
+exports.findByAccountId = function(req, res) {
+    req.checkParams('productId', 'Please provide a product id').isInt();
+    req.checkParams('accountId', 'Please provide a account id').isInt();
 
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var productId = parseInt(req.params.productId);
-      var accountId = parseInt(req.params.accountId);
-      Quote.findByProductIdAccountId(productId,accountId).then(function(account) {
-          if (account) {
-              res.status(200).send(account);
-          } else {
-              res.status(404).send();
-          }
-      });
-  }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var productId = parseInt(req.params.productId);
+        var accountId = parseInt(req.params.accountId);
+        return Quote.findByProductIdAccountId(productId, accountId).then(function(account) {
+            if (account) {
+                res.status(200).send(account);
+            } else {
+                res.status(404).send();
+            }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({msg: err.message});
+            return;
+        });
+    }
 };

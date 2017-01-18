@@ -42,14 +42,17 @@ RESPONSE:
 
 *******************************************************************************/
 exports.list = function (req, res) {
-
-      Categories.list().then(function(categories) {
-          if (categories) {
-              res.status(200).send(categories);
-          } else {
-              res.status(404).send();
-          }
-        });
+    return Categories.list().then(function(categories) {
+        if (categories) {
+            res.status(200).send(categories);
+        } else {
+            res.status(404).send();
+        }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
+    });
 };
 
 /*******************************************************************************
@@ -72,11 +75,15 @@ exports.list = function (req, res) {
  *******************************************************************************/
 
 exports.getCategoryById = function (req, res){
-    Categories.getCategoryById(req.params.id).then(function(category){
+    return Categories.getCategoryById(req.params.id).then(function(category){
         if (category) {
             res.status(200).send(category);
         } else {
             res.status(404).send();
         }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 };

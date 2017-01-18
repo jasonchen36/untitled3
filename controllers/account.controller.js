@@ -40,8 +40,8 @@ exports.create = function (req, res) {
         accountObj.pushNotifications = req.body.pushNotifications;
         accountObj.emailNotifications = req.body.emailNotifications;
         accountObj.taxProId = req.body.taxProId;
-        account.create(accountObj).then(function(insertId) {
-            account.findById(insertId).then(function(account) {
+        return account.create(accountObj).then(function(insertId) {
+            return account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
                     res.status(500).send("Internal Error");
                 } else {
@@ -54,7 +54,15 @@ exports.create = function (req, res) {
                     };
                     res.status(200).send(jsonData);
                 }
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
             });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -80,7 +88,7 @@ exports.findById = function (req, res) {
     } else {
         var id = req.params.id;
 
-        account.findById(id).then(function(account) {
+        return account.findById(id).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send();
             } else {
@@ -95,6 +103,10 @@ exports.findById = function (req, res) {
 
                 res.status(200).send(accountObj);
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -123,8 +135,8 @@ exports.update = function (req, res) {
         var accountObj = {};
         accountObj.name = req.body.name;
         accountObj.taxProId = req.body.taxProId;
-        account.create(accountObj).then(function(insertId) {
-            account.findById(insertId).then(function(account) {
+        return account.create(accountObj).then(function(insertId) {
+            return account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
                     res.status(500).send("Internal Error");
                 } else {
@@ -135,7 +147,15 @@ exports.update = function (req, res) {
                     };
                     res.status(200).send(jsonData);
                 }
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
             });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };

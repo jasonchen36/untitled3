@@ -42,10 +42,10 @@ exports.createResetKey = function(req, res) {
     var userToReset = req.body;
 
     if ((userToReset.email) && (userToReset.email.length > 0)) {
-        User.findByEmail(userToReset.email).then(function(user) {
+        return User.findByEmail(userToReset.email).then(function(user) {
             if (user) {
                 user.reset_key = User.createResetKey();
-                User.updateResetKey(user.id, user.reset_key).then(function() {
+                return User.updateResetKey(user.id, user.reset_key).then(function() {
 
                     var variables = {
                         name: user.first_name,
@@ -55,10 +55,18 @@ exports.createResetKey = function(req, res) {
                     logger.debug('reset_url: ' + variables.reset_url);
                     notificationService.sendNotification(user, notificationService.NotificationType.PASSWORD_RESET, variables)
                     res.status(200).send();
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(400).send({ msg: err.message });
+                    return;
                 });
             } else {
                 res.status(404).send({ msg: 'unknown user' });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     } else {
         res.status(400).send({ msg: 'No email provided' });
@@ -82,18 +90,26 @@ exports.resetPassword = function(req, res) {
 
     if ((password) && (password.length > 0)) {
         var reset_key = req.params.reset_key;
-        User.findByResetKey(reset_key).then(function(user) {
+        return User.findByResetKey(reset_key).then(function(user) {
             if (user) {
                 var new_salt = User.makeSalt();
                 var hashed_password = User.encryptPassword(new_salt, password);
                 user.hashed_password = hashed_password;
                 user.reset_key = null;
-                User.updatePassword(user.id, hashed_password, new_salt).then(function() {
+                return User.updatePassword(user.id, hashed_password, new_salt).then(function() {
                     res.status(200).send();
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(400).send({ msg: err.message });
+                    return;
                 });
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     } else {
         res.status(400).send({ msg: 'No password provided' });
@@ -185,7 +201,7 @@ exports.create = function(req, res, next) {
         }
         userObj.productId = config.api.currentProductId;
 
-        User.findByEmail(userObj.email).then(function(existingUser) {
+        return User.findByEmail(userObj.email).then(function(existingUser) {
             if (existingUser) {
                 res.status(400).send({ 'message': 'User exists!' });
             } else {
@@ -195,18 +211,26 @@ exports.create = function(req, res, next) {
                     // create a new account for this user
                     var accountObj = {};
                     accountObj.name = userObj.first_name;
-                    Account.create(accountObj).then(function(accountResult) {
+                    return Account.create(accountObj).then(function(accountResult) {
                         userObj.accountId = accountResult;
                         createUserAndSendEmail(userObj).then(function(token) {
                             res.json({ token : token });
                         });
+                    }).catch(function(err) {
+                        logger.error(err.message);
+                        res.status(400).send({ msg: err.message });
+                        return;
                     });
                 } else {
-                    createUserAndSendEmail(userObj).then(function(token) {
+                    return createUserAndSendEmail(userObj).then(function(token) {
                         res.json({ token : token });
                     });
                 }
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -247,6 +271,10 @@ function createUserAndSendEmail(userObj) {
                     var token = createToken(user);
                     return token;
                 });
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
             });
         });
     });
@@ -282,14 +310,18 @@ exports.me = function(req, res) {
     user.taxpro_pic = null;
     user.taxpro_desc = null;
     if(user.taxpro_id !== null){
-        User.findById(user.taxpro_id).then(function(taxpro) {
+        return User.findById(user.taxpro_id).then(function(taxpro) {
             if (taxpro) {
                 user.taxpro_pic = taxpro.profile_picture;
                 user.taxpro_desc = taxpro.description;
                 res.jsonp(user ? cleanUserData(user) : null);
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
-    }else{
+    } else {
         res.jsonp(user ? cleanUserData(user) : null);
     }
 
@@ -327,17 +359,23 @@ exports.list = function(req, res) {
 
     // TODO look into passport and roles
     if (req.user.role === 'Admin') {
-        User.findAllCustomersFiltered(queryParams).then(function(users) {
-
+        return User.findAllCustomersFiltered(queryParams).then(function(users) {
             res.status(200).send(cleanUsersData(users));
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     } else if(req.user.role === 'TaxPro') {
         // filter out for users with this taxpro's id.
         queryParams.taxPro=req.user.id;
 
-        User.findAllCustomersFiltered(queryParams, req.user.id).then(function(users) {
-
+        return User.findAllCustomersFiltered(queryParams, req.user.id).then(function(users) {
             res.status(200).send(cleanUsersData(users));
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     } else {
         res.status(404).send();
@@ -381,12 +419,16 @@ exports.find = function(req, res, err) {
         res.status(200).send(req.user);
     } else {
         // TODO need service for this
-        User.findById(userId).then(function(user) {
+        return User.findById(userId).then(function(user) {
             if (user) {
                 res.status(200).send(cleanUserData(user));
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     }
 };
@@ -409,8 +451,12 @@ exports.delete = function(req, res, next) {
         if (req.user.id === userId) {
             res.status(400).send({ msg: 'Unable to remove yourself' });
         } else {
-            User.deleteById(userId).then(function() {
+            return User.deleteById(userId).then(function() {
                 res.status(204).send();
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
             });
         }
     } else {
@@ -446,8 +492,12 @@ exports.update_password = function(req, res) {
         if (req.user.id === userId || req.user.role === 'Admin') {
             var new_salt = User.makeSalt();
             var hashed_password = User.encryptPassword(new_salt, password);
-            User.updatePassword(userId, hashed_password, new_salt).then(function() {
+            return User.updatePassword(userId, hashed_password, new_salt).then(function() {
                 res.status(200).send();
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
             });
         } else {
             res.status(404).send();
@@ -489,7 +539,7 @@ exports.update = function(req, res, next) {
         }
         var params = _.pick(user, keys);
 
-        User.findById(userId).then(function(user) {
+        return User.findById(userId).then(function(user) {
             _.each(params, function(value, key) {
                 user[key] = value;
             });
@@ -497,7 +547,15 @@ exports.update = function(req, res, next) {
             return User.updateById(userId,params)
             .then(function(userResult) {
                 return res.json(cleanUserData(userResult));
-              });
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(400).send({ msg: err.message });
+                return;
+            });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({ msg: err.message });
+            return;
         });
     } else {
         res.status(404).send();
@@ -512,10 +570,14 @@ exports.update = function(req, res, next) {
 
 // router.param  user
 exports.user = function(req, res, next, id) {
-    User.findById(id).then(function(user) {
+    return User.findById(id).then(function(user) {
         if (!user) return next({ message: 'Failed to load User ' + id, status: 404 });
         req.user = user;
         next();
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(400).send({ msg: err.message });
+        return;
     });
 };
 

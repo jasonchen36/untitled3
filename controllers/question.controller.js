@@ -52,22 +52,26 @@ RESPONSE:
   }
 ]
 *******************************************************************************/
-exports.findByCategoryId = function (req, res) {
-  req.checkParams('productId', 'Please provide a product id').isInt();
-  req.checkParams('categoryId', 'Please provide a category id').isInt();
+exports.findByCategoryId = function(req, res) {
+    req.checkParams('productId', 'Please provide a product id').isInt();
+    req.checkParams('categoryId', 'Please provide a category id').isInt();
 
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var productId = req.params.productId;
-      var categoryId = req.params.categoryId;
-      Question.findByProductIdCategoryId(productId,categoryId).then(function(question) {
-          if (question) {
-              res.status(200).send(question);
-          } else {
-              res.status(404).send();
-          }
-      });
-  }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var productId = req.params.productId;
+        var categoryId = req.params.categoryId;
+        return Question.findByProductIdCategoryId(productId, categoryId).then(function(question) {
+            if (question) {
+                res.status(200).send(question);
+            } else {
+                res.status(404).send();
+            }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(400).send({msg: err.message});
+            return;
+        });
+    }
 };

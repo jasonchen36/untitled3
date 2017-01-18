@@ -16,10 +16,14 @@ var Account = {
 
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
         return db.knex.raw(accountSql, [id]).then(function(accountSqlResults) {
-            var accountId = accountSqlResults[0][0].id;
-            var name = accountSqlResults[0][0].name;
-            var pushNotifications = accountSqlResults[0][0].push_notifications;
-            var emailNotifications = accountSqlResults[0][0].email_notifications;
+            if ((accountSqlResults[0]) && (accountSqlResults[0].length > 0)) {
+                var accountId = accountSqlResults[0][0].id;
+                var name = accountSqlResults[0][0].name;
+                var pushNotifications = accountSqlResults[0][0].push_notifications;
+                var emailNotifications = accountSqlResults[0][0].email_notifications;
+            } else {
+                return Promise.resolve({});
+            }
             var resultObj = {};
             resultObj.id = accountId;
             resultObj.name = name;
