@@ -75,6 +75,9 @@ exports.create = function (req, res) {
     // if message OK, save it
     Message.create(message).then(function() {
       res.status(200).send('OK');
+
+      // update the last User activity of the logged in user
+      if(req.user.id) { User.updateLastUserActivity(req.user.id) }
     });
 
 };

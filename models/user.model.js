@@ -244,6 +244,10 @@ var User = {
         return db.knex.raw(userSql, [reset_key]).then(function(userSqlResults) {
             return(userSqlResults[0][0]);
         });
+    },
+    updateLastUserActivity: function(userId,trx) {
+      trx = trx ? trx: db.knex;
+      return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
     }
 
 //    removeAccount: function(account) {

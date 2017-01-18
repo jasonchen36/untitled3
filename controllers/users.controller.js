@@ -196,11 +196,17 @@ exports.create = function(req, res, next) {
                         userObj.accountId = accountResult;
                         createUserAndSendEmail(userObj).then(function(token) {
                             res.json({ token : token });
+
+                            // update the last User activity of the logged in user
+                            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
                         });
                     });
                 } else {
                     createUserAndSendEmail(userObj).then(function(token) {
                         res.json({ token : token });
+
+                        // update the last User activity of the logged in user
+                        if(req.user.id) { User.updateLastUserActivity(req.user.id); }
                     });
                 }
             }
@@ -468,6 +474,9 @@ exports.update = function(req, res, next) {
 
             return User.updateById(userId,params)
             .then(function(userResult) {
+                // update the last User activity of the logged in user
+                if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+
                 return res.json(cleanUserData(userResult));
               });
         });

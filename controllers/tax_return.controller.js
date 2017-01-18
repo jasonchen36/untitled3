@@ -19,6 +19,8 @@ var Document = require('../models/document.model');
 var validator = require('express-validator');
 var cacheService = require('../services/cache.service');
 var Promise = require('bluebird');
+var User = require('../models/user.model');
+
 
 // boilerplate
 var _ = require('underscore');
@@ -116,6 +118,9 @@ exports.createTaxReturns = function (req, res) {
             resultArr.push(taxReturnResult);
         }).then(function() {
             res.status(200).json(resultArr);
+
+            // update the last User activity of the logged in user
+            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -177,6 +182,10 @@ exports.createTaxReturn = function (req, res) {
                             resultObj.status = status;
 
                             res.status(200).json(resultObj);
+
+                            // update the last User activity of the logged in user
+                            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+
                         });
                     }
                 });
@@ -246,6 +255,9 @@ exports.updateTaxReturnById = function (req, res) {
             .then(function(taxReturn) {
               if (taxReturn) {
                 res.status(200).send(taxReturn);
+
+                // update the last User activity of the logged in user
+                if(req.user.id) { User.updateLastUserActivity(req.user.id); }
               } else {
                 res.status(404).send();
               }
@@ -283,6 +295,10 @@ exports.updateTaxReturnStatusById = function (req, res) {
             };
         return TaxReturn.update(taxReturnId, taxReturnObj).then(function() {
             res.status(200).send('OK');
+            
+            // update the last User activity of the logged in user
+            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+
         });
     }
 };
@@ -431,6 +447,9 @@ exports.createAnswer = function(req, res) {
                             } else {
                                 return Promise.all(answerPromises).then(function() {
                                     res.status(200).send('OK');
+
+                                    // update the last User activity of the logged in user
+                                    if(req.user.id) { User.updateLastUserActivity(req.user.id); }
                                 });
                             }
                         });
@@ -595,6 +614,9 @@ exports.createAddress = function (req, res) {
             var resultObj = {};
             resultObj.addressId = addressId;
             res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -654,6 +676,9 @@ exports.updateAddress = function (req, res) {
             resultObj.postalCode = postalCode;
 
             res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -769,9 +794,10 @@ exports.linkExistingAddresses = function (req, res) {
                         addressTaxReturnObj.taxReturnId = taxReturnId;
 
                         return Address.createAssociation(addressTaxReturnObj).then(function() {
+                          res.status(200).send("OK");
 
-
-                            res.status(200).send("OK");
+                          // update the last User activity of the logged in user
+                          if(req.user.id) { User.updateLastUserActivity(req.user.id); }
                         });
                     }
                 });
@@ -828,6 +854,9 @@ exports.createDependant = function (req, res) {
             var resultObj = {};
             resultObj.dependantId = dependantId;
             res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -894,6 +923,9 @@ exports.updateDependant = function (req, res) {
                     resultObj.isShared = isShared;
 
                     res.status(200).json(resultObj);
+
+                    // update the last User activity of the logged in user
+                    if(req.user.id) { User.updateLastUserActivity(req.user.id); }
                 });
             }
         });
@@ -923,6 +955,9 @@ exports.deleteDependant = function (req, res) {
         // check that dependantId exists
         Dependant.deleteById(dependantId, taxReturnId).then(function() {
             res.status(200).send('OK');
+
+            // update the last User activity of the logged in user
+            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
         })
             .catch(function(error){
                 res.status(400).send(error);
@@ -1044,6 +1079,9 @@ exports.linkExistingDependants = function (req, res) {
                         dependantTaxReturnObj.taxReturnId = taxReturnId;
                         return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
                             res.status(200).send("OK");
+
+                            // update the last User activity of the logged in user
+                            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
                         });
                     }
                 });
