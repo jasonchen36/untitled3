@@ -13,33 +13,50 @@ var User = {
             return(usersSqlResults[0]);
         });
     },
-    findAllCustomersFiltered: function(filters, taxProId) {
+    findAllCustomersFiltered: function(filters, taxProId, trx) {
+      // if taxpro not included, take from filter
+      var connection = trx ? trx : db.knex;
+      var users=null;
 
-        // if taxpro not included, take from filter
-        taxProId = taxProId ? taxProId : filters['taxPro'];
+      taxProId = taxProId ? taxProId : filters['taxPro'];
 
-        if(!filters) {
-          return findAllCustomers();
-        }
+      if(!filters) {
+        return findAllCustomers();
+      }
 
-        var sql = {sql:'SELECT users.* FROM users', params:[]};
-     
-        sql = concatenateSql(sql, {sql:' WHERE 1=1',params:[]});
+      var sql = {sql:'SELECT users.* FROM users', params:[]};
+    
+      sql = concatenateSql(sql, filterByTaxProfileStatusUsingJoin(filters));
 
-        sql = concatenateSql(sql, filterUserPermissions(taxProId));
+      sql = concatenateSql(sql, {sql:' WHERE 1=1',params:[]});
 
+      sql = concatenateSql(sql, filterUserPermissions(taxProId));
 
-        sql = concatenateSql(sql, filterbyEmailAndName(filters));
+      sql = concatenateSql(sql, filterbyEmailAndName(filters));
 
-        sql = concatenateSql(sql, filterByRole(filters));
+      sql = concatenateSql(sql, filterByRole(filters));
       
-        var possibleOrderByValues=[{key:'lastName',val:'last_name'},{key:'lastUpdated',val:'user_updated_at'}];
+      var possibleOrderByValues=[{key:'lastName', val:'last_name'},{key:'lastUpdated', val:'user_updated_at'}];
 
-        sql = concatenateSql(sql, getOrderBySQL(filters,possibleOrderByValues));
+      sql = concatenateSql(sql, getOrderBySQL(filters, possibleOrderByValues));
 
-        return db.knex.raw(sql.sql, sql.params).then(function(usersSqlResults) {
-            return(usersSqlResults[0]);
+      return connection.raw(sql.sql, sql.params).then(function(usersSqlResults) {
+        return(usersSqlResults[0]);
+      }).then(function(results) {
+        users = results;
+        return getUsersStatuses(results, connection);
+      }).then(function(statusResults) {
+        return _.map(users, function(u) {
+          var curU = _.cloneDeep(u);
+
+          curU.statuses = _.filter(statusResults,
+            function(s) {
+              return s.user_id === curU.id;
+          });
+
+          return curU;
         });
+      });
     },
     findById: function(id,trx) {
         if ((!id) || (id.length === 0)) {
@@ -100,7 +117,6 @@ var User = {
         var userInsertSqlParams = [
           userObj.provider,
           userObj.role,
-//            userObj.username,
           userObj.hashed_password,
           userObj.salt,
           userObj.first_name,
@@ -286,7 +302,18 @@ var filterbyEmailAndName = function(filters) {
     // Filter email & last name on Q.
     if( filters['q'] ) {
         result.sql+=' AND ( email LIKE CONCAT("%",?,"%") OR last_name LIKE CONCAT("%",?,"%") OR first_name LIKE CONCAT("%",?,"%") OR CONCAT(first_name," ",last_name) LIKE CONCAT("%",?,"%")) ';
-        results.params = _.concat(result.params, filters['q'], filters['q'], filters['q'], filters['q']);
+        result.params = _.concat(result.params, filters['q'], filters['q'], filters['q'], filters['q']);
+    }
+
+    return result;
+};
+
+var filterByTaxProfileStatusUsingJoin = function(filters) {
+    var result = { sql:'',params:[]};
+
+    if( filters['status'] && _.parseInt(filters['status'])>=0 ) {
+        result.sql+=' JOIN (SELECT DISTINCT u.id, tr.status_id FROM users as u JOIN tax_returns as tr ON tr.account_id=u.account_id WHERE tr.status_id=? ) AS userswithStatus ON userswithStatus.id = users.id';
+        result.params = _.concat(result.params,filters['status']);
     }
 
     return result;
@@ -311,6 +338,28 @@ var concatenateSql = function(initial,second) {
     result.sql+=initial.sql+second.sql;
     result.params = _.concat(initial.params, second.params);
     return result;
+};
+
+var getUsersStatuses = function(users,trx) {
+  if(users.length>5000) {
+    return Promise.reject(new Error("Too many users to get statuses for. Please page your data"));
+  } else if (users.length ===0) {
+    return Promise.resolve([]);
+  }
+
+  var connection = trx ? trx : db.knex;
+  var userIds = _.map(users,function(u) { return u.id });
+
+
+  var sql = 'SELECT u.id as user_id, tR.account_id, tR.id as tax_return_id, s.id as status_id, s.name, s.display_text, tR.account_id, tR.first_name, tR.last_name';
+  sql+=' FROM tax_returns as tR JOIN status as s ON TR.status_id=s.id JOIN users as u ON u.account_id=tR.account_id WHERE u.role="Customer" AND u.id IN ('+userIds.join(',')+')';
+
+  var sqlParams=[];
+
+  return connection.raw(sql, sqlParams)
+    .then(function(results) {
+      return results[0];
+    });
 };
 
 module.exports = User;

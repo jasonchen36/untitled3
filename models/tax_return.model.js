@@ -62,7 +62,6 @@ var TaxReturn = {
             return Promise.resolve(affectedRows);
         });
     },
-
     checkIdExists: function(id) {
         if (!id) {
             return Promise.resolve(false);
@@ -75,7 +74,6 @@ var TaxReturn = {
             }
         });
     },
-
     formatData: function(data){
         return {
             id: data.id,
@@ -96,6 +94,14 @@ var TaxReturn = {
             updated_at: data.updated_at,
             filer_type: data.filer_type
         }
+    },
+    getTaxReturnStatuses: function(data,trx) {
+      var content = trx ? trx : db.knex;
+
+      return content.raw('SELECT * FROM taxplan_dev.status')
+        .then(function(results) {
+          return results[0]; 
+        });
     }
 };
 
