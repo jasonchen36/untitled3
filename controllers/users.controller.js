@@ -279,7 +279,20 @@ RESPONSE:
 exports.me = function(req, res) {
   var user = req.user;
 
-  res.jsonp(user ? cleanUserData(user) : null);
+    user.taxpro_pic = null;
+    user.taxpro_desc = null;
+    if(user.taxpro_id !== null){
+        User.findById(user.taxpro_id).then(function(taxpro) {
+            if (taxpro) {
+                user.taxpro_pic = taxpro.profile_picture;
+                user.taxpro_desc = taxpro.description;
+                res.jsonp(user ? cleanUserData(user) : null);
+            }
+        });
+    }else{
+        res.jsonp(user ? cleanUserData(user) : null);
+    }
+
 };
 
 /*******************************************************************************
