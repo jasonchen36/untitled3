@@ -120,7 +120,7 @@ exports.createTaxReturns = function (req, res) {
             res.status(200).json(resultArr);
 
             // update the last User activity of the logged in user
-            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -184,7 +184,7 @@ exports.createTaxReturn = function (req, res) {
                             res.status(200).json(resultObj);
 
                             // update the last User activity of the logged in user
-                            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
 
                         });
                     }
@@ -257,7 +257,7 @@ exports.updateTaxReturnById = function (req, res) {
                 res.status(200).send(taxReturn);
 
                 // update the last User activity of the logged in user
-                if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+                if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
               } else {
                 res.status(404).send();
               }
@@ -297,7 +297,7 @@ exports.updateTaxReturnStatusById = function (req, res) {
             res.status(200).send('OK');
             
             // update the last User activity of the logged in user
-            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
 
         });
     }
@@ -449,7 +449,7 @@ exports.createAnswer = function(req, res) {
                                     res.status(200).send('OK');
 
                                     // update the last User activity of the logged in user
-                                    if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+                                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
                                 });
                             }
                         });
@@ -616,7 +616,7 @@ exports.createAddress = function (req, res) {
             res.status(200).json(resultObj);
 
             // update the last User activity of the logged in user
-            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -678,7 +678,7 @@ exports.updateAddress = function (req, res) {
             res.status(200).json(resultObj);
 
             // update the last User activity of the logged in user
-            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -797,7 +797,7 @@ exports.linkExistingAddresses = function (req, res) {
                           res.status(200).send("OK");
 
                           // update the last User activity of the logged in user
-                          if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+                          if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
                         });
                     }
                 });
@@ -856,7 +856,7 @@ exports.createDependant = function (req, res) {
             res.status(200).json(resultObj);
 
             // update the last User activity of the logged in user
-            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
         });
     }
 };
@@ -925,7 +925,7 @@ exports.updateDependant = function (req, res) {
                     res.status(200).json(resultObj);
 
                     // update the last User activity of the logged in user
-                    if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
                 });
             }
         });
@@ -957,7 +957,7 @@ exports.deleteDependant = function (req, res) {
             res.status(200).send('OK');
 
             // update the last User activity of the logged in user
-            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
         })
             .catch(function(error){
                 res.status(400).send(error);
@@ -1081,7 +1081,7 @@ exports.linkExistingDependants = function (req, res) {
                             res.status(200).send("OK");
 
                             // update the last User activity of the logged in user
-                            if(req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
                         });
                     }
                 });

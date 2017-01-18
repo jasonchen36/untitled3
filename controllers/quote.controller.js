@@ -555,7 +555,7 @@ exports.createDocument = function (req, res) {
                         }
 
                         // update the last User activity of the logged in user
-                        if(req.user.id) { User.updateLastUserActivity(req.user.id) }
+                        if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
 
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
                     });
@@ -592,7 +592,7 @@ exports.deleteDocumentById = function (req, res) {
                     res.status(200).send('Ok');
 
                     // update the last User activity of the logged in user
-                    if(req.user.id) { User.updateLastUserActivity(req.user.id) }
+                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
                 });
             } else {
                 res.status(404).send();
