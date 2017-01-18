@@ -212,8 +212,6 @@ exports.createTaxReturn = function (req, res) {
  ******************************************************************************/
 exports.updateTaxReturnById = function (req, res) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
-    req.checkBody('accountId', 'Please provide a accountId').isInt();
-    req.checkBody('productId', 'Please provide a productId').isInt();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
@@ -221,49 +219,38 @@ exports.updateTaxReturnById = function (req, res) {
         var taxReturnId = req.params.id;
         var accountId = req.body.accountId;
         var productId = req.body.productId;
+        var taxReturnObj = {};
 
+        if ((!req.body.firstName) &&
+            (!req.body.lastName) &&
+            (!req.body.provinceOfResidence) &&
+            (!req.body.dateOfBirth) &&
+            (!req.body.canadianCitizen) &&
+            (!req.body.authorizeCra) &&
+            (!req.body.filerType)
+        ) {
+            res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
+        } else {
+          if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
+          if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
+          if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
+          if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
+          if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
+          if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
+          if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
 
-        // check that accountId exists
-        Account.findById(accountId).then(function(account) {
-            if ((!account) || (account.length === 0)) {
-                res.status(404).send({ msg: 'Invalid accountID' });
-            } else {
-                // check that productId exists
-                Product.findById(productId).then(function(product) {
-                    if ((!product) || (product.length === 0)) {
-                        res.status(404).send({ msg: 'Invalid productID' });
-                    } else {
-                        var taxReturnObj = {};
-                        if ((!req.body.firstName) &&
-                            (!req.body.lastName) &&
-                            (!req.body.provinceOfResidence) &&
-                            (!req.body.dateOfBirth) &&
-                            (!req.body.canadianCitizen) &&
-                            (!req.body.authorizeCra) &&
-                            (!req.body.filerType)
-                        ) {
-                            res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
-                        } else {
-                            if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
-                            if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
-                            if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
-                            if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
-                            if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
-                            if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
-                            if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
-                            return TaxReturn.update(taxReturnId, taxReturnObj).then(function(taxReturnId) {
-                                var resultObj = {};
-                                resultObj.accountId = accountId;
-                                resultObj.productId = productId;
-                                resultObj.taxReturnId = taxReturnId;
-
-                                res.status(200).json(resultObj);
-                            });
-                        }
-                    }
-                });
-            }
-        });
+          return TaxReturn.update(taxReturnId, taxReturnObj)
+            .then(function(taxReturnId) {
+              return TaxReturn.findById(taxReturnId);
+            })
+            .then(function(taxReturn) {
+              if (taxReturn) {
+                res.status(200).send(taxReturn);
+              } else {
+                res.status(404).send();
+              }
+            });
+        }
     }
 };
 
