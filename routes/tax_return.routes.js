@@ -18,36 +18,36 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/tax_return/:id')
-        .get(tax_return.findTaxReturnById)
-        .put(tax_return.updateTaxReturnById);
+        .get(PassportAuthMiddleware, tax_return.findTaxReturnById)
+        .put(PassportAuthMiddleware, tax_return.updateTaxReturnById);
     router.route('/tax_return')
         .post(tax_return.createTaxReturn); // does not require login
     router.route('/tax_returns')
-        .post(tax_return.createTaxReturns);
+        .post(PassportAuthMiddleware, tax_return.createTaxReturns);
     router.route('/tax_return/:id/answers')
-        .post(tax_return.createAnswer)
-        .get(tax_return.listAnswers);
+        .post(PassportAuthMiddleware, tax_return.createAnswer)
+        .get(PassportAuthMiddleware, tax_return.listAnswers);
     router.route('/tax_return/:taxReturnId/answers/category/:categoryId')
-        .get(tax_return.listAnswersFilterCategory);
+        .get(PassportAuthMiddleware, tax_return.listAnswersFilterCategory);
     router.route('/tax_return/:id/answer/:id')
-        .get(tax_return.findAnswerById);
+        .get(PassportAuthMiddleware, tax_return.findAnswerById);
     router.route('/tax_return/:id/address')
-        .post(tax_return.createAddress);
+        .post(PassportAuthMiddleware, tax_return.createAddress);
     router.route('/tax_return/:id/addresses')
-        .get(tax_return.listAddresses);
+        .get(PassportAuthMiddleware, tax_return.listAddresses);
     router.route('/tax_return/:id/status')
-        .put(tax_return.updateTaxReturnStatusById);
+        .put(PassportAuthMiddleware, tax_return.updateTaxReturnStatusById);
     router.route('/tax_return/:id/dependants')
-        .get(tax_return.getDependantsById);
+        .get(PassportAuthMiddleware, tax_return.getDependantsById);
     router.route('/tax_return/:taxReturnId/address/:addressId')
-        .get(tax_return.findAddressById)
-        .put(tax_return.updateAddress)
-        .post(tax_return.linkExistingAddresses);
+        .get(PassportAuthMiddleware, tax_return.findAddressById)
+        .put(PassportAuthMiddleware, tax_return.updateAddress)
+        .post(PassportAuthMiddleware, tax_return.linkExistingAddresses);
     router.route('/tax_return/:id/dependant')
-        .post(tax_return.createDependant);
+        .post(PassportAuthMiddleware, tax_return.createDependant);
     router.route('/tax_return/:taxReturnId/dependant/:dependantId')
-        .get(tax_return.findDependantById)
-        .put(tax_return.updateDependant)
-        .post(tax_return.linkExistingDependants)
-        .delete(tax_return.deleteDependant);
+        .get(PassportAuthMiddleware, tax_return.findDependantById)
+        .put(PassportAuthMiddleware, tax_return.updateDependant)
+        .post(PassportAuthMiddleware, tax_return.linkExistingDependants)
+        .delete(PassportAuthMiddleware, tax_return.deleteDependant);
 };
