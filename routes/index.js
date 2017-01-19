@@ -20,6 +20,7 @@ var router = express.Router();
 router.route('/')
   .all(controllers.index);
 
+require('./product.routes')(router);
 require('./user.routes')(router);
 require('./healthcheck.routes')(router);
 require('./message.routes')(router);
