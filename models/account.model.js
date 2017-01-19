@@ -22,7 +22,7 @@ var Account = {
                 var pushNotifications = accountSqlResults[0][0].push_notifications;
                 var emailNotifications = accountSqlResults[0][0].email_notifications;
             } else {
-                return Promise.resolve({});
+                return Promise.resolve();
             }
             var resultObj = {};
             resultObj.id = accountId;
