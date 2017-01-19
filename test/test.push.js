@@ -4,5 +4,7 @@ var config = require('../config/config');
 var logger = require('../services/logger.service');
 var onesignal = require('../services/push.notification.service');
 
-var user = {id: 123, account_id: 433};
+console.log(config.onesignal.appId);
+
+var user = {"id": 40, "account_id": 413}
 onesignal.send(user, 'Hello from TAXplan API!');
