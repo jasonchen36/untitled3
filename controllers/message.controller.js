@@ -17,6 +17,7 @@ var _ = require('underscore');
 var config = require('../config/config');
 var async = require("async");
 var mailService = require('../services/mail.service');
+var notificationService = require('../services/notification.service');
 var mailclient = require('../services/mailclient2'); // just here for initiaL TEST
 
 /*******************************************************************************
@@ -74,6 +75,13 @@ exports.create = function (req, res) {
 
     // if message OK, save it
     return Message.create(message).then(function() {
+        if (req.user.role !== 'Customer') { // message from Taxpro or Admin triggers notification
+            var variables = {
+                name: req.user.first_name,
+                message: message.body
+            }
+            return notificationService.sendNotification(req.user, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables)
+        }
         res.status(200).send('OK');
     }).catch(function(err) {
         logger.error(err.message);
