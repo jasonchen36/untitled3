@@ -41,7 +41,7 @@ exports.create = function (req, res) {
         accountObj.emailNotifications = req.body.emailNotifications;
         accountObj.taxProId = req.body.taxProId;
         return Account.create(accountObj).then(function(insertId) {
-            return account.findById(insertId).then(function(account) {
+            return Account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
                     res.status(500).send("Internal Error");
                 } else {
@@ -145,10 +145,22 @@ exports.update = function (req, res) {
                 params['name'] = req.body.name;
             }
             if ((req.body.pushNotifications) && (req.body.pushNotifications.length > 0)) {
-                params['push_notifications'] = req.body.pushNotifications;
+                if (req.body.pushNotifications.toUpperCase() === 'YES') {
+                    params['push_notifications'] = 'Yes';
+                } else {
+                    if (req.body.pushNotifications.toUpperCase() === 'NO') {
+                        params['push_notifications'] = 'No';
+                    }
+                }
             }
             if ((req.body.emailNotifications) && (req.body.emailNotifications.length > 0)) {
-                params['email_notifications'] = req.body.emailNotifications;
+                if (req.body.emailNotifications.toUpperCase() === 'YES') {
+                    params['email_notifications'] = 'Yes';
+                } else {
+                    if (req.body.emailNotifications.toUpperCase() === 'NO') {
+                        params['email_notifications'] = 'No';
+                    }
+                }
             }
             if ((req.body.taxproId) && (req.body.taxproId.length > 0)) {
                 params['taxpro_id'] = req.body.taxproId;
