@@ -57,7 +57,7 @@ exports.createResetKey = function(req, res) {
                     res.status(200).send();
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             } else {
@@ -65,7 +65,7 @@ exports.createResetKey = function(req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     } else {
@@ -100,7 +100,7 @@ exports.resetPassword = function(req, res) {
                     res.status(200).send();
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             } else {
@@ -108,7 +108,7 @@ exports.resetPassword = function(req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     } else {
@@ -218,7 +218,7 @@ exports.create = function(req, res, next) {
                         });
                     }).catch(function(err) {
                         logger.error(err.message);
-                        res.status(400).send({ msg: err.message });
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
                         return;
                     });
                 } else {
@@ -229,7 +229,7 @@ exports.create = function(req, res, next) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -273,7 +273,7 @@ function createUserAndSendEmail(userObj) {
                 });
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         });
@@ -318,7 +318,7 @@ exports.me = function(req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     } else {
@@ -363,7 +363,7 @@ exports.list = function(req, res) {
             res.status(200).send(cleanUsersData(users));
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     } else if(req.user.role === 'TaxPro') {
@@ -374,7 +374,7 @@ exports.list = function(req, res) {
             res.status(200).send(cleanUsersData(users));
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     } else {
@@ -427,7 +427,7 @@ exports.find = function(req, res, err) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -455,7 +455,7 @@ exports.delete = function(req, res, next) {
                 res.status(204).send();
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         }
@@ -496,7 +496,7 @@ exports.update_password = function(req, res) {
                 res.status(200).send();
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         } else {
@@ -549,12 +549,12 @@ exports.update = function(req, res, next) {
                 return res.json(cleanUserData(userResult));
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     } else {
@@ -576,7 +576,7 @@ exports.user = function(req, res, next, id) {
         next();
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
 };

@@ -77,7 +77,7 @@ exports.create = function (req, res) {
         res.status(200).send('OK');
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
 
@@ -127,7 +127,7 @@ exports.getMessageListForUser = function (req, res) {
         res.status(200).send(out);
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
 
@@ -180,7 +180,7 @@ exports.read = function (req, res) {
         }
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
 };
@@ -203,7 +203,7 @@ exports.markRead = function(req, res) {
         res.status(200).send();
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
 };
@@ -218,7 +218,7 @@ exports.markAllRead = function(req, res) {
         res.status(200).send();
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
 };

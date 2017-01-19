@@ -19,6 +19,7 @@ var Document = require('../models/document.model');
 var validator = require('express-validator');
 var cacheService = require('../services/cache.service');
 var Promise = require('bluebird');
+var util = require('util');
 
 // boilerplate
 var _ = require('underscore');
@@ -107,19 +108,19 @@ exports.createTaxReturns = function (req, res) {
                                 return Promise.resolve(resultObj);
                             }).catch(function(err) {
                                 logger.error(err.message);
-                                res.status(400).send({ msg: err.message });
+                                res.status(500).send({ msg: 'Something broke: check server logs.' });
                                 return;
                             });
                         }
                     }).catch(function(err) {
                         logger.error(err.message);
-                        res.status(400).send({ msg: err.message });
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
                         return;
                     });
                 }
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         };
@@ -211,19 +212,19 @@ exports.createTaxReturn = function (req, res) {
                             res.status(200).json(resultObj);
                         }).catch(function(err) {
                             logger.error(err.message);
-                            res.status(400).send({ msg: err.message });
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
                             return;
                         });
                     }
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -303,7 +304,7 @@ exports.updateTaxReturnById = function (req, res) {
               }
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         }
@@ -341,7 +342,7 @@ exports.updateTaxReturnStatusById = function (req, res) {
             res.status(200).send('OK');
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -382,7 +383,7 @@ exports.findTaxReturnById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -497,24 +498,24 @@ exports.createAnswer = function(req, res) {
                                 res.status(200).send('OK');
                             }).catch(function(err) {
                                 logger.error(err.message);
-                                res.status(400).send({ msg: err.message });
+                                res.status(500).send({ msg: 'Something broke: check server logs.' });
                                 return;
                             });
                         }
                     }).catch(function(err) {
                         logger.error(err.message);
-                        res.status(400).send({ msg: err.message });
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
                         return;
                     });
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -556,7 +557,7 @@ exports.findAnswerById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -598,12 +599,12 @@ exports.listAnswers = function(req, res) {
                 }
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -630,12 +631,12 @@ exports.listAnswersFilterCategory = function(req, res) {
                 }
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -696,7 +697,7 @@ exports.createAddress = function (req, res) {
             res.status(200).json(resultObj);
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -759,7 +760,7 @@ exports.updateAddress = function (req, res) {
             res.status(200).json(resultObj);
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -799,7 +800,7 @@ exports.findAddressById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -842,7 +843,7 @@ exports.listAddresses = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -887,19 +888,19 @@ exports.linkExistingAddresses = function (req, res) {
                             res.status(200).send("OK");
                         }).catch(function(err) {
                             logger.error(err.message);
-                            res.status(400).send({ msg: err.message });
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
                             return;
                         });
                     }
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -955,7 +956,7 @@ exports.createDependant = function (req, res) {
             res.status(200).json(resultObj);
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -1025,13 +1026,13 @@ exports.updateDependant = function (req, res) {
                     res.status(200).json(resultObj);
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -1062,7 +1063,7 @@ exports.deleteDependant = function (req, res) {
             res.status(200).send('OK');
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -1109,7 +1110,7 @@ exports.getDependantsById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -1148,7 +1149,7 @@ exports.findDependantById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -1192,19 +1193,19 @@ exports.linkExistingDependants = function (req, res) {
                             res.status(200).send("OK");
                         }).catch(function(err) {
                             logger.error(err.message);
-                            res.status(400).send({ msg: err.message });
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
                             return;
                         });
                     }
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -1248,7 +1249,7 @@ exports.getAvailableTaxReturnStatuses = function (req, res) {
         return res.status(200).json(results);
     }).catch(function(err) {
         logger.error(err.message);
-        res.status(400).send({ msg: err.message });
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
         return;
     });
   }

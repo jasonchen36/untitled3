@@ -70,7 +70,7 @@ exports.findByCategoryId = function(req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({msg: err.message});
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }

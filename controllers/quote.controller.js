@@ -179,7 +179,7 @@ exports.create = function (req, res) {
                                     }
                                 }).catch(function(err) {
                                     logger.error(err.message);
-                                    res.status(400).send({ msg: err.message });
+                                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                                     return;
                                 });
                             };
@@ -227,30 +227,30 @@ exports.create = function (req, res) {
                                         res.status(200).json(quoteObj);
                                     }).catch(function(err) {
                                         logger.error(err.message);
-                                        res.status(400).send({ msg: err.message });
+                                        res.status(500).send({ msg: 'Something broke: check server logs.' });
                                         return;
                                     });
                                 }).catch(function(err) {
                                     logger.error(err.message);
-                                    res.status(400).send({ msg: err.message });
+                                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                                     return;
                                 });
                             }
                         }).catch(function(err) {
                             logger.error(err.message);
-                            res.status(400).send({ msg: err.message });
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
                             return;
                         });
                     }
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -382,19 +382,19 @@ exports.submit = function (req, res) {
                             });
                         }).catch(function(err) {
                             logger.error(err.message);
-                            res.status(400).send({ msg: err.message });
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
                             return;
                         });
                     }
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -489,7 +489,7 @@ exports.findById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({msg: err.message});
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -590,22 +590,22 @@ exports.createDocument = function (req, res) {
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
                     }).catch(function(err) {
                         logger.error(err.message);
-                        res.status(400).send({ msg: err.message });
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
                         return;
                     });
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             }).catch(function(err) {
                 logger.error(err.message);
-                res.status(400).send({ msg: err.message });
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
                 return;
             });
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -637,7 +637,7 @@ exports.deleteDocumentById = function (req, res) {
                     res.status(200).send('Ok');
                 }).catch(function(err) {
                     logger.error(err.message);
-                    res.status(400).send({ msg: err.message });
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
                     return;
                 });
             } else {
@@ -645,7 +645,7 @@ exports.deleteDocumentById = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -711,7 +711,7 @@ exports.getChecklist = function (req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -780,7 +780,7 @@ exports.getChecklistPDF = function(req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({ msg: err.message });
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
@@ -804,7 +804,7 @@ exports.findByAccountId = function(req, res) {
             }
         }).catch(function(err) {
             logger.error(err.message);
-            res.status(400).send({msg: err.message});
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
             return;
         });
     }
