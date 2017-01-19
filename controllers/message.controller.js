@@ -83,7 +83,15 @@ exports.create = function (req, res) {
             return User.findById(message.client).then(function(targetUser) {
                 return notificationService.sendNotification(targetUser, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
                     res.status(200).send('OK');
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
             });
         } else {
             res.status(200).send('OK');
