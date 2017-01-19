@@ -8,7 +8,7 @@
  * Module dependencies.
  */
 var logger = require('../services/logger.service');
-var account = require('../models/account.model');
+var Account = require('../models/account.model');
 var validator = require('express-validator');
 
 // boilerplate
@@ -40,7 +40,7 @@ exports.create = function (req, res) {
         accountObj.pushNotifications = req.body.pushNotifications;
         accountObj.emailNotifications = req.body.emailNotifications;
         accountObj.taxProId = req.body.taxProId;
-        return account.create(accountObj).then(function(insertId) {
+        return Account.create(accountObj).then(function(insertId) {
             return account.findById(insertId).then(function(account) {
                 if ((!account) || (account.length === 0)) {
                     res.status(500).send("Internal Error");
@@ -88,7 +88,7 @@ exports.findById = function (req, res) {
     } else {
         var id = req.params.id;
 
-        return account.findById(id).then(function(account) {
+        return Account.findById(id).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send();
             } else {
@@ -126,26 +126,48 @@ RESPONSE:
 *******************************************************************************/
 
 exports.update = function (req, res) {
-    req.checkBody('name', 'Please provide a name').notEmpty();
-    req.checkBody('productId', 'Please provide a productId').isInt();
+    req.checkParams('id', 'Please provide an accountId').isInt();
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountObj = {};
-        accountObj.name = req.body.name;
-        accountObj.taxProId = req.body.taxProId;
-        return account.create(accountObj).then(function(insertId) {
-            return account.findById(insertId).then(function(account) {
-                if ((!account) || (account.length === 0)) {
-                    res.status(500).send("Internal Error");
+        var accountId = req.params.id;
+        var keys = ['name', 'push_notifications', 'email_notifications', 'taxpro_id'];
+
+        return Account.findById(accountId).then(function(account) {
+            if ((!account) || (account.length === 0)) {
+                res.status(404).send();
+                return;
+            }
+
+            var params = [];
+            if ((req.body.name) && (req.body.name.length > 0)) {
+                params['name'] = req.body.name;
+            }
+            if ((req.body.pushNotifications) && (req.body.pushNotifications.length > 0)) {
+                params['push_notifications'] = req.body.pushNotifications;
+            }
+            if ((req.body.emailNotifications) && (req.body.emailNotifications.length > 0)) {
+                params['email_notifications'] = req.body.emailNotifications;
+            }
+            if ((req.body.taxproId) && (req.body.taxproId.length > 0)) {
+                params['taxpro_id'] = req.body.taxproId;
+            }
+
+
+            _.each(params, function(value, key) {
+                user[key] = value;
+            });
+
+            return Account.updateById(accountId, params)
+            .then(function() {
+                return Account.findById(accountId);
+            })
+            .then(function(account) {
+                if (account) {
+                    res.status(200).send(account);
                 } else {
-                    var jsonData = {
-                        accountId: account.id,
-                        name: account.name,
-                        taxProId: account.taxProId
-                    };
-                    res.status(200).send(jsonData);
+                    res.status(404).send();
                 }
             }).catch(function(err) {
                 logger.error(err.message);

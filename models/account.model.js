@@ -69,6 +69,13 @@ var Account = {
        return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(messageInsertSqlResults) {
            return messageInsertSqlResults[0].insertId;
        });
+    },
+
+    updateById: function(accountId, accountObj) {
+        if ((!accountId) || (accountId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+        return db.knex('accounts').update(accountObj).where('id', accountId);
     }
 };
 
