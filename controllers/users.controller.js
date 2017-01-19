@@ -462,7 +462,7 @@ exports.update = function(req, res, next) {
         if (User.isAdmin(req.user)) {
             keys.push('role');
         }
-        if ((user.role) && ((user.role !== 'Admin') && (user.role !== 'Customer'))) {
+        if ((user.role) && ((user.role !== 'Admin') && (user.role !== 'Customer') && user.role !== 'TaxPro')) {
             return res.status(409).json(new Error('Invalid role'));
         }
         var params = _.pick(user, keys);
