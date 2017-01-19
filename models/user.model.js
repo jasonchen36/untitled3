@@ -352,7 +352,7 @@ var getUsersStatuses = function(users,trx) {
 
 
   var sql = 'SELECT u.id as user_id, tR.account_id, tR.id as tax_return_id, s.id as status_id, s.name, s.display_text, tR.account_id, tR.first_name, tR.last_name';
-  sql+=' FROM tax_returns as tR JOIN status as s ON TR.status_id=s.id JOIN users as u ON u.account_id=tR.account_id WHERE u.role="Customer" AND u.id IN ('+userIds.join(',')+')';
+  sql+=' FROM tax_returns as tR JOIN status as s ON tR.status_id=s.id JOIN users as u ON u.account_id=tR.account_id WHERE u.role="Customer" AND u.id IN ('+userIds.join(',')+')';
 
   var sqlParams=[];
 
