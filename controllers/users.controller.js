@@ -213,11 +213,15 @@ exports.create = function(req, res, next) {
                     accountObj.name = userObj.first_name;
                     return Account.create(accountObj).then(function(accountResult) {
                         userObj.accountId = accountResult;
-                        createUserAndSendEmail(userObj).then(function(token) {
+                        return createUserAndSendEmail(userObj).then(function(token) {
                             res.json({ token : token });
 
                             // update the last User activity of the logged in user
                             User.updateLastUserActivity(req.user);
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
+                            return;
                         });
                     }).catch(function(err) {
                         logger.error(err.message);
@@ -230,6 +234,10 @@ exports.create = function(req, res, next) {
 
                         // update the last User activity of the logged in user
                         User.updateLastUserActivity(req.user);
+                    }).catch(function(err) {
+                        logger.error(err.message);
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
+                        return;
                     });
                 }
             }
@@ -277,10 +285,6 @@ function createUserAndSendEmail(userObj) {
                     var token = createToken(user);
                     return token;
                 });
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
             });
         });
     });
