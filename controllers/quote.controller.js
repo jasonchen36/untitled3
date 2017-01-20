@@ -16,6 +16,7 @@ var Document = require('../models/document.model');
 var Quote = require('../models/quote.model');
 var Product = require('../models/product.model');
 var Account = require('../models/account.model');
+var User = require('../models/user.model');
 var Question = require('../models/question.model');
 var Answer = require('../models/answer.model');
 var TaxReturn = require('../models/tax_return.model');
@@ -379,6 +380,10 @@ exports.submit = function (req, res) {
                             data.name = req.user.first_name;
                             notificationService.sendNotification(notificationService.NotificationType.TAX_RETURN_SUBMITTED, req.user, data).then(function() {
                                 res.status(200).send();
+
+                                // update the last User activity of the logged in user
+                                User.updateLastUserActivity(req.user);
+
                             });
                         }).catch(function(err) {
                             logger.error(err.message);
@@ -587,6 +592,10 @@ exports.createDocument = function (req, res) {
                                 file: req.file
                             }));
                         }
+
+                        // update the last User activity of the logged in user
+                        User.updateLastUserActivity(req.user);
+
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
                     }).catch(function(err) {
                         logger.error(err.message);
@@ -635,6 +644,10 @@ exports.deleteDocumentById = function (req, res) {
             if (document) {
                 return Document.deleteById(quoteId, documentId).then(function() {
                     res.status(200).send('Ok');
+
+                    // update the last User activity of the logged in user
+                    User.updateLastUserActivity(req.user);
+
                 }).catch(function(err) {
                     logger.error(err.message);
                     res.status(500).send({ msg: 'Something broke: check server logs.' });
