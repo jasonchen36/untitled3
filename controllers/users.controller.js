@@ -324,6 +324,8 @@ exports.me = function(req, res) {
             if (taxpro) {
                 user.taxpro_pic = taxpro.profile_picture;
                 user.taxpro_desc = taxpro.description;
+                user.taxpro_name = taxpro.first_name + " " + taxpro.last_name;
+                user.taxpro_title = taxpro.title;
                 res.jsonp(user ? cleanUserData(user) : null);
             }
         }).catch(function(err) {
