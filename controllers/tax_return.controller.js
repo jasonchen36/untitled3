@@ -172,16 +172,10 @@ exports.createTaxReturns = function (req, res) {
  }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
-console.log('req.body = ' + JSON.stringify(req.body, null, 2));
-    if (!User.hasAccess(req.user, req.body.accountId)) {
-        res.status(403).send();
-        return;
-    }
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
     var errors = req.validationErrors();
-console.log('errors = ' + JSON.stringify(errors, null, 2));
     if (errors) {
         res.status(400).send(errors);
     } else {
@@ -367,7 +361,7 @@ exports.updateTaxReturnStatusById = function (req, res) {
             };
         return TaxReturn.update(taxReturnId, taxReturnObj).then(function() {
             res.status(200).send('OK');
-            
+
             // update the last User activity of the logged in user
             User.updateLastUserActivity(req.user);
         }).catch(function(err) {
