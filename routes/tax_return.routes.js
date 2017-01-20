@@ -23,7 +23,7 @@ module.exports = function (router) {
     router.route('/tax_return')
         .post(tax_return.createTaxReturn); // does not require login
     router.route('/tax_returns')
-        .post(PassportAuthMiddleware, tax_return.createTaxReturns);
+        .post(tax_return.createTaxReturns); // does not require login
     router.route('/tax_return/:id/answers')
         .post(PassportAuthMiddleware, tax_return.createAnswer)
         .get(PassportAuthMiddleware, tax_return.listAnswers);

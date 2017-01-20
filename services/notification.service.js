@@ -55,6 +55,7 @@ var sendNotification = function(user, notificationType, data) {
             notificationPromises.push(systemMessageService.create(user, subject, cmessage));
             break;
         case NotificationType.CHAT_MESSAGE_FROM_TAXPRO:
+            data.dashboardUrl = config.domain + '/dashboard';
             notificationPromises.push(mailService.send(user, emailTemplate, data));
             break;
         default:
