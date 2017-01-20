@@ -60,14 +60,16 @@ var API_DATE_INPUT_FORMAT = config.api.dateInputFormat;
 
  ******************************************************************************/
 exports.createTaxReturns = function (req, res) {
+console.log('req.body = ' + JSON.stringify(req.body, null, 2));
     req.checkBody('taxReturns', 'Please provide array of taxReturns').notEmpty();
     var errors = req.validationErrors();
+console.log('errors = ' + JSON.stringify(errors, null, 2));
     if (errors) {
         res.status(400).send(errors);
     } else {
         var createTaxReturnPromise = function(taxReturn) {
-            var accountId = taxReturn.accountId;
-            var productId = taxReturn.productId;
+            var accountId = parseInt(taxReturn.accountId);
+            var productId = parseInt(taxReturn.productId);
             var firstName = taxReturn.firstName;
             var filerType = taxReturn.filerType;
             var status = taxReturn.status;
