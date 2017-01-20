@@ -20,6 +20,7 @@ var Document = require('../models/document.model');
 var validator = require('express-validator');
 var cacheService = require('../services/cache.service');
 var Promise = require('bluebird');
+var User = require('../models/user.model');
 var util = require('util');
 
 // boilerplate
@@ -146,6 +147,9 @@ exports.createTaxReturns = function (req, res) {
             return Promise.resolve({});
         }).then(function() {
             res.status(200).json(resultArr);
+
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(req.user);
         });
     }
 };
@@ -222,6 +226,10 @@ console.log('errors = ' + JSON.stringify(errors, null, 2));
                             resultObj.middleInitial = middleInitial;
 
                             res.status(200).json(resultObj);
+
+                            // update the last User activity of the logged in user
+                            User.updateLastUserActivity(req.user);
+
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -315,6 +323,9 @@ exports.updateTaxReturnById = function (req, res) {
             .then(function(taxReturn) {
               if (taxReturn) {
                 res.status(200).send(taxReturn);
+
+                // update the last User activity of the logged in user
+                User.updateLastUserActivity(req.user);
               } else {
                 res.status(404).send();
               }
@@ -356,6 +367,9 @@ exports.updateTaxReturnStatusById = function (req, res) {
             };
         return TaxReturn.update(taxReturnId, taxReturnObj).then(function() {
             res.status(200).send('OK');
+            
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -512,6 +526,9 @@ exports.createAnswer = function(req, res) {
                         } else {
                             return Promise.all(answerPromises).then(function() {
                                 res.status(200).send('OK');
+
+                                // update the last User activity of the logged in user
+                                User.updateLastUserActivity(req.user);
                             }).catch(function(err) {
                                 logger.error(err.message);
                                 res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -711,6 +728,9 @@ exports.createAddress = function (req, res) {
             var resultObj = {};
             resultObj.addressId = addressId;
             res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -774,6 +794,9 @@ exports.updateAddress = function (req, res) {
             resultObj.postalCode = postalCode;
 
             res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -902,6 +925,9 @@ exports.linkExistingAddresses = function (req, res) {
 
                         return Address.createAssociation(addressTaxReturnObj).then(function() {
                             res.status(200).send("OK");
+
+                            // update the last User activity of the logged in user
+                            User.updateLastUserActivity(req.user);
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -970,6 +996,9 @@ exports.createDependant = function (req, res) {
             var resultObj = {};
             resultObj.dependantId = dependantId;
             res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -1040,6 +1069,9 @@ exports.updateDependant = function (req, res) {
                     resultObj.isShared = isShared;
 
                     res.status(200).json(resultObj);
+
+                    // update the last User activity of the logged in user
+                    User.updateLastUserActivity(req.user);
                 }).catch(function(err) {
                     logger.error(err.message);
                     res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -1077,6 +1109,9 @@ exports.deleteDependant = function (req, res) {
         // check that dependantId exists
         return Dependant.deleteById(dependantId, taxReturnId).then(function() {
             res.status(200).send('OK');
+
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -1207,6 +1242,8 @@ exports.linkExistingDependants = function (req, res) {
                         dependantTaxReturnObj.taxReturnId = taxReturnId;
                         return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
                             res.status(200).send("OK");
+                            // update the last User activity of the logged in user
+                            User.updateLastUserActivity(req.user);
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
