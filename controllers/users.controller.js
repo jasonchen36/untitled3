@@ -217,7 +217,7 @@ exports.create = function(req, res, next) {
                             res.json({ token : token });
 
                             // update the last User activity of the logged in user
-                            User.updateLastUserActivity(req.user);
+                            User.updateLastUserActivity(userObj);
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -233,7 +233,7 @@ exports.create = function(req, res, next) {
                         res.json({ token : token });
 
                         // update the last User activity of the logged in user
-                        User.updateLastUserActivity(req.user);
+                        User.updateLastUserActivity(userObj);
                     }).catch(function(err) {
                         logger.error(err.message);
                         res.status(500).send({ msg: 'Something broke: check server logs.' });
