@@ -382,7 +382,7 @@ exports.submit = function (req, res) {
                                 res.status(200).send();
 
                                 // update the last User activity of the logged in user
-                                if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                                User.updateLastUserActivity(req.user);
 
                             });
                         }).catch(function(err) {
@@ -594,7 +594,7 @@ exports.createDocument = function (req, res) {
                         }
 
                         // update the last User activity of the logged in user
-                        if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+                        User.updateLastUserActivity(req.user);
 
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
                     }).catch(function(err) {
@@ -646,7 +646,7 @@ exports.deleteDocumentById = function (req, res) {
                     res.status(200).send('Ok');
 
                     // update the last User activity of the logged in user
-                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                    User.updateLastUserActivity(req.user);
 
                 }).catch(function(err) {
                     logger.error(err.message);

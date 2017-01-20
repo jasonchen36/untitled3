@@ -85,7 +85,7 @@ exports.create = function (req, res) {
                     res.status(200).send('OK');
 
                     // update the last User activity of the logged in user
-                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+                    User.updateLastUserActivity(req.user);
 
                 }).catch(function(err) {
                     logger.error(err.message);
@@ -101,7 +101,7 @@ exports.create = function (req, res) {
             res.status(200).send('OK');
 
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+            User.updateLastUserActivity(req.user);
 
         }
     }).catch(function(err) {

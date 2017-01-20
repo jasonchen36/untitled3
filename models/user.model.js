@@ -5,6 +5,8 @@
 var db = require('../services/db');
 var crypto = require('crypto');
 var _ = require('lodash');
+var logger = require('../services/logger.service');
+
 
 var User = {
     findAllCustomers: function() {
@@ -245,9 +247,16 @@ var User = {
             return(userSqlResults[0][0]);
         });
     },
-    updateLastUserActivity: function(userId,trx) {
-      trx = trx ? trx: db.knex;
-      return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
+    updateLastUserActivity: function(user,trx) {
+      if(!user || !user.id) {
+        logger.info("user is missing, cannot update for last user activity.");
+
+        return Promise.resolve({});
+      } else {
+        var userId = user.id;
+        trx = trx ? trx: db.knex;
+        return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
+      }
     }
 
 //    removeAccount: function(account) {

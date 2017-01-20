@@ -217,7 +217,7 @@ exports.create = function(req, res, next) {
                             res.json({ token : token });
 
                             // update the last User activity of the logged in user
-                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            User.updateLastUserActivity(req.user);
                         });
                     }).catch(function(err) {
                         logger.error(err.message);
@@ -229,7 +229,7 @@ exports.create = function(req, res, next) {
                         res.json({ token : token });
 
                         // update the last User activity of the logged in user
-                        if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                        User.updateLastUserActivity(req.user);
                     });
                 }
             }
@@ -553,7 +553,7 @@ exports.update = function(req, res, next) {
             return User.updateById(userId,params)
             .then(function(userResult) {
                 // update the last User activity of the logged in user
-                if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                User.updateLastUserActivity(req.user);
 
                 return res.json(cleanUserData(userResult));
             }).catch(function(err) {

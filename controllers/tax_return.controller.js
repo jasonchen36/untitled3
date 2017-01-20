@@ -145,7 +145,7 @@ console.log('errors = ' + JSON.stringify(errors, null, 2));
             res.status(200).json(resultArr);
 
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+            User.updateLastUserActivity(req.user);
         });
     }
 };
@@ -218,7 +218,7 @@ exports.createTaxReturn = function (req, res) {
                             res.status(200).json(resultObj);
 
                             // update the last User activity of the logged in user
-                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            User.updateLastUserActivity(req.user);
 
                         }).catch(function(err) {
                             logger.error(err.message);
@@ -311,7 +311,7 @@ exports.updateTaxReturnById = function (req, res) {
                 res.status(200).send(taxReturn);
 
                 // update the last User activity of the logged in user
-                if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                User.updateLastUserActivity(req.user);
               } else {
                 res.status(404).send();
               }
@@ -355,7 +355,7 @@ exports.updateTaxReturnStatusById = function (req, res) {
             res.status(200).send('OK');
             
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -514,7 +514,7 @@ exports.createAnswer = function(req, res) {
                                 res.status(200).send('OK');
 
                                 // update the last User activity of the logged in user
-                                if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                                User.updateLastUserActivity(req.user);
                             }).catch(function(err) {
                                 logger.error(err.message);
                                 res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -716,7 +716,7 @@ exports.createAddress = function (req, res) {
             res.status(200).json(resultObj);
 
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -782,7 +782,7 @@ exports.updateAddress = function (req, res) {
             res.status(200).json(resultObj);
 
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -913,7 +913,7 @@ exports.linkExistingAddresses = function (req, res) {
                             res.status(200).send("OK");
 
                             // update the last User activity of the logged in user
-                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            User.updateLastUserActivity(req.user);
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -984,7 +984,7 @@ exports.createDependant = function (req, res) {
             res.status(200).json(resultObj);
 
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -1057,7 +1057,7 @@ exports.updateDependant = function (req, res) {
                     res.status(200).json(resultObj);
 
                     // update the last User activity of the logged in user
-                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                    User.updateLastUserActivity(req.user);
                 }).catch(function(err) {
                     logger.error(err.message);
                     res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -1097,7 +1097,7 @@ exports.deleteDependant = function (req, res) {
             res.status(200).send('OK');
 
             // update the last User activity of the logged in user
-            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+            User.updateLastUserActivity(req.user);
         }).catch(function(err) {
             logger.error(err.message);
             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -1229,7 +1229,7 @@ exports.linkExistingDependants = function (req, res) {
                         return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
                             res.status(200).send("OK");
                             // update the last User activity of the logged in user
-                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            User.updateLastUserActivity(req.user);
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
