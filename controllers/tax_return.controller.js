@@ -10,6 +10,7 @@
 var logger = require('../services/logger.service');
 var TaxReturn = require('../models/tax_return.model');
 var Account = require('../models/account.model');
+var User = require('../models/user.model');
 var Product = require('../models/product.model');
 var Question = require('../models/question.model');
 var Answer = require('../models/answer.model');
@@ -128,9 +129,17 @@ exports.createTaxReturns = function (req, res) {
 
         var resultArr = [];
         var createTaxReturnPromises = [];
+        var accessDenied = false;
         _.forEach(req.body.taxReturns, function(taxReturn) {
+            if (!User.hasAccess(req.user, taxReturn.accountId)) {
+                accessDenied = true;
+            }
             createTaxReturnPromises.push(createTaxReturnPromise(taxReturn));
         });
+        if (accessDenied) {
+            res.status(403).send();
+            return;
+        }
 
         return Promise.each(createTaxReturnPromises, function(taxReturnResult) {
             resultArr.push(taxReturnResult);
@@ -162,15 +171,21 @@ exports.createTaxReturns = function (req, res) {
  }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res) {
+console.log('req.body = ' + JSON.stringify(req.body, null, 2));
+    if (!User.hasAccess(req.user, req.body.accountId)) {
+        res.status(403).send();
+        return;
+    }
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
     var errors = req.validationErrors();
+console.log('errors = ' + JSON.stringify(errors, null, 2));
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountId = req.body.accountId;
-        var productId = req.body.productId;
+        var accountId = parseInt(req.body.accountId);
+        var productId = parseInt(req.body.productId);
         var firstName = req.body.firstName;
         var filerType = req.body.filerType;
         var status = req.body.status;
@@ -256,6 +271,10 @@ exports.createTaxReturn = function (req, res) {
  At least one optional field must be present or there would be nothing to update
  ******************************************************************************/
 exports.updateTaxReturnById = function (req, res) {
+    if (!User.hasAccess(req.user, req.body.accountId)) {
+        res.status(403).send();
+        return;
+    }
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
     if (errors) {

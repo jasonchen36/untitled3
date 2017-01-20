@@ -25,7 +25,7 @@ var User = {
       }
 
       var sql = {sql:'SELECT users.* FROM users', params:[]};
-    
+
       sql = concatenateSql(sql, filterByTaxProfileStatusUsingJoin(filters));
 
       sql = concatenateSql(sql, {sql:' WHERE 1=1',params:[]});
@@ -35,7 +35,7 @@ var User = {
       sql = concatenateSql(sql, filterbyEmailAndName(filters));
 
       sql = concatenateSql(sql, filterByRole(filters));
-      
+
       var possibleOrderByValues=[{key:'lastName', val:'last_name'},{key:'lastUpdated', val:'user_updated_at'}];
 
       sql = concatenateSql(sql, getOrderBySQL(filters, possibleOrderByValues));
@@ -153,15 +153,6 @@ var User = {
     },
 
     /**
-     * Is the user an Admin
-     *
-     * @param {Object} user
-     */
-    isAdmin: function(user) {
-        return user.role === 'Admin';
-    },
-
-    /**
      * Authenticate - check if the passwords are the same
      *
      * @param {String} salt
@@ -244,6 +235,39 @@ var User = {
         return db.knex.raw(userSql, [reset_key]).then(function(userSqlResults) {
             return(userSqlResults[0][0]);
         });
+    },
+
+    IsAdmin: function(user) {
+        if ((user.role) && (user.role === 'Admin')) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    IsTaxpro: function(user) {
+        if ((user.role) && (user.role === 'Taxpro')) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    hasAccess: function(user, accountId) {
+        if (typeof user !== 'object') {
+            throw new Error('hasAccess(): user is not a object ');
+        }
+        if (!accountId) {
+            return true; // no accountId specified
+        }
+        if (this.IsAdmin(user) || this.IsTaxpro(user)) {
+            return true;
+        }
+        if (user.account_id === accountId) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 //    removeAccount: function(account) {
@@ -271,7 +295,7 @@ var getOrderBySQL = function(filters,possibleOrderByValues) {
   if ( filters['orderBy'] && orderByVal) {
       result.hasSql=true;
       result.sql+=' ORDER BY '+orderByVal.val;
- 
+
       if ( filters['orderAscending'] ) {
           if(filters['orderAscending'] === 'false') {
               result.sql+=' DESC';
@@ -291,8 +315,8 @@ var filterUserPermissions = function(taxProId) {
       result.sql+=' AND users.taxpro_id = ?'
       result.params = _.concat(result.params,taxProId);
       // show all users with all roles
-    } 
-   
+    }
+
     return result;
 };
 
