@@ -32,13 +32,36 @@ var TaxReturn = {
         if ((!taxReturnObj.filerType) || (taxReturnObj.filerType.length === 0)) {
           return Promise.reject(new Error('No  filerType specified!'));
         }
-        var taxReturnInsertSql = 'INSERT INTO tax_returns (account_id, product_id, first_name, filer_type) VALUES(?, ?, ?, ?)';
+        var taxReturnInsertFieldList = 'account_id, product_id, first_name, filer_type';
+        var taxReturnInsertValues = '?, ?, ?, ?';
         var taxReturnInsertSqlParams = [
             taxReturnObj.accountId,
             taxReturnObj.productId,
             taxReturnObj.firstName,
             taxReturnObj.filerType
         ];
+        if (taxReturnObj.sin) {
+            taxReturnInsertFieldList = taxReturnInsertFieldList + ', SIN';
+            taxReturnInsertValues = taxReturnInsertValues + ', ?';
+            taxReturnInsertSqlParams.push(taxReturnObj.sin);
+        }
+        if (taxReturnObj.middleInitial) {
+            taxReturnInsertFieldList = taxReturnInsertFieldList + ', middle_initial';
+            taxReturnInsertValues = taxReturnInsertValues + ', ?';
+            taxReturnInsertSqlParams.push(taxReturnObj.middleInitial);
+        }
+        if (taxReturnObj.prefix) {
+            taxReturnInsertFieldList = taxReturnInsertFieldList + ', prefix';
+            taxReturnInsertValues = taxReturnInsertValues + ', ?';
+            taxReturnInsertSqlParams.push(taxReturnObj.prefix);
+        }
+        if (taxReturnObj.status) {
+            taxReturnInsertFieldList = taxReturnInsertFieldList + ', status';
+            taxReturnInsertValues = taxReturnInsertValues + ', ?';
+            taxReturnInsertSqlParams.push(taxReturnObj.status);
+        }
+        var taxReturnInsertSql = 'INSERT INTO tax_returns (' + taxReturnInsertFieldList + ') VALUES(' + taxReturnInsertValues + ')';
+
         return db.knex.raw(taxReturnInsertSql, taxReturnInsertSqlParams).then(function(taxReturnInsertSqlResults) {
             var taxReturnId = taxReturnInsertSqlResults[0].insertId;
             return Promise.resolve(taxReturnId);
@@ -100,7 +123,7 @@ var TaxReturn = {
 
       return content.raw('SELECT * FROM taxplan_dev.status')
         .then(function(results) {
-          return results[0]; 
+          return results[0];
         });
     }
 };

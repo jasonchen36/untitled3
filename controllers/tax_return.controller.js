@@ -20,7 +20,7 @@ var validator = require('express-validator');
 var cacheService = require('../services/cache.service');
 var Promise = require('bluebird');
 var User = require('../models/user.model');
-
+var util = require('util');
 
 // boilerplate
 var _ = require('underscore');
@@ -61,18 +61,22 @@ var API_DATE_INPUT_FORMAT = config.api.dateInputFormat;
 
  ******************************************************************************/
 exports.createTaxReturns = function (req, res) {
+console.log('req.body = ' + JSON.stringify(req.body, null, 2));
     req.checkBody('taxReturns', 'Please provide array of taxReturns').notEmpty();
     var errors = req.validationErrors();
+console.log('errors = ' + JSON.stringify(errors, null, 2));
     if (errors) {
         res.status(400).send(errors);
     } else {
-
         var createTaxReturnPromise = function(taxReturn) {
-            var accountId = taxReturn.accountId;
-            var productId = taxReturn.productId;
+            var accountId = parseInt(taxReturn.accountId);
+            var productId = parseInt(taxReturn.productId);
             var firstName = taxReturn.firstName;
             var filerType = taxReturn.filerType;
             var status = taxReturn.status;
+            var sin = taxReturn.sin;
+            var prefix = taxReturn.prefix;
+            var middleInitial = taxReturn.middleInitial;
 
             // check that accountId exists
             return Account.findById(accountId).then(function(account) {
@@ -90,6 +94,9 @@ exports.createTaxReturns = function (req, res) {
                             taxReturnObj.firstName = firstName;
                             taxReturnObj.filerType = filerType;
                             taxReturnObj.status = status;
+                            taxReturnObj.sin = sin;
+                            taxReturnObj.prefix = prefix;
+                            taxReturnObj.middleInitial = middleInitial;
 
                             return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                                 var resultObj = {};
@@ -98,12 +105,26 @@ exports.createTaxReturns = function (req, res) {
                                 resultObj.taxReturnId = taxReturnId;
                                 resultObj.filerType = filerType;
                                 resultObj.status = status;
+                                resultObj.sin = sin;
+                                resultObj.prefix = prefix;
+                                resultObj.middleInitial = middleInitial;
                                 return Promise.resolve(resultObj);
-
+                            }).catch(function(err) {
+                                logger.error(err.message);
+                                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                                return;
                             });
                         }
+                    }).catch(function(err) {
+                        logger.error(err.message);
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
+                        return;
                     });
                 }
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
             });
         };
 
@@ -111,11 +132,15 @@ exports.createTaxReturns = function (req, res) {
         var resultArr = [];
         var createTaxReturnPromises = [];
         _.forEach(req.body.taxReturns, function(taxReturn) {
-            createTaxReturnPromises.push(createTaxReturnPromise(taxReturn))
+            createTaxReturnPromises.push(createTaxReturnPromise(taxReturn));
         });
 
-        Promise.each(createTaxReturnPromises, function(taxReturnResult) {
+        return Promise.each(createTaxReturnPromises, function(taxReturnResult) {
             resultArr.push(taxReturnResult);
+        }).catch(function(err) {
+            logger.error(err.stack);
+            res.status(400).send({ msg: 'create tax return failed' });
+            return Promise.resolve({});
         }).then(function() {
             res.status(200).json(resultArr);
 
@@ -155,14 +180,17 @@ exports.createTaxReturn = function (req, res) {
         var firstName = req.body.firstName;
         var filerType = req.body.filerType;
         var status = req.body.status;
+        var sin = req.body.sin;
+        var prefix = req.body.prefix;
+        var middleInitial = req.body.middleInitial;
 
         // check that accountId exists
-        Account.findById(accountId).then(function(account) {
+        return Account.findById(accountId).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send({ msg: 'Invalid accountID' });
             } else {
                 // check that productId exists
-                Product.findById(productId).then(function(product) {
+                return Product.findById(productId).then(function(product) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
@@ -172,6 +200,9 @@ exports.createTaxReturn = function (req, res) {
                         taxReturnObj.firstName = firstName;
                         taxReturnObj.filerType = filerType;
                         taxReturnObj.status = status;
+                        taxReturnObj.sin = sin;
+                        taxReturnObj.prefix = prefix;
+                        taxReturnObj.middleInitial = middleInitial;
 
                         return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
                             var resultObj = {};
@@ -180,16 +211,31 @@ exports.createTaxReturn = function (req, res) {
                             resultObj.taxReturnId = taxReturnId;
                             resultObj.filerType = filerType;
                             resultObj.status = status;
+                            resultObj.sin = sin;
+                            resultObj.prefix = prefix;
+                            resultObj.middleInitial = middleInitial;
 
                             res.status(200).json(resultObj);
 
                             // update the last User activity of the logged in user
                             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
 
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
+                            return;
                         });
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -236,7 +282,11 @@ exports.updateTaxReturnById = function (req, res) {
             (!req.body.dateOfBirth) &&
             (!req.body.canadianCitizen) &&
             (!req.body.authorizeCra) &&
-            (!req.body.filerType)
+            (!req.body.filerType) &&
+            (!req.body.status) &&
+            (!req.body.sin) &&
+            (!req.body.prefix) &&
+            (!req.body.middleInitial)
         ) {
             res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
         } else {
@@ -247,6 +297,10 @@ exports.updateTaxReturnById = function (req, res) {
           if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
           if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
           if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
+          if (req.body.status) {taxReturnObj.status = req.body.status; }
+          if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
+          if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
+          if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
 
           return TaxReturn.update(taxReturnId, taxReturnObj)
             .then(function(taxReturnId) {
@@ -261,6 +315,10 @@ exports.updateTaxReturnById = function (req, res) {
               } else {
                 res.status(404).send();
               }
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
             });
         }
     }
@@ -298,7 +356,10 @@ exports.updateTaxReturnStatusById = function (req, res) {
             
             // update the last User activity of the logged in user
             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
-
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -330,12 +391,16 @@ exports.findTaxReturnById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var id = req.params.id;
-        TaxReturn.findById(id).then(function(taxReturn) {
+        return TaxReturn.findById(id).then(function(taxReturn) {
             if (taxReturn) {
                 res.status(200).send(taxReturn);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -375,88 +440,103 @@ exports.createAnswer = function(req, res) {
         var taxReturnId = req.params.id;
         var answers = req.body.answers;
         // check that taxReturnId exists
-        TaxReturn.findById(taxReturnId).then(function(taxReturn) {
-                if ((!taxReturn) || (taxReturn.length === 0)) {
-                    res.status(404).send({msg: 'Invalid taxReturnId'});
-                } else {
-                    cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
-                        cacheService.get('questions', Question.populateQuestions()).then(function(questionsCache) {
-                            var answersObj = answers;
-                            var answerErrors = [];
-                            var answerPromises = [];
-                            _.each(answersObj, function(answer) {
-                                var questionId = parseInt(answer.questionId);
-                                var question = _.find(questionsCache, {id: questionId});
-                                if (!question) {
-                                    answerErrors.push({taxReturnId: taxReturnId,
-                                        questionID: questionId,
-                                        error: 'questionId = ' + questionId + ' is not valid.'});
-                                } else {
-                                    var filteredValues = _.filter(valuesCache, {question_id: questionId});
-                                    var answerText = answer.text;
-                                    var questionType = question.type;
-                                    var foundValue = _.find(filteredValues, {text: answerText});
-                                    var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
-                                    var validChoice = ((questionType === 'Choice') && (foundValue));
-                                    var validDate = false;
-                                    if (questionType === 'Date') {
-                                        var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
-                                        validDate = ((questionType === 'Date') && (isValidDate));
-                                    }
-                                    var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
-                                    var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
+        return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
+            if ((!taxReturn) || (taxReturn.length === 0)) {
+                res.status(404).send({msg: 'Invalid taxReturnId'});
+            } else {
+                return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
+                    return cacheService.get('questions', Question.populateQuestions()).then(function(questionsCache) {
+                        var answersObj = answers;
+                        var answerErrors = [];
+                        var answerPromises = [];
+                        _.each(answersObj, function(answer) {
+                            var questionId = parseInt(answer.questionId);
+                            var question = _.find(questionsCache, {id: questionId});
+                            if (!question) {
+                                answerErrors.push({taxReturnId: taxReturnId,
+                                    questionID: questionId,
+                                    error: 'questionId = ' + questionId + ' is not valid.'});
+                            } else {
+                                var filteredValues = _.filter(valuesCache, {question_id: questionId});
+                                var answerText = answer.text;
+                                var questionType = question.type;
+                                var foundValue = _.find(filteredValues, {text: answerText});
+                                var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
+                                var validChoice = ((questionType === 'Choice') && (foundValue));
+                                var validDate = false;
+                                if (questionType === 'Date') {
+                                    var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
+                                    validDate = ((questionType === 'Date') && (isValidDate));
+                                }
+                                var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
+                                var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
 
-                                    if ((answer.text) &&
-                                        (validBool ||
-                                        validChoice ||
-                                        validDate ||
-                                        validNotSure ||
-                                        validNoneApply)
-                                    ) {
-                                        var questionIdparsed = parseInt(questionId);
-                                        if (!isNaN(questionIdparsed) && (questionId)) {
-                                            var answerObj = {};
-                                            answerObj.questionId = questionIdparsed;
-                                            answerObj.text = answerText;
-                                            answerObj.taxReturnId = taxReturnId;
+                                if ((answer.text) &&
+                                    (validBool ||
+                                    validChoice ||
+                                    validDate ||
+                                    validNotSure ||
+                                    validNoneApply)
+                                ) {
+                                    var questionIdparsed = parseInt(questionId);
+                                    if (!isNaN(questionIdparsed) && (questionId)) {
+                                        var answerObj = {};
+                                        answerObj.questionId = questionIdparsed;
+                                        answerObj.text = answerText;
+                                        answerObj.taxReturnId = taxReturnId;
 
-                                            answerPromises.push(Answer.create(answerObj));
-                                        } else {
-                                            answerErrors.push({taxReturnId: taxReturnId,
-                                                questionID: questionId,
-                                                error: 'questionId = ' + questionId + ' is not valid.'});
-                                        }
+                                        answerPromises.push(Answer.create(answerObj));
                                     } else {
-                                        var msg = '';
-                                        if (questionType === 'Date') {
-                                            msg = 'Invalid text value for answer (questionId=' + questionId +
-                                                ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
-                                        } else {
-                                            msg = 'Invalid text value for answer (questionId=' + questionId +
-                                                ', questionType=' + questionType + ', answer.text=' + answerText + ')';
-
-                                        }
                                         answerErrors.push({taxReturnId: taxReturnId,
                                             questionID: questionId,
-                                            error: msg});
+                                            error: 'questionId = ' + questionId + ' is not valid.'});
                                     }
-                                }
-                            });
-                            if (answerErrors.length > 0) {
-                                res.status(400).send(answerErrors);
-                            } else {
-                                return Promise.all(answerPromises).then(function() {
-                                    res.status(200).send('OK');
+                                } else {
+                                    var msg = '';
+                                    if (questionType === 'Date') {
+                                        msg = 'Invalid text value for answer (questionId=' + questionId +
+                                            ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
+                                    } else {
+                                        msg = 'Invalid text value for answer (questionId=' + questionId +
+                                            ', questionType=' + questionType + ', answer.text=' + answerText + ')';
 
-                                    // update the last User activity of the logged in user
-                                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
-                                });
+                                    }
+                                    answerErrors.push({taxReturnId: taxReturnId,
+                                        questionID: questionId,
+                                        error: msg});
+                                }
                             }
                         });
+                        if (answerErrors.length > 0) {
+                            res.status(400).send(answerErrors);
+                        } else {
+                            return Promise.all(answerPromises).then(function() {
+                                res.status(200).send('OK');
+
+                                // update the last User activity of the logged in user
+                                if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            }).catch(function(err) {
+                                logger.error(err.message);
+                                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                                return;
+                            });
+                        }
+                    }).catch(function(err) {
+                        logger.error(err.message);
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
+                        return;
                     });
-                }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
+                });
             }
-        );
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
+        });
     }
 };
 
@@ -488,12 +568,16 @@ exports.findAnswerById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var answerId = req.params.answerId;
-        Answer.findById(answerId).then(function(answer) {
+        return Answer.findById(answerId).then(function(answer) {
             if (answer) {
                 res.status(200).send(answer);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -523,8 +607,8 @@ exports.listAnswers = function(req, res) {
         res.status(400).send(errors);
     } else {
         var id = req.params.id;
-        cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
-            Answer.listAnswers(valuesCache, id).then(function(answers) {
+        return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
+            return Answer.listAnswers(valuesCache, id).then(function(answers) {
                 if (answers) {
                     var answersObj = {};
                     answersObj.answers = answers;
@@ -532,7 +616,15 @@ exports.listAnswers = function(req, res) {
                 } else {
                     res.status(404).send();
                 }
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
             });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -547,8 +639,8 @@ exports.listAnswersFilterCategory = function(req, res) {
     } else {
         var taxReturnId = req.params.taxReturnId;
         var categoryId = req.params.categoryId;
-        cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
-            Answer.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answers) {
+        return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
+            return Answer.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answers) {
                 if (answers) {
                     var answersObj = {};
                     answersObj.answers = answers;
@@ -556,7 +648,15 @@ exports.listAnswersFilterCategory = function(req, res) {
                 } else {
                     res.status(404).send();
                 }
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
             });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -617,6 +717,10 @@ exports.createAddress = function (req, res) {
 
             // update the last User activity of the logged in user
             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -679,6 +783,10 @@ exports.updateAddress = function (req, res) {
 
             // update the last User activity of the logged in user
             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -709,12 +817,16 @@ exports.findAddressById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var addressId = req.params.addressId;
-        Address.findById(addressId).then(function(address) {
+        return Address.findById(addressId).then(function(address) {
             if (address) {
                 res.status(200).send(address);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -748,12 +860,16 @@ exports.listAddresses = function (req, res) {
         res.status(400).send(errors);
     } else {
         var taxReturnId = req.params.id;
-        Address.findAll(taxReturnId).then(function(addressArr) {
+        return Address.findAll(taxReturnId).then(function(addressArr) {
             if (addressArr) {
                 res.status(200).send(addressArr);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -780,12 +896,12 @@ exports.linkExistingAddresses = function (req, res) {
         var addressId = req.params.addressId;
         var taxReturnId = req.params.taxReturnId;
         // check that addressId exists
-        Address.findById(addressId).then(function(address) {
+        return Address.findById(addressId).then(function(address) {
             if ((!address) || (address.length === 0)) {
                 res.status(404).send({ msg: 'Invalid address' });
             } else {
                 // check that taxReturnId exists
-                TaxReturn.findById(taxReturnId).then(function(taxReturn) {
+                return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
                     if ((!taxReturn) || (taxReturn.length === 0)) {
                         res.status(404).send({ msg: 'Invalid taxReturn' });
                     } else {
@@ -794,14 +910,26 @@ exports.linkExistingAddresses = function (req, res) {
                         addressTaxReturnObj.taxReturnId = taxReturnId;
 
                         return Address.createAssociation(addressTaxReturnObj).then(function() {
-                          res.status(200).send("OK");
+                            res.status(200).send("OK");
 
-                          // update the last User activity of the logged in user
-                          if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                            // update the last User activity of the logged in user
+                            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
+                            return;
                         });
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -857,6 +985,10 @@ exports.createDependant = function (req, res) {
 
             // update the last User activity of the logged in user
             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -903,7 +1035,7 @@ exports.updateDependant = function (req, res) {
             return;
         }
         // check that dependantId exists
-        Dependant.findById(dependantId).then(function(dependant) {
+        return Dependant.findById(dependantId).then(function(dependant) {
             if ((!dependant) || (dependant.length === 0)) {
                 res.status(404).send({ msg: 'Dependant not found' });
             } else {
@@ -926,8 +1058,16 @@ exports.updateDependant = function (req, res) {
 
                     // update the last User activity of the logged in user
                     if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -953,15 +1093,16 @@ exports.deleteDependant = function (req, res) {
         const dependantId = req.params.dependantId,
             taxReturnId = req.params.taxReturnId;
         // check that dependantId exists
-        Dependant.deleteById(dependantId, taxReturnId).then(function() {
+        return Dependant.deleteById(dependantId, taxReturnId).then(function() {
             res.status(200).send('OK');
 
             // update the last User activity of the logged in user
             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
-        })
-            .catch(function(error){
-                res.status(400).send(error);
-            });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
+        });
     }
 };
 
@@ -998,12 +1139,16 @@ exports.getDependantsById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var taxReturnId = req.params.id;
-        Dependant.getAllById(taxReturnId).then(function(dependant) {
+        return Dependant.getAllById(taxReturnId).then(function(dependant) {
             if (dependant) {
                 res.status(200).send(dependant);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -1033,12 +1178,16 @@ exports.findDependantById = function (req, res) {
         res.status(400).send(errors);
     } else {
         var dependantId = req.params.dependantId;
-        Dependant.findById(dependantId).then(function(dependant) {
+        return Dependant.findById(dependantId).then(function(dependant) {
             if (dependant) {
                 res.status(200).send(dependant);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -1065,12 +1214,12 @@ exports.linkExistingDependants = function (req, res) {
         var dependantId = req.params.dependantId;
         var taxReturnId = req.params.taxReturnId;
         // check that dependantId exists
-        Dependant.findById(dependantId).then(function(dependant) {
+        return Dependant.findById(dependantId).then(function(dependant) {
             if ((!dependant) || (dependant.length === 0)) {
                 res.status(404).send({ msg: 'Invalid dependant' });
             } else {
                 // check that taxReturnId exists
-                TaxReturn.findById(taxReturnId).then(function(taxReturn) {
+                return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
                     if ((!taxReturn) || (taxReturn.length === 0)) {
                         res.status(404).send({ msg: 'Invalid taxReturn' });
                     } else {
@@ -1079,13 +1228,24 @@ exports.linkExistingDependants = function (req, res) {
                         dependantTaxReturnObj.taxReturnId = taxReturnId;
                         return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
                             res.status(200).send("OK");
-
                             // update the last User activity of the logged in user
                             if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
+                            return;
                         });
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -1123,9 +1283,13 @@ exports.getAvailableTaxReturnStatuses = function (req, res) {
   } else {
 
     // check that dependantId exists
-    TaxReturn.getTaxReturnStatuses()
+    return TaxReturn.getTaxReturnStatuses()
       .then(function(results) {
         return res.status(200).json(results);
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
     });
   }
 };

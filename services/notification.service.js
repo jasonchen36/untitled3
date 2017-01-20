@@ -11,11 +11,13 @@ var NotificationType = {
   PASSWORD_RESET: 2,
   QUOTE: 3,
   TAX_RETURN_SUBMITTED: 4,
+  CHAT_MESSAGE_FROM_TAXPRO: 5,
   emailTemplates: {
       1: {name: config.email.templates.welcome},
       2: {name: config.email.templates.password_reset},
       3: {name: config.email.templates.quote},
-      4: {name: config.email.templates.tax_return_submitted}
+      4: {name: config.email.templates.tax_return_submitted},
+      5: {name: config.email.templates.message_from_taxpro}
   }
 };
 
@@ -48,9 +50,12 @@ var sendNotification = function(user, notificationType, data) {
             var subject = config.email.submittedSubject;
             var message = config.email.submittedMessage;
 
-            return mailService.send(user, emailTemplate, data);
+            notificationPromises.push(mailService.send(user, emailTemplate, data));
             notificationPromises.push(pushService.send(user, message));
-            notificationPromises.push(systemMessageService.create(user, subject, config.email.submittedMessage));
+            notificationPromises.push(systemMessageService.create(user, subject, cmessage));
+            break;
+        case NotificationType.CHAT_MESSAGE_FROM_TAXPRO:
+            notificationPromises.push(mailService.send(user, emailTemplate, data));
             break;
         default:
             logger.error('Unknown notification type: ' + notificationType);

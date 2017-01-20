@@ -35,7 +35,9 @@ function internalSend(user, message) {
             body: {
                 'app_id': ONESIGNAL_APP_ID,
                 'contents': {en: message},
-                filters: [{"field": "tag", "key": "user_id", "value": userId}]
+                filters: [{"field": "tag", "key": "user_id", "value": userId}],
+                ios_badgeType: 'Increase',
+                ios_badgeCount: 1
             }
         },
         function(error, response, body) {

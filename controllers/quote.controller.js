@@ -141,17 +141,17 @@ exports.create = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountId = req.body.accountId;
-        var productId = req.body.productId;
+        var accountId = parseInt(req.body.accountId);
+        var productId = parseInt(req.body.productId);
         var taxReturns = req.body.taxReturns;
 
         // check that accountId exists
-        Account.findById(accountId).then(function(account) {
+        return Account.findById(accountId).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send({msg: 'Invalid accountID'});
             } else {
                 // check that productId exists
-                Product.findById(productId).then(function(product) {
+                return Product.findById(productId).then(function(product) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
@@ -178,13 +178,17 @@ exports.create = function (req, res) {
                                                            questionID: questionId,
                                                            error: 'questionId = ' + questionId + ' not found on questions table'});
                                     }
+                                }).catch(function(err) {
+                                    logger.error(err.message);
+                                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                                    return;
                                 });
                             };
                             _.forEach(taxReturn.answers, function(answerObj) {
                                 validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
                             });
                         });
-                        Promise.all(validateQuestionIdPromises).then(function(result) {
+                        return Promise.all(validateQuestionIdPromises).then(function(result) {
                             if (answerErrors.length > 0) {
                                 res.status(400).send(answerErrors);
                             } else {
@@ -201,7 +205,7 @@ exports.create = function (req, res) {
                                         saveAnswersPromises.push(saveAnswer(answerObj));
                                     });
                                 });
-                                Promise.all(saveAnswersPromises).then(function(result) {
+                                return Promise.all(saveAnswersPromises).then(function(result) {
                                     var quoteObj = {};
                                     quoteObj.accountId = accountId;
                                     quoteObj.productId = productId;
@@ -222,13 +226,33 @@ exports.create = function (req, res) {
                                         });
                                         quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
                                         res.status(200).json(quoteObj);
+                                    }).catch(function(err) {
+                                        logger.error(err.message);
+                                        res.status(500).send({ msg: 'Something broke: check server logs.' });
+                                        return;
                                     });
+                                }).catch(function(err) {
+                                    logger.error(err.message);
+                                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                                    return;
                                 });
                             }
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
+                            return;
                         });
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -324,17 +348,17 @@ RESPONSE:
 }
  ******************************************************************************/
 exports.submit = function (req, res) {
-    req.checkBody('accountId', 'Please provide a accountId').isInt();
-    req.checkBody('productId', 'Please provide a productId').isInt();
+    req.checkBody('accountId', 'Please provide an integer accountId').isInt();
+    req.checkBody('productId', 'Please provide an integer productId').isInt();
     req.checkParams('id', 'Please provide a quoteId').isInt();
 
     var errors = req.validationErrors();
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountId = req.body.accountId;
-        var productId = req.body.productId;
-        var quoteId = req.params.id;
+        var accountId = parseInt(req.body.accountId);
+        var productId = parseInt(req.body.productId);
+        var quoteId = parseInt(req.params.id);
 
         if (accountId !== req.user.account_id) {
             res.status(401).send();
@@ -342,12 +366,12 @@ exports.submit = function (req, res) {
         }
 
         // check that accountId exists
-        Account.findById(accountId).then(function(account) {
+        return Account.findById(accountId).then(function(account) {
             if ((!account) || (account.length === 0)) {
                 res.status(404).send({ msg: 'Invalid accountID' });
             } else {
                 // check that productId exists
-                Product.findById(productId).then(function(product) {
+                return Product.findById(productId).then(function(product) {
                     if ((!product) || (product.length === 0)) {
                         res.status(404).send({ msg: 'Invalid productID' });
                     } else {
@@ -361,11 +385,22 @@ exports.submit = function (req, res) {
                                 if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
 
                             });
+                        }).catch(function(err) {
+                            logger.error(err.message);
+                            res.status(500).send({ msg: 'Something broke: check server logs.' });
+                            return;
                         });
-
                     }
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -444,21 +479,25 @@ RESPONSE:
 }
 *******************************************************************************/
 exports.findById = function (req, res) {
-      req.checkParams('id', 'Please provide a quoteId').isInt();
+    req.checkParams('id', 'Please provide a quoteId').isInt();
 
-      var errors = req.validationErrors();
-      if (errors) {
-          res.status(400).send(errors);
-      } else {
-          var id = req.params.id;
-          Quote.findById(id).then(function(quote) {
-              if (quote) {
-                  res.status(200).send(quote);
-              } else {
-                  res.status(404).send();
-              }
-          });
-      }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var id = parseInt(req.params.id);
+        return Quote.findById(id).then(function(quote) {
+            if (quote) {
+                res.status(200).send(quote);
+            } else {
+                res.status(404).send();
+            }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
+        });
+    }
 };
 
 
@@ -498,7 +537,7 @@ exports.createDocument = function (req, res) {
         logger.debug('req.body = ' + JSON.stringify(req.body, null, 2));
         logger.debug(req.file);
 
-        var quoteId = req.params.id;
+        var quoteId = parseInt(req.params.id);
         var taxReturnId = parseInt(req.body.taxReturnId);
         var checklistItemId = parseInt(req.body.checklistItemId);
         var originalname = req.file.originalname;
@@ -558,10 +597,25 @@ exports.createDocument = function (req, res) {
                         if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
 
                         return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                    }).catch(function(err) {
+                        logger.error(err.message);
+                        res.status(500).send({ msg: 'Something broke: check server logs.' });
+                        return;
                     });
-
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
             });
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -584,19 +638,28 @@ exports.deleteDocumentById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var quoteId = req.params.quoteId;
-        var documentId = req.params.documentId;
-        Document.findById(documentId).then(function(document) {
+        var quoteId = parseInt(req.params.quoteId);
+        var documentId = parseInt(req.params.documentId);
+        return Document.findById(documentId).then(function(document) {
             if (document) {
-                Document.deleteById(quoteId, documentId).then(function() {
+                return Document.deleteById(quoteId, documentId).then(function() {
                     res.status(200).send('Ok');
 
                     // update the last User activity of the logged in user
-                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id); }
+
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
                 });
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -652,13 +715,17 @@ exports.getChecklist = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
-        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+        var id = parseInt(req.params.id);
+        return Checklist.getCheckListForQuoteId(id).then(function(checklist) {
             if (checklist) {
                 res.status(200).send(checklist);
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
@@ -681,8 +748,8 @@ exports.getChecklistPDF = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
-        Checklist.getCheckListForQuoteId(id).then(function(checklist) {
+        var id = parseInt(req.params.id);
+        return Checklist.getCheckListForQuoteId(id).then(function(checklist) {
             if (checklist) {
                 var doc = new PDFDocument({
                     Title: 'Export'
@@ -724,26 +791,34 @@ exports.getChecklistPDF = function(req, res) {
             } else {
                 res.status(404).send();
             }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
         });
     }
 };
 
-exports.findByAccountId = function (req, res) {
-  req.checkParams('productId', 'Please provide a product id').isInt();
-  req.checkParams('accountId', 'Please provide a account id').isInt();
+exports.findByAccountId = function(req, res) {
+    req.checkParams('productId', 'Please provide a product id').isInt();
+    req.checkParams('accountId', 'Please provide a account id').isInt();
 
-  var errors = req.validationErrors();
-  if (errors) {
-      res.status(400).send(errors);
-  } else {
-      var productId = req.params.productId;
-      var accountId = req.params.accountId;
-      Quote.findByProductIdAccountId(productId,accountId).then(function(account) {
-          if (account) {
-              res.status(200).send(account);
-          } else {
-              res.status(404).send();
-          }
-      });
-  }
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        var productId = parseInt(req.params.productId);
+        var accountId = parseInt(req.params.accountId);
+        return Quote.findByProductIdAccountId(productId, accountId).then(function(account) {
+            if (account) {
+                res.status(200).send(account);
+            } else {
+                res.status(404).send();
+            }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
+        });
+    }
 };

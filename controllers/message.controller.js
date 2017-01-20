@@ -17,6 +17,7 @@ var _ = require('underscore');
 var config = require('../config/config');
 var async = require("async");
 var mailService = require('../services/mail.service');
+var notificationService = require('../services/notification.service');
 var mailclient = require('../services/mailclient2'); // just here for initiaL TEST
 
 /*******************************************************************************
@@ -73,11 +74,40 @@ exports.create = function (req, res) {
 
 
     // if message OK, save it
-    Message.create(message).then(function() {
-      res.status(200).send('OK');
+    return Message.create(message).then(function() {
+        if (req.user.role !== 'Customer') { // message from Taxpro or Admin triggers notification
+            var variables = {
+                name: req.user.first_name,
+                message: message.body
+            }
+            return User.findById(message.client).then(function(targetUser) {
+                return notificationService.sendNotification(targetUser, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
+                    res.status(200).send('OK');
 
-      // update the last User activity of the logged in user
-      if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+                    // update the last User activity of the logged in user
+                    if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+
+                }).catch(function(err) {
+                    logger.error(err.message);
+                    res.status(500).send({ msg: 'Something broke: check server logs.' });
+                    return;
+                });
+            }).catch(function(err) {
+                logger.error(err.message);
+                res.status(500).send({ msg: 'Something broke: check server logs.' });
+                return;
+            });
+        } else {
+            res.status(200).send('OK');
+
+            // update the last User activity of the logged in user
+            if(req.user && req.user.id) { User.updateLastUserActivity(req.user.id) }
+
+        }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
     });
 
 };
@@ -116,7 +146,7 @@ exports.getMessageListForUser = function (req, res) {
         }
     }
 
-    Message.findAllById(client).then(function(messages) {
+    return Message.findAllById(client).then(function(messages) {
         if (!messages) {
             res.status(404).send();
             return;
@@ -124,6 +154,10 @@ exports.getMessageListForUser = function (req, res) {
 
         var out = { "messages": messages };
         res.status(200).send(out);
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
     });
 
 };
@@ -166,13 +200,17 @@ exports.read = function (req, res) {
     } else {
         isAdmin = false;
     }
-    Message.findOneById(id, client, isAdmin).then(function(message) {
+    return Message.findOneById(id, client, isAdmin).then(function(message) {
         if (!message) {
             res.status(404).send();
             return;
         } else {
             res.status(200).send(message);
         }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
     });
 };
 
@@ -190,8 +228,12 @@ exports.markRead = function(req, res) {
 
     var id = req.params.id;
     var client = req.user.id; // user comes from authentication
-    Message.setReadStatusById(id, client).then(function() {
+    return Message.setReadStatusById(id, client).then(function() {
         res.status(200).send();
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
     });
 };
 
@@ -201,7 +243,11 @@ exports.markAllRead = function(req, res) {
     }
 
     var client = req.user.id; // user comes from authentication
-    Message.setAllReadStatusByUserId(client).then(function() {
+    return Message.setAllReadStatusByUserId(client).then(function() {
         res.status(200).send();
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
     });
 };

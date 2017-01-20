@@ -42,12 +42,48 @@ RESPONSE:
 
 *******************************************************************************/
 exports.list = function (req, res) {
+    return Categories.list().then(function(categories) {
+        if (categories) {
+            res.status(200).send(categories);
+        } else {
+            res.status(404).send();
+        }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
+    });
+};
 
-      Categories.list().then(function(categories) {
-          if (categories) {
-              res.status(200).send(categories);
-          } else {
-              res.status(404).send();
-          }
-        });
+/*******************************************************************************
+ ENDPOINT
+ GET /categories/:id
+
+ RESPONSE:
+
+ [
+ {
+   "id": 2,
+   "name": "Credits",
+   "displaytext": "Hi % do you have these credits:",
+   "secondarytext": null,
+   "created_at": "2016-11-16T23:56:11.000Z",
+   "updated_at": "2016-11-17T22:15:45.000Z"
+ }
+ ]
+
+ *******************************************************************************/
+
+exports.getCategoryById = function (req, res){
+    return Categories.getCategoryById(req.params.id).then(function(category){
+        if (category) {
+            res.status(200).send(category);
+        } else {
+            res.status(404).send();
+        }
+    }).catch(function(err) {
+        logger.error(err.message);
+        res.status(500).send({ msg: 'Something broke: check server logs.' });
+        return;
+    });
 };
