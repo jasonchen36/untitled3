@@ -215,9 +215,6 @@ exports.create = function(req, res, next) {
                         userObj.accountId = accountResult;
                         return createUserAndSendEmail(userObj).then(function(token) {
                             res.json({ token : token });
-
-                            // update the last User activity of the logged in user
-                            User.updateLastUserActivity(userObj);
                         }).catch(function(err) {
                             logger.error(err.message);
                             res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -231,9 +228,6 @@ exports.create = function(req, res, next) {
                 } else {
                     return createUserAndSendEmail(userObj).then(function(token) {
                         res.json({ token : token });
-
-                        // update the last User activity of the logged in user
-                        User.updateLastUserActivity(userObj);
                     }).catch(function(err) {
                         logger.error(err.message);
                         res.status(500).send({ msg: 'Something broke: check server logs.' });
@@ -277,6 +271,8 @@ function createUserAndSendEmail(userObj) {
         };
 
         return User.findByEmail(userObj.email).then(function(user) {
+            // update the last User activity of the logged in user
+            User.updateLastUserActivity(user);
             return Quote.getEmailFieldsByProductIdAccountId(userObj.productId, userObj.accountId).then(function(quote) {
                 user.quote = quote;
                 return sendWelcomeEmailTo(user).then(function() {
