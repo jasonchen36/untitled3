@@ -78,8 +78,10 @@ exports.create = function (req, res) {
         if (req.user.role !== 'Customer') { // message from Taxpro or Admin triggers notification
             var variables = {
                 name: req.user.first_name,
-                message: message.body
+                message: message.body,
+                dashboard_url: config.domain + '/dashboard'
             }
+
             return User.findById(message.client).then(function(targetUser) {
                 return notificationService.sendNotification(targetUser, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
                     res.status(200).send('OK');
