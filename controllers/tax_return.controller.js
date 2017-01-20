@@ -131,9 +131,6 @@ exports.createTaxReturns = function (req, res) {
         var createTaxReturnPromises = [];
         var accessDenied = false;
         _.forEach(req.body.taxReturns, function(taxReturn) {
-            if (!User.hasAccess(req.user, taxReturn.accountId)) {
-                accessDenied = true;
-            }
             createTaxReturnPromises.push(createTaxReturnPromise(taxReturn));
         });
         if (accessDenied) {
