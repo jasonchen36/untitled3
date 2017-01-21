@@ -75,15 +75,22 @@ exports.list = function (req, res) {
  *******************************************************************************/
 
 exports.getCategoryById = function (req, res){
-    return Categories.getCategoryById(req.params.id).then(function(category){
-        if (category) {
-            res.status(200).send(category);
-        } else {
-            res.status(404).send();
-        }
-    }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
-    });
+    req.checkBody('id', 'Please provide a category id').isInt();
+
+    var errors = req.validationErrors();
+    if (errors) {
+        res.status(400).send(errors);
+    } else {
+        return Categories.getCategoryById(req.params.id).then(function(category){
+            if (category) {
+                res.status(200).send(category);
+            } else {
+                res.status(404).send();
+            }
+        }).catch(function(err) {
+            logger.error(err.message);
+            res.status(500).send({ msg: 'Something broke: check server logs.' });
+            return;
+        });
+    }
 };
