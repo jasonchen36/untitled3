@@ -86,7 +86,7 @@ exports.findById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
+        var id = parseInt(req.params.id);
 
         return Account.findById(id).then(function(account) {
             if ((!account) || (account.length === 0)) {
@@ -131,7 +131,7 @@ exports.update = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var accountId = req.params.id;
+        var accountId = parseInt(req.params.id);
         var keys = ['name', 'push_notifications', 'email_notifications', 'taxpro_id'];
 
         return Account.findById(accountId).then(function(account) {

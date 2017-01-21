@@ -60,8 +60,8 @@ exports.findByCategoryId = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var productId = req.params.productId;
-        var categoryId = req.params.categoryId;
+        var productId = parseInt(req.params.productId);
+        var categoryId = parseInt(req.params.categoryId);
         return Question.findByProductIdCategoryId(productId, categoryId).then(function(question) {
             if (question) {
                 res.status(200).send(question);

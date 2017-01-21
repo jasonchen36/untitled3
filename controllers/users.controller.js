@@ -199,7 +199,7 @@ exports.create = function(req, res, next) {
         userObj.last_name = req.body.last_name;
         userObj.email = req.body.email;
         if (req.body.accountId) {
-            userObj.accountId = req.body.accountId; // link account to user
+            userObj.accountId = parseInt(req.body.accountId); // link account to user
         }
         userObj.productId = config.api.currentProductId;
 

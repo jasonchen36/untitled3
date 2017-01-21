@@ -279,7 +279,7 @@ exports.updateTaxReturnById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var taxReturnId = req.params.id;
+        var taxReturnId = parseInt(req.params.id);
         var accountId = req.body.accountId;
         var productId = req.body.productId;
         var taxReturnObj = {};
@@ -355,9 +355,9 @@ exports.updateTaxReturnStatusById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        const taxReturnId = req.params.id,
+        const taxReturnId = parseInt(req.params.id),
             taxReturnObj = {
-                status_id: req.body.statusId
+                status_id: parseInt(req.body.statusId)
             };
         return TaxReturn.update(taxReturnId, taxReturnObj).then(function() {
             res.status(200).send('OK');
@@ -398,7 +398,7 @@ exports.findTaxReturnById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
+        var id = parseInt(req.params.id);
         return TaxReturn.findById(id).then(function(taxReturn) {
             if (taxReturn) {
                 res.status(200).send(taxReturn);
@@ -445,7 +445,7 @@ exports.createAnswer = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var taxReturnId = req.params.id;
+        var taxReturnId = parseInt(req.params.id);
         var answers = req.body.answers;
         // check that taxReturnId exists
         return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
@@ -575,7 +575,7 @@ exports.findAnswerById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var answerId = req.params.answerId;
+        var answerId = parseInt(req.params.answerId);
         return Answer.findById(answerId).then(function(answer) {
             if (answer) {
                 res.status(200).send(answer);
@@ -614,7 +614,7 @@ exports.listAnswers = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var id = req.params.id;
+        var id = parseInt(req.params.id);
         return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
             return Answer.listAnswers(valuesCache, id).then(function(answers) {
                 if (answers) {
@@ -645,8 +645,8 @@ exports.listAnswersFilterCategory = function(req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var taxReturnId = req.params.taxReturnId;
-        var categoryId = req.params.categoryId;
+        var taxReturnId = parseInt(req.params.taxReturnId);
+        var categoryId = parseInt(req.params.categoryId);
         return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
             return Answer.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answers) {
                 if (answers) {
@@ -765,7 +765,7 @@ exports.updateAddress = function (req, res) {
     } else {
         var addressLine1 = req.body.addressLine1;
         var addressLine2 = req.body.addressLine2;
-        var addressId = req.params.addressId;
+        var addressId = parseInt(req.params.addressId);
         var city = req.body.city;
         var province = req.body.province;
         var postalCode = req.body.postalCode;
@@ -824,7 +824,7 @@ exports.findAddressById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var addressId = req.params.addressId;
+        var addressId = parseInt(req.params.addressId);
         return Address.findById(addressId).then(function(address) {
             if (address) {
                 res.status(200).send(address);
@@ -867,7 +867,7 @@ exports.listAddresses = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var taxReturnId = req.params.id;
+        var taxReturnId = parseInt(req.params.id);
         return Address.findAll(taxReturnId).then(function(addressArr) {
             if (addressArr) {
                 res.status(200).send(addressArr);
@@ -901,8 +901,8 @@ exports.linkExistingAddresses = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var addressId = req.params.addressId;
-        var taxReturnId = req.params.taxReturnId;
+        var addressId = parseInt(req.params.addressId);
+        var taxReturnId = parseInt(req.params.taxReturnId);
         // check that addressId exists
         return Address.findById(addressId).then(function(address) {
             if ((!address) || (address.length === 0)) {
@@ -1033,8 +1033,8 @@ exports.updateDependant = function (req, res) {
         var lastName = req.body.lastName;
         var dateOfBirth = req.body.dateOfBirth;
         var relationship = req.body.relationship;
-        var dependantId = req.params.dependantId;
-        var taxReturnId = req.params.taxReturnId;
+        var dependantId = parseInt(req.params.dependantId);
+        var taxReturnId = parseInt(req.params.taxReturnId);
         var isShared = req.body.isShared;
         var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
         if(!isValidDate){
@@ -1098,8 +1098,8 @@ exports.deleteDependant = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        const dependantId = req.params.dependantId,
-            taxReturnId = req.params.taxReturnId;
+        const dependantId = parseInt(req.params.dependantId),
+            taxReturnId = parseInt(req.params.taxReturnId);
         // check that dependantId exists
         return Dependant.deleteById(dependantId, taxReturnId).then(function() {
             res.status(200).send('OK');
@@ -1146,7 +1146,7 @@ exports.getDependantsById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var taxReturnId = req.params.id;
+        var taxReturnId = parseInt(req.params.id);
         return Dependant.getAllById(taxReturnId).then(function(dependant) {
             if (dependant) {
                 res.status(200).send(dependant);
@@ -1185,7 +1185,7 @@ exports.findDependantById = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var dependantId = req.params.dependantId;
+        var dependantId = parseInt(req.params.dependantId);
         return Dependant.findById(dependantId).then(function(dependant) {
             if (dependant) {
                 res.status(200).send(dependant);
@@ -1219,8 +1219,8 @@ exports.linkExistingDependants = function (req, res) {
     if (errors) {
         res.status(400).send(errors);
     } else {
-        var dependantId = req.params.dependantId;
-        var taxReturnId = req.params.taxReturnId;
+        var dependantId = parseInt(req.params.dependantId);
+        var taxReturnId = parseInt(req.params.taxReturnId);
         // check that dependantId exists
         return Dependant.findById(dependantId).then(function(dependant) {
             if ((!dependant) || (dependant.length === 0)) {
