@@ -536,11 +536,9 @@ exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var user = req.body;
 
-
     if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
         var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id', 'migrated_user']; //v2
-
         if (User.isAdmin(req.user)) {
             keys.push('role');
         }

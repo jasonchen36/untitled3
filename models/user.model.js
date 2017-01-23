@@ -235,7 +235,7 @@ var User = {
         if ((!new_salt) || (new_salt.length === 0)) {
           return Promise.reject(new Error('updatePassword() No new_salt specified!'));
         }
-        var updateUserSql = 'UPDATE users SET reset_key = null, hashed_password = ?, salt = ? WHERE id = ?';
+        var updateUserSql = 'UPDATE users SET reset_key = null, migrated_user = No, hashed_password = ?, salt = ? WHERE id = ?';
         var updateUserSqlParams = [hashed_password, new_salt, userId];
         return db.knex.raw(updateUserSql, updateUserSqlParams);
     },
