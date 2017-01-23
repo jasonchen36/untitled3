@@ -316,7 +316,7 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
         return res.status(403).send();
     }
-    return TaxReturntaxReturnModelupdate(taxReturnId, taxReturnObj).then(function() {
+    return taxReturnModel(taxReturnId, taxReturnObj).then(function() {
         res.status(200).send('OK');
 
         // update the last User activity of the logged in user
