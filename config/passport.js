@@ -58,7 +58,11 @@ module.exports = function(passport) {
                             expiredAt: 1408621000
                           }
                         */
-                        logger.info(err.name + ': ' + err.message + ', expiredAt: ' + err.expiredAt);
+                        if (err.expiredAt) {
+                            logger.error(err.name + ': ' + err.message + ', expiredAt: ' + err.expiredAt);
+                        } else {
+                            logger.error(err.name + ': ' + err.message);
+                        }
                         return done(null, false);
                     }
                     User.findByEmail(decoded.email).then(function(user) {
