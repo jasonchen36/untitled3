@@ -9,6 +9,17 @@ var logger = require('../services/logger.service');
 
 
 var User = {
+    hasAccess: function(userObj, userId) {
+        if ((!userObj) || (userObj.length === 0)) return false;
+        if ((!userId) || (userId.length === 0)) return false;
+
+        if ((userObj.user_id === userId) ||
+            (this.isAdmin(userObj)) ||
+            (this.isTaxpro(userObj))) {
+            return true;
+        }
+    },
+
     findAllCustomers: function() {
         var userSql = 'SELECT * FROM users WHERE role = "Customer"';
         return db.knex.raw(userSql, []).then(function(usersSqlResults) {
@@ -249,33 +260,17 @@ var User = {
         return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
       }
     },
-    IsAdmin: function(user) {
-        if ((user.role) && (user.role === 'Admin')) {
+    isAdmin: function(userObj) {
+        if ((userObj.role) && (userObj.role === 'Admin')) {
             return true;
         } else {
             return false;
         }
     },
 
-    IsTaxpro: function(user) {
-        if ((user.role) && (user.role === 'Taxpro')) {
-            return true;
-        } else {
-            return false;
-        }
-    },
 
-    hasAccess: function(user, accountId) {
-        if (typeof user !== 'object') {
-            throw new Error('hasAccess(): user is not a object ');
-        }
-        if (!accountId) {
-            return true; // no accountId specified
-        }
-        if (this.IsAdmin(user) || this.IsTaxpro(user)) {
-            return true;
-        }
-        if (user.account_id === accountId) {
+    isTaxpro: function(userObj) {
+        if ((userObj.role) && (userObj.role === 'Taxpro')) {
             return true;
         } else {
             return false;
