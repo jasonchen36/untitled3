@@ -35,7 +35,7 @@ RESPONSE:
 ]
 
 *******************************************************************************/
-exports.list = function (req, res) {
+exports.list = function (req, res, next) {
     return Categories.list().then(function(categoriesArr) {
         if (categoriesArr) {
             return res.status(200).send(categoriesArr);
