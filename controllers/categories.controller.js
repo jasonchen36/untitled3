@@ -43,7 +43,7 @@ exports.list = function (req, res, next) {
             return res.status(404).send();
         }
     }).catch(function(err) {
-        next();
+        next(err);
     });
 };
 
@@ -68,19 +68,16 @@ exports.list = function (req, res, next) {
 
 exports.getCategoryById = function (req, res, next){
     req.checkParams('id', 'Please provide a category id').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        return Categories.getCategoryById(req.params.id).then(function(categoryObj){
-            if (categoryObj) {
-                return res.status(200).send(categoryObj);
-            } else {
-                return res.status(404).send();
-            }
-        }).catch(function(err) {
-            next();
-        });
-    }
+    if (errors) { res.status(400).send(errors); };
+
+    return Categories.getCategoryById(req.params.id).then(function(categoryObj){
+        if (categoryObj) {
+            return res.status(200).send(categoryObj);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
