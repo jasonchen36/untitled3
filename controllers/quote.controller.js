@@ -355,7 +355,7 @@ exports.submit = function (req, res, next) {
             return taxReturnModel.setAllsubmittedForAccountId(accountId, productId).then(function() {
                 var data = {};
                 data.name = req.user.first_name;
-                notificationService.sendNotification(notificationService.NotificationType.TAX_RETURN_SUBMITTED, req.user, data).then(function() {
+                return notificationService.sendNotification(req.user, notificationService.NotificationType.TAX_RETURN_SUBMITTED, data).then(function() {
                     res.status(200).send();
 
                     // update the last User activity of the logged in user

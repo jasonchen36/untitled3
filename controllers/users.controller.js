@@ -53,7 +53,7 @@ exports.createResetKey = function(req, res) {
                     };
                     logger.info('Sending password reset email to user ' + user.email);
                     logger.debug('reset_url: ' + variables.reset_url);
-                    notificationService.sendNotification(user, notificationService.NotificationType.PASSWORD_RESET, variables)
+                    return notificationService.sendNotification(user, notificationService.NotificationType.PASSWORD_RESET, variables)
                     res.status(200).send();
                 }).catch(function(err) {
                     logger.error(err.message);

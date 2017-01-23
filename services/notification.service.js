@@ -52,7 +52,7 @@ var sendNotification = function(user, notificationType, data) {
 
             notificationPromises.push(mailService.send(user, emailTemplate, data));
             notificationPromises.push(pushService.send(user, message));
-            notificationPromises.push(systemMessageService.create(user, subject, cmessage));
+            notificationPromises.push(systemMessageService.create(user, subject, message));
             break;
         case NotificationType.CHAT_MESSAGE_FROM_TAXPRO:
             notificationPromises.push(mailService.send(user, emailTemplate, data));
