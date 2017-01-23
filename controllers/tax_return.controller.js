@@ -60,7 +60,7 @@ var cacheService = require('../services/cache.service');
 exports.createTaxReturns = function (req, res, next) {
     req.checkBody('taxReturns', 'Please provide array of taxReturns').notEmpty();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var createTaxReturnPromise = function(taxReturn) {
         var accountId = parseInt(taxReturn.accountId);
@@ -154,7 +154,7 @@ exports.createTaxReturn = function (req, res, next) {
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var accountId = parseInt(req.body.accountId);
     var productId = parseInt(req.body.productId);
@@ -232,7 +232,7 @@ exports.createTaxReturn = function (req, res, next) {
 exports.updateTaxReturnById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     var accountId = req.body.accountId;
@@ -274,14 +274,13 @@ exports.updateTaxReturnById = function (req, res, next) {
           return taxReturnModel.findById(taxReturnId);
         })
         .then(function(taxReturn) {
-          if (taxReturn) {
-            res.status(200).send(taxReturn);
-
-            // update the last User activity of the logged in user
-            userModel.updateLastUserActivity(req.user);
-          } else {
+          if (!taxReturn) {
             return res.status(404).send();
           }
+          res.status(200).send(taxReturn);
+
+          // update the last User activity of the logged in user
+          userModel.updateLastUserActivity(req.user);
         }).catch(function(err) {
             next(err);
         });
@@ -308,7 +307,7 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     req.checkBody('statusId', 'Please provide a status id').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     const taxReturnId = parseInt(req.params.id),
         taxReturnObj = {
@@ -349,18 +348,17 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
 exports.findTaxReturnById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
         return res.status(403).send();
     }
     return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
-        if (taxReturnObj) {
-            return res.status(200).send(taxReturnObj);
-        } else {
+        if (!taxReturnObj) {
             return res.status(404).send();
         }
+        return res.status(200).send(taxReturnObj);
     }).catch(function(err) {
         next(err);
     });
@@ -395,7 +393,7 @@ exports.createAnswer = function(req, res, next) {
     req.checkBody('answers', 'Please provide a list of answers').notEmpty();
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -516,7 +514,7 @@ exports.findAnswerById = function (req, res, next) {
     req.checkParams('answerId', 'Please provide an answerId').isInt();
     req.checkParams('taxReturnId', 'Please provide an taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -524,11 +522,10 @@ exports.findAnswerById = function (req, res, next) {
     }
     var answerId = parseInt(req.params.answerId);
     return answerModel.findById(answerId).then(function(answerObj) {
-        if (answerObj) {
-            return res.status(200).send(answerObj);
-        } else {
+        if (!answerObj) {
             return res.status(404).send();
         }
+        return res.status(200).send(answerObj);
     }).catch(function(err) {
         next(err);
     });
@@ -554,7 +551,7 @@ exports.findAnswerById = function (req, res, next) {
 exports.listAnswers = function(req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -562,13 +559,12 @@ exports.listAnswers = function(req, res, next) {
     }
     return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
         return answerModel.listAnswers(valuesCache, taxReturnId).then(function(answersArr) {
-            if (answersArr) {
-                var answersObj = {};
-                answersObj.answers = answersArr;
-                return res.status(200).send(answersObj);
-            } else {
+            if (!answersArr) {
                 return res.status(404).send();
             }
+            var answersObj = {};
+            answersObj.answers = answersArr;
+            return res.status(200).send(answersObj);
         }).catch(function(err) {
             next(err);
         });
@@ -581,7 +577,7 @@ exports.listAnswersFilterCategory = function(req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('categoryId', 'Please provide a categoryId').isInt();
     var errors = req.validationErrors();
-     if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -590,13 +586,12 @@ exports.listAnswersFilterCategory = function(req, res, next) {
     var categoryId = parseInt(req.params.categoryId);
     return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
         return answerModel.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answersArr) {
-            if (answersArr) {
-                var answersObj = {};
-                answersObj.answers = answersArr;
-                return res.status(200).send(answersObj);
-            } else {
+            if (!answersArr) {
                 return res.status(404).send();
             }
+            var answersObj = {};
+            answersObj.answers = answersArr;
+            return res.status(200).send(answersObj);
         }).catch(function(err) {
             next(err);
         });
@@ -634,7 +629,7 @@ exports.createAddress = function (req, res, next) {
     req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var addressLine1 = req.body.addressLine1;
     var addressLine2 = req.body.addressLine2;
@@ -695,7 +690,7 @@ exports.updateAddress = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('addressId', 'Please provide an addressId').isInt();
     var errors = req.validationErrors();
-     if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var addressLine1 = req.body.addressLine1;
     var addressLine2 = req.body.addressLine2;
@@ -756,7 +751,7 @@ exports.findAddressById = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('addressId', 'Please provide a addressId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -765,11 +760,10 @@ exports.findAddressById = function (req, res, next) {
 
     var addressId = parseInt(req.params.addressId);
     return addressModel.findById(addressId).then(function(addressObj) {
-        if (addressObj) {
-            return res.status(200).send(addressObj);
-        } else {
+        if (!addressObj) {
             return res.status(404).send();
         }
+        return res.status(200).send(addressObj);
     }).catch(function(err) {
         next(err);
     });
@@ -799,18 +793,17 @@ exports.findAddressById = function (req, res, next) {
 exports.listAddresses = function (req, res, next) {
     req.checkParams('id', 'Please provide a tax return id').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
         return res.status(403).send();
     }
     return addressModel.findAll(taxReturnId).then(function(addressArr) {
-        if (addressArr) {
-            return res.status(200).send(addressArr);
-        } else {
+        if (!addressArr) {
             return res.status(404).send();
         }
+        return res.status(200).send(addressArr);
     }).catch(function(err) {
         next(err);
     });
@@ -832,7 +825,7 @@ exports.linkExistingAddresses = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('addressId', 'Please provide a addressId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var addressId = parseInt(req.params.addressId);
     var taxReturnId = parseInt(req.params.taxReturnId);
@@ -897,7 +890,7 @@ exports.createDependant = function (req, res, next) {
     req.checkBody('relationship', 'Please provide a relationship').notEmpty();
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -953,7 +946,7 @@ exports.updateDependant = function (req, res, next) {
     req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
     req.checkBody('relationship', 'Please provide a relationship').notEmpty();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var firstName = req.body.firstName;
     var lastName = req.body.lastName;
@@ -1015,7 +1008,7 @@ exports.deleteDependant = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     const dependantId = parseInt(req.params.dependantId),
         taxReturnId = parseInt(req.params.taxReturnId);
@@ -1061,18 +1054,17 @@ exports.deleteDependant = function (req, res, next) {
 exports.getDependantsById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturn Id').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
         return res.status(403).send();
     }
     return dependantModel.getAllById(taxReturnId).then(function(dependantArr) {
-        if (dependantArr) {
-            return res.status(200).send(dependantArr);
-        } else {
+        if (!dependantArr) {
             return res.status(404).send();
         }
+        return res.status(200).send(dependantArr);
     }).catch(function(err) {
         next(err);
     });
@@ -1098,7 +1090,7 @@ exports.findDependantById = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
     if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
@@ -1106,11 +1098,10 @@ exports.findDependantById = function (req, res, next) {
     }
     var dependantId = parseInt(req.params.dependantId);
     return DependantdependantModelfindById(dependantId).then(function(dependantObj) {
-        if (dependantObj) {
-            return res.status(200).send(dependantObj);
-        } else {
+        if (!dependantObj) {
             return res.status(404).send();
         }
+        return res.status(200).send(dependantObj);
     }).catch(function(err) {
         next(err);
     });
@@ -1132,7 +1123,7 @@ exports.linkExistingDependants = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId id').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId id').isInt();
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     var dependantId = parseInt(req.params.dependantId);
     var taxReturnId = parseInt(req.params.taxReturnId);
@@ -1196,7 +1187,7 @@ exports.linkExistingDependants = function (req, res, next) {
  *******************************************************************************/
 exports.getAvailableTaxReturnStatuses = function (req, res, next) {
     var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); };
+    if (errors) { return res.status(400).send(errors); }
 
     // check that dependantId exists
     return taxReturnModel.getTaxReturnStatuses()

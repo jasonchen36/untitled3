@@ -2,20 +2,15 @@
 
 'use strict';
 
-// message controller
-
 /**
  * Module dependencies.
  */
+var config = require('../config/config');
+var _ = require('underscore');
+var userModel = require('../models/user.model');
+var messageModel = require('../models/message.model');
 var db = require('../services/db');
 var logger = require('../services/logger.service');
-var User = require('../models/user.model');
-var Message = require('../models/message.model');
-
-// boilerplate
-var _ = require('underscore');
-var config = require('../config/config');
-var async = require("async");
 var mailService = require('../services/mail.service');
 var notificationService = require('../services/notification.service');
 var mailclient = require('../services/mailclient2'); // just here for initiaL TEST
@@ -39,34 +34,32 @@ AUTH TOKEN IS REQUIRED
 RESPONSE:
 200 OK
 *******************************************************************************/
-exports.create = function (req, res) {
-    var message = {};
+exports.create = function (req, res, next) {
+    var messageObj = {};
     logger.debug('controller - message instantiated');
 
-    message.from = req.user.id; // logged-in user from authentication, whoever that may be
-    message.fromname = req.user.first_name + ' ' + req.user.last_name;
-    message.fromRole = req.user.role;
+    messageObj.from = req.user.id; // logged-in user from authentication, whoever that may be
+    messageObj.fromname = req.user.first_name + ' ' + req.user.last_name;
+    messageObj.fromRole = req.user.role;
 
     // if message is from a user, they are the client
     if (req.user.role == 'Customer') {
-        message.client = parseInt(req.user.id);
+        messageObj.client = parseInt(req.user.id);
     } else {
-        message.client = parseInt(req.body.client); // client is passed in
+        messageObj.client = parseInt(req.body.client); // client is passed in
     }
 
-    message.subject = req.body.subject;
-    message.body = req.body.body;
-    message.status = 'new';
-//    message.datetime = new Date();
+    messageObj.subject = req.body.subject;
+    messageObj.body = req.body.body;
+    messageObj.status = 'new';
 
     // fix me
-    if (!message.from || !message.client || !message.body) {
-        res.status(401).send('missing stuff');
-        return;
+    if (!messageObj.from || !messageObj.client || !messageObj.body) {
+        return res.status(401).send('missing stuff');
     }
 
-    if (!message.subject) {
-        message.subject = ''; // optional parameter
+    if (!messageObj.subject) {
+        messageObj.subject = ''; // optional parameter
     }
 
 
@@ -74,42 +67,34 @@ exports.create = function (req, res) {
 
 
     // if message OK, save it
-    return Message.create(message).then(function() {
+    return messageModel.create(messageObj).then(function() {
         if (req.user.role !== 'Customer') { // message from Taxpro or Admin triggers notification
             var variables = {
                 name: req.user.first_name,
-                message: message.body,
+                message: messageObj.body,
                 dashboard_url: config.domain + '/dashboard'
             }
 
-            return User.findById(message.client).then(function(targetUser) {
-                return notificationService.sendNotification(targetUser, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
+            return userModel.findById(messageObj.client).then(function(targetUserObj) {
+                return notificationService.sendNotification(targetUserObj, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
                     res.status(200).send('OK');
 
                     // update the last User activity of the logged in user
-                    User.updateLastUserActivity(req.user);
-
+                    userModel.updateLastUserActivity(req.user);
                 }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
+                    next(err);
                 });
             }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
+                next(err);
             });
         } else {
             res.status(200).send('OK');
 
             // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
-
+            userModel.updateLastUserActivity(req.user);
         }
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 
 };
@@ -124,7 +109,7 @@ NONE - ONLY AUTH TOKEN IS REQUIRED
 RESPONSE:
 200 OK
 *******************************************************************************/
-exports.getMessageListForUser = function (req, res) {
+exports.getMessageListForUser = function (req, res, next) {
 
     if (!req.user) {
         res.status(409).send('no user in request!');
@@ -136,30 +121,25 @@ exports.getMessageListForUser = function (req, res) {
 
     if (req.user.role != 'Customer') { // Admins must specify client
         if (!req.params.client) {
-            res.status(409).send('no client parameter in request!');
-            return;
+            return res.status(409).send('no client parameter in request!');
         }
         client = req.params.client;
 
     } else {
         if (req.params.client) { // Non admin user specified a client id param - illegal
-            res.status(401).send(); // not authorized
-            return;
+            return res.status(401).send(); // not authorized
         }
     }
 
-    return Message.findAllById(client).then(function(messages) {
-        if (!messages) {
-            res.status(404).send();
-            return;
+    return messageModel.findAllById(client).then(function(messagesArr) {
+        if (!messagesArr) {
+            return res.status(404).send();
         }
 
-        var out = { "messages": messages };
-        res.status(200).send(out);
+        var out = { "messages": messagesArr };
+        return res.status(200).send(out);
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 
 };
@@ -185,7 +165,7 @@ RESPONSE:
 
 200 OK
 *******************************************************************************/
-exports.read = function (req, res) {
+exports.read = function (req, res, next) {
 
     if (!req.user) {
         res.status(409).send('no user in request!');
@@ -202,54 +182,46 @@ exports.read = function (req, res) {
     } else {
         isAdmin = false;
     }
-    return Message.findOneById(id, client, isAdmin).then(function(message) {
-        if (!message) {
-            res.status(404).send();
-            return;
-        } else {
-            res.status(200).send(message);
+    return messageModel.findOneById(id, client, isAdmin).then(function(messageObj) {
+        if (!messageObj) {
+            return res.status(404).send();
         }
+        return res.status(200).send(messageObj);
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 };
 
 // just here for initiaL TEST; may end up in separate cron or triggered process
-exports.emailtest = function (req, res) {
+exports.emailtest = function (req, res, next) {
     console.log('controller emailtest function');
     var whatsit = mailclient.emailTest();
-    res.status(200).send('emailtest done');
+    return res.status(200).send('emailtest done');
 };
 
-exports.markRead = function(req, res) {
+exports.markRead = function(req, res, next) {
     if (!req.user) {
         res.status(409).send('no user in request!');
     }
 
     var id = req.params.id;
     var client = req.user.id; // user comes from authentication
-    return Message.setReadStatusById(id, client).then(function() {
-        res.status(200).send();
+    return messageModel.setReadStatusById(id, client).then(function() {
+        return res.status(200).send();
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 };
 
-exports.markAllRead = function(req, res) {
+exports.markAllRead = function(req, res, next) {
     if (!req.user) {
         res.status(409).send('no user in request!');
     }
 
     var client = req.user.id; // user comes from authentication
-    return Message.setAllReadStatusByUserId(client).then(function() {
-        res.status(200).send();
+    return messageModel.setAllReadStatusByUserId(client).then(function() {
+        return res.status(200).send();
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 };
