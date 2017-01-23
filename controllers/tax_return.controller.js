@@ -2,32 +2,28 @@
 
 'use strict';
 
-// message controller
 
 /**
  * Module dependencies.
  */
-var logger = require('../services/logger.service');
-var TaxReturn = require('../models/tax_return.model');
-var Account = require('../models/account.model');
-var User = require('../models/user.model');
-var Product = require('../models/product.model');
-var Question = require('../models/question.model');
-var Answer = require('../models/answer.model');
-var Address = require('../models/address.model');
-var Dependant = require('../models/dependant.model');
-var Document = require('../models/document.model');
-var validator = require('express-validator');
-var cacheService = require('../services/cache.service');
-var Promise = require('bluebird');
-var User = require('../models/user.model');
-var util = require('util');
-
-// boilerplate
-var _ = require('underscore');
-var moment = require('moment');
 var config = require('../config/config');
 var API_DATE_INPUT_FORMAT = config.api.dateInputFormat;
+var Promise = require('bluebird');
+var _ = require('underscore');
+var moment = require('moment');
+var validator = require('express-validator');
+var logger = require('../services/logger.service');
+var taxReturnModel = require('../models/tax_return.model');
+var accountModel = require('../models/account.model');
+var userModel = require('../models/user.model');
+var productModel = require('../models/product.model');
+var questionModel = require('../models/question.model');
+var answerModel = require('../models/answer.model');
+var addressModel = require('../models/address.model');
+var dependantModel = require('../models/dependant.model');
+var cacheService = require('../services/cache.service');
+
+
 
 /*******************************************************************************
  ENDPOINT
@@ -61,97 +57,79 @@ var API_DATE_INPUT_FORMAT = config.api.dateInputFormat;
  ]
 
  ******************************************************************************/
-exports.createTaxReturns = function (req, res) {
+exports.createTaxReturns = function (req, res, next) {
     req.checkBody('taxReturns', 'Please provide array of taxReturns').notEmpty();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var createTaxReturnPromise = function(taxReturn) {
-            var accountId = parseInt(taxReturn.accountId);
-            var productId = parseInt(taxReturn.productId);
-            var firstName = taxReturn.firstName;
-            var filerType = taxReturn.filerType;
-            var status = taxReturn.status;
-            var sin = taxReturn.sin;
-            var prefix = taxReturn.prefix;
-            var middleInitial = taxReturn.middleInitial;
+    if (errors) { return res.status(400).send(errors); };
 
-            // check that accountId exists
-            return Account.findById(accountId).then(function(account) {
-                if ((!account) || (account.length === 0)) {
-                    res.status(404).send({ msg: 'Invalid accountID' });
-                } else {
-                    // check that productId exists
-                    return Product.findById(productId).then(function(product) {
-                        if ((!product) || (product.length === 0)) {
-                            res.status(404).send({ msg: 'Invalid productID' });
-                        } else {
-                            var taxReturnObj = {};
-                            taxReturnObj.accountId = accountId;
-                            taxReturnObj.productId = productId;
-                            taxReturnObj.firstName = firstName;
-                            taxReturnObj.filerType = filerType;
-                            taxReturnObj.status = status;
-                            taxReturnObj.sin = sin;
-                            taxReturnObj.prefix = prefix;
-                            taxReturnObj.middleInitial = middleInitial;
+    var createTaxReturnPromise = function(taxReturn) {
+        var accountId = parseInt(taxReturn.accountId);
+        var productId = parseInt(taxReturn.productId);
+        var firstName = taxReturn.firstName;
+        var filerType = taxReturn.filerType;
+        var status = taxReturn.status;
+        var sin = taxReturn.sin;
+        var prefix = taxReturn.prefix;
+        var middleInitial = taxReturn.middleInitial;
 
-                            return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
-                                var resultObj = {};
-                                resultObj.accountId = accountId;
-                                resultObj.productId = productId;
-                                resultObj.taxReturnId = taxReturnId;
-                                resultObj.filerType = filerType;
-                                resultObj.status = status;
-                                resultObj.sin = sin;
-                                resultObj.prefix = prefix;
-                                resultObj.middleInitial = middleInitial;
-                                return Promise.resolve(resultObj);
-                            }).catch(function(err) {
-                                logger.error(err.message);
-                                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                                return;
-                            });
-                        }
-                    }).catch(function(err) {
-                        logger.error(err.message);
-                        res.status(500).send({ msg: 'Something broke: check server logs.' });
-                        return;
-                    });
+        // check that accountId exists
+        return accountModel.findById(accountId).then(function(accountObj) {
+            if ((!accountObj) || (accountObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid accountID' });
+            }
+            // check that productId exists
+            return productModel.findById(productId).then(function(productObj) {
+                if ((!productObj) || (productObj.length === 0)) {
+                    return res.status(404).send({ msg: 'Invalid productID' });
                 }
+                var taxReturnObj = {};
+                taxReturnObj.accountId = accountId;
+                taxReturnObj.productId = productId;
+                taxReturnObj.firstName = firstName;
+                taxReturnObj.filerType = filerType;
+                taxReturnObj.status = status;
+                taxReturnObj.sin = sin;
+                taxReturnObj.prefix = prefix;
+                taxReturnObj.middleInitial = middleInitial;
+
+                return taxReturnModel.create(taxReturnObj).then(function(taxReturnId) {
+                    var resultObj = taxReturnObj;
+                    resultObj.taxReturnId = taxReturnId;
+                    return Promise.resolve(resultObj);
+                }).catch(function(err) {
+                    next(err);
+                });
             }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
+                next(err);
             });
-        };
-
-
-        var resultArr = [];
-        var createTaxReturnPromises = [];
-        var accessDenied = false;
-        _.forEach(req.body.taxReturns, function(taxReturn) {
-            createTaxReturnPromises.push(createTaxReturnPromise(taxReturn));
-        });
-        if (accessDenied) {
-            res.status(403).send();
-            return;
-        }
-
-        return Promise.each(createTaxReturnPromises, function(taxReturnResult) {
-            resultArr.push(taxReturnResult);
         }).catch(function(err) {
-            logger.error(err.stack);
-            res.status(400).send({ msg: 'create tax return failed' });
-            return Promise.resolve({});
-        }).then(function() {
-            res.status(200).json(resultArr);
-
-            // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
+            next(err);
         });
+    };
+
+
+    var resultArr = [];
+    var createTaxReturnPromises = [];
+    var accessDenied = false;
+    _.forEach(req.body.taxReturns, function(taxReturnObj) {
+        createTaxReturnPromises.push(createTaxReturnPromise(taxReturnObj));
+    });
+    if (accessDenied) {
+        return res.status(403).send();
     }
+
+    return Promise.each(createTaxReturnPromises, function(taxReturnResult) {
+        resultArr.push(taxReturnResult);
+    }).catch(function(err) {
+        logger.error(err.stack);
+        res.status(400).send({ msg: 'create tax return failed' });
+        return Promise.resolve({});
+    }).then(function() {
+        res.status(200).json(resultArr);
+
+        // update the last User activity of the logged in user
+        userModel.updateLastUserActivity(req.user);
+    });
 };
 
 /*******************************************************************************
@@ -171,77 +149,59 @@ exports.createTaxReturns = function (req, res) {
    "taxReturnId": 101
  }
  ******************************************************************************/
-exports.createTaxReturn = function (req, res) {
+exports.createTaxReturn = function (req, res, next) {
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var accountId = parseInt(req.body.accountId);
-        var productId = parseInt(req.body.productId);
-        var firstName = req.body.firstName;
-        var filerType = req.body.filerType;
-        var status = req.body.status;
-        var sin = req.body.sin;
-        var prefix = req.body.prefix;
-        var middleInitial = req.body.middleInitial;
+    if (errors) { return res.status(400).send(errors); };
 
-        // check that accountId exists
-        return Account.findById(accountId).then(function(account) {
-            if ((!account) || (account.length === 0)) {
-                res.status(404).send({ msg: 'Invalid accountID' });
-            } else {
-                // check that productId exists
-                return Product.findById(productId).then(function(product) {
-                    if ((!product) || (product.length === 0)) {
-                        res.status(404).send({ msg: 'Invalid productID' });
-                    } else {
-                        var taxReturnObj = {};
-                        taxReturnObj.accountId = accountId;
-                        taxReturnObj.productId = productId;
-                        taxReturnObj.firstName = firstName;
-                        taxReturnObj.filerType = filerType;
-                        taxReturnObj.status = status;
-                        taxReturnObj.sin = sin;
-                        taxReturnObj.prefix = prefix;
-                        taxReturnObj.middleInitial = middleInitial;
+    var accountId = parseInt(req.body.accountId);
+    var productId = parseInt(req.body.productId);
+    var firstName = req.body.firstName;
+    var filerType = req.body.filerType;
+    var status = req.body.status;
+    var sin = req.body.sin;
+    var prefix = req.body.prefix;
+    var middleInitial = req.body.middleInitial;
 
-                        return TaxReturn.create(taxReturnObj).then(function(taxReturnId) {
-                            var resultObj = {};
-                            resultObj.accountId = accountId;
-                            resultObj.productId = productId;
-                            resultObj.taxReturnId = taxReturnId;
-                            resultObj.filerType = filerType;
-                            resultObj.status = status;
-                            resultObj.sin = sin;
-                            resultObj.prefix = prefix;
-                            resultObj.middleInitial = middleInitial;
-
-                            res.status(200).json(resultObj);
-
-                            // update the last User activity of the logged in user
-                            User.updateLastUserActivity(req.user);
-
-                        }).catch(function(err) {
-                            logger.error(err.message);
-                            res.status(500).send({ msg: 'Something broke: check server logs.' });
-                            return;
-                        });
-                    }
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
-                });
+    // check that accountId exists
+    return accountModel.findById(accountId).then(function(accountObj) {
+        if ((!accountObj) || (accountObj.length === 0)) {
+            return res.status(404).send({ msg: 'Invalid accountID' });
+        }
+        // check that productId exists
+        return productModel.findById(productId).then(function(productObj) {
+            if ((!productObj) || (productObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid productID' });
             }
+            var taxReturnObj = {};
+            taxReturnObj.accountId = accountId;
+            taxReturnObj.productId = productId;
+            taxReturnObj.firstName = firstName;
+            taxReturnObj.filerType = filerType;
+            taxReturnObj.status = status;
+            taxReturnObj.sin = sin;
+            taxReturnObj.prefix = prefix;
+            taxReturnObj.middleInitial = middleInitial;
+
+            return taxReturnModel.create(taxReturnObj).then(function(taxReturnId) {
+                var resultObj = taxReturnObj;
+                resultObj.taxReturnId = taxReturnId;
+                res.status(200).json(resultObj);
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+
+            }).catch(function(err) {
+                next(err);
+            });
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
-    }
+            next(err);
+         });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -269,66 +229,62 @@ exports.createTaxReturn = function (req, res) {
  NOTE:
  At least one optional field must be present or there would be nothing to update
  ******************************************************************************/
-exports.updateTaxReturnById = function (req, res) {
-    if (!User.hasAccess(req.user, req.body.accountId)) {
-        res.status(403).send();
-        return;
-    }
+exports.updateTaxReturnById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.id);
+    var accountId = req.body.accountId;
+    var productId = req.body.productId;
+    var taxReturnObj = {};
+
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
+    }
+
+    if ((!req.body.firstName) &&
+        (!req.body.lastName) &&
+        (!req.body.provinceOfResidence) &&
+        (!req.body.dateOfBirth) &&
+        (!req.body.canadianCitizen) &&
+        (!req.body.authorizeCra) &&
+        (!req.body.filerType) &&
+        (!req.body.status) &&
+        (!req.body.sin) &&
+        (!req.body.prefix) &&
+        (!req.body.middleInitial)
+    ) {
+        return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
     } else {
-        var taxReturnId = parseInt(req.params.id);
-        var accountId = req.body.accountId;
-        var productId = req.body.productId;
-        var taxReturnObj = {};
+      if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
+      if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
+      if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
+      if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
+      if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
+      if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
+      if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
+      if (req.body.status) {taxReturnObj.status = req.body.status; }
+      if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
+      if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
+      if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
 
-        if ((!req.body.firstName) &&
-            (!req.body.lastName) &&
-            (!req.body.provinceOfResidence) &&
-            (!req.body.dateOfBirth) &&
-            (!req.body.canadianCitizen) &&
-            (!req.body.authorizeCra) &&
-            (!req.body.filerType) &&
-            (!req.body.status) &&
-            (!req.body.sin) &&
-            (!req.body.prefix) &&
-            (!req.body.middleInitial)
-        ) {
-            res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
-        } else {
-          if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
-          if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
-          if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
-          if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
-          if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
-          if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
-          if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
-          if (req.body.status) {taxReturnObj.status = req.body.status; }
-          if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
-          if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
-          if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
+      return taxReturnModel.update(taxReturnId, taxReturnObj)
+        .then(function(taxReturnId) {
+          return taxReturnModel.findById(taxReturnId);
+        })
+        .then(function(taxReturn) {
+          if (taxReturn) {
+            res.status(200).send(taxReturn);
 
-          return TaxReturn.update(taxReturnId, taxReturnObj)
-            .then(function(taxReturnId) {
-              return TaxReturn.findById(taxReturnId);
-            })
-            .then(function(taxReturn) {
-              if (taxReturn) {
-                res.status(200).send(taxReturn);
-
-                // update the last User activity of the logged in user
-                User.updateLastUserActivity(req.user);
-              } else {
-                res.status(404).send();
-              }
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
-            });
-        }
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+          } else {
+            return res.status(404).send();
+          }
+        }).catch(function(err) {
+            next(err);
+        });
     }
 };
 
@@ -348,28 +304,27 @@ exports.updateTaxReturnById = function (req, res) {
  200 OK
 
  ******************************************************************************/
-exports.updateTaxReturnStatusById = function (req, res) {
+exports.updateTaxReturnStatusById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     req.checkBody('statusId', 'Please provide a status id').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        const taxReturnId = parseInt(req.params.id),
-            taxReturnObj = {
-                status_id: parseInt(req.body.statusId)
-            };
-        return TaxReturn.update(taxReturnId, taxReturnObj).then(function() {
-            res.status(200).send('OK');
+    if (errors) { return res.status(400).send(errors); };
 
-            // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    const taxReturnId = parseInt(req.params.id),
+        taxReturnObj = {
+            status_id: parseInt(req.body.statusId)
+        };
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    return TaxReturntaxReturnModelupdate(taxReturnId, taxReturnObj).then(function() {
+        res.status(200).send('OK');
+
+        // update the last User activity of the logged in user
+        userModel.updateLastUserActivity(req.user);
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -391,26 +346,24 @@ exports.updateTaxReturnStatusById = function (req, res) {
    "authorizeCra": "Y"                         Optional
  }
  *******************************************************************************/
-exports.findTaxReturnById = function (req, res) {
+exports.findTaxReturnById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var id = parseInt(req.params.id);
-        return TaxReturn.findById(id).then(function(taxReturn) {
-            if (taxReturn) {
-                res.status(200).send(taxReturn);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+        if (taxReturnObj) {
+            return res.status(200).send(taxReturnObj);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -438,114 +391,106 @@ exports.findTaxReturnById = function (req, res) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.createAnswer = function(req, res) {
+exports.createAnswer = function(req, res, next) {
     req.checkBody('answers', 'Please provide a list of answers').notEmpty();
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var taxReturnId = parseInt(req.params.id);
-        var answers = req.body.answers;
-        // check that taxReturnId exists
-        return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
-            if ((!taxReturn) || (taxReturn.length === 0)) {
-                res.status(404).send({msg: 'Invalid taxReturnId'});
-            } else {
-                return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
-                    return cacheService.get('questions', Question.populateQuestions()).then(function(questionsCache) {
-                        var answersObj = answers;
-                        var answerErrors = [];
-                        var answerPromises = [];
-                        _.each(answersObj, function(answer) {
-                            var questionId = parseInt(answer.questionId);
-                            var question = _.find(questionsCache, {id: questionId});
-                            if (!question) {
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
+    }
+    var answers = req.body.answers;
+    // check that taxReturnId exists
+    return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+        if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
+            return res.status(404).send({msg: 'Invalid taxReturnId'});
+        }
+        return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
+            return cacheService.get('questions', questionModel.populateQuestions()).then(function(questionsCache) {
+                var answersArr = answers;
+                var answerErrors = [];
+                var answerPromises = [];
+                _.each(answersArr, function(answerObj) {
+                    var questionId = parseInt(answerObj.questionId);
+                    var question = _.find(questionsCache, {id: questionId});
+                    if (!question) {
+                        answerErrors.push({
+                            taxReturnId: taxReturnId,
+                            questionID: questionId,
+                            error: 'questionId = ' + questionId + ' is not valid.'});
+                    } else {
+                        var filteredValues = _.filter(valuesCache, {question_id: questionId});
+                        var answerText = answerObj.text;
+                        var questionType = question.type;
+                        var foundValue = _.find(filteredValues, {text: answerText});
+                        var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
+                        var validChoice = ((questionType === 'Choice') && (foundValue));
+                        var validDate = false;
+                        if (questionType === 'Date') {
+                            var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
+                            validDate = ((questionType === 'Date') && (isValidDate));
+                        }
+                        var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
+                        var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
+
+                        if ((answerObj.text) &&
+                            (validBool ||
+                            validChoice ||
+                            validDate ||
+                            validNotSure ||
+                            validNoneApply)
+                        ) {
+                            var questionIdparsed = parseInt(questionId);
+                            if (!isNaN(questionIdparsed) && (questionId)) {
+                                var createAnswerObj = {};
+                                createAnswerObj.questionId = questionIdparsed;
+                                createAnswerObj.text = answerText;
+                                createAnswerObj.taxReturnId = taxReturnId;
+
+                                answerPromises.push(answerModel.create(createAnswerObj));
+                            } else {
                                 answerErrors.push({taxReturnId: taxReturnId,
                                     questionID: questionId,
                                     error: 'questionId = ' + questionId + ' is not valid.'});
-                            } else {
-                                var filteredValues = _.filter(valuesCache, {question_id: questionId});
-                                var answerText = answer.text;
-                                var questionType = question.type;
-                                var foundValue = _.find(filteredValues, {text: answerText});
-                                var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
-                                var validChoice = ((questionType === 'Choice') && (foundValue));
-                                var validDate = false;
-                                if (questionType === 'Date') {
-                                    var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
-                                    validDate = ((questionType === 'Date') && (isValidDate));
-                                }
-                                var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
-                                var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
-
-                                if ((answer.text) &&
-                                    (validBool ||
-                                    validChoice ||
-                                    validDate ||
-                                    validNotSure ||
-                                    validNoneApply)
-                                ) {
-                                    var questionIdparsed = parseInt(questionId);
-                                    if (!isNaN(questionIdparsed) && (questionId)) {
-                                        var answerObj = {};
-                                        answerObj.questionId = questionIdparsed;
-                                        answerObj.text = answerText;
-                                        answerObj.taxReturnId = taxReturnId;
-
-                                        answerPromises.push(Answer.create(answerObj));
-                                    } else {
-                                        answerErrors.push({taxReturnId: taxReturnId,
-                                            questionID: questionId,
-                                            error: 'questionId = ' + questionId + ' is not valid.'});
-                                    }
-                                } else {
-                                    var msg = '';
-                                    if (questionType === 'Date') {
-                                        msg = 'Invalid text value for answer (questionId=' + questionId +
-                                            ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
-                                    } else {
-                                        msg = 'Invalid text value for answer (questionId=' + questionId +
-                                            ', questionType=' + questionType + ', answer.text=' + answerText + ')';
-
-                                    }
-                                    answerErrors.push({taxReturnId: taxReturnId,
-                                        questionID: questionId,
-                                        error: msg});
-                                }
                             }
-                        });
-                        if (answerErrors.length > 0) {
-                            res.status(400).send(answerErrors);
                         } else {
-                            return Promise.all(answerPromises).then(function() {
-                                res.status(200).send('OK');
+                            var msg = '';
+                            if (questionType === 'Date') {
+                                msg = 'Invalid text value for answer (questionId=' + questionId +
+                                    ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
+                            } else {
+                                msg = 'Invalid text value for answer (questionId=' + questionId +
+                                    ', questionType=' + questionType + ', answer.text=' + answerText + ')';
 
-                                // update the last User activity of the logged in user
-                                User.updateLastUserActivity(req.user);
-                            }).catch(function(err) {
-                                logger.error(err.message);
-                                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                                return;
-                            });
+                            }
+                            answerErrors.push({taxReturnId: taxReturnId,
+                                questionID: questionId,
+                                error: msg});
                         }
-                    }).catch(function(err) {
-                        logger.error(err.message);
-                        res.status(500).send({ msg: 'Something broke: check server logs.' });
-                        return;
-                    });
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
+                    }
                 });
-            }
+                if (answerErrors.length > 0) {
+                    return res.status(400).send(answerErrors);
+                }
+                return Promise.all(answerPromises).then(function() {
+                    res.status(200).send('OK');
+
+                    // update the last User activity of the logged in user
+                    userModel.updateLastUserActivity(req.user);
+                }).catch(function(err) {
+                    next(err);
+                });
+            }).catch(function(err) {
+                next(err);
+            });
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
+            next(err);
         });
-    }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 var isYesNoAnswer = function(answerText) {
@@ -567,27 +512,26 @@ var isYesNoAnswer = function(answerText) {
    "text": "Yes"
  }
  *******************************************************************************/
-exports.findAnswerById = function (req, res) {
+exports.findAnswerById = function (req, res, next) {
     req.checkParams('answerId', 'Please provide an answerId').isInt();
     req.checkParams('taxReturnId', 'Please provide an taxReturnId').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var answerId = parseInt(req.params.answerId);
-        return Answer.findById(answerId).then(function(answer) {
-            if (answer) {
-                res.status(200).send(answer);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    var answerId = parseInt(req.params.answerId);
+    return answerModel.findById(answerId).then(function(answerObj) {
+        if (answerObj) {
+            return res.status(200).send(answerObj);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -607,66 +551,58 @@ exports.findAnswerById = function (req, res) {
   "text": "N" }
  ]
  *******************************************************************************/
-exports.listAnswers = function(req, res) {
+exports.listAnswers = function(req, res, next) {
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var id = parseInt(req.params.id);
-        return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
-            return Answer.listAnswers(valuesCache, id).then(function(answers) {
-                if (answers) {
-                    var answersObj = {};
-                    answersObj.answers = answers;
-                    res.status(200).send(answersObj);
-                } else {
-                    res.status(404).send();
-                }
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
-            });
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
+        return answerModel.listAnswers(valuesCache, taxReturnId).then(function(answersArr) {
+            if (answersArr) {
+                var answersObj = {};
+                answersObj.answers = answersArr;
+                return res.status(200).send(answersObj);
+            } else {
+                return res.status(404).send();
+            }
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
-exports.listAnswersFilterCategory = function(req, res) {
+exports.listAnswersFilterCategory = function(req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('categoryId', 'Please provide a categoryId').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var taxReturnId = parseInt(req.params.taxReturnId);
-        var categoryId = parseInt(req.params.categoryId);
-        return cacheService.get('values', Answer.populateValues()).then(function(valuesCache) {
-            return Answer.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answers) {
-                if (answers) {
-                    var answersObj = {};
-                    answersObj.answers = answers;
-                    res.status(200).send(answersObj);
-                } else {
-                    res.status(404).send();
-                }
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
-            });
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+     if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    var categoryId = parseInt(req.params.categoryId);
+    return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
+        return answerModel.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answersArr) {
+            if (answersArr) {
+                var answersObj = {};
+                answersObj.answers = answersArr;
+                return res.status(200).send(answersObj);
+            } else {
+                return res.status(404).send();
+            }
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -691,46 +627,45 @@ exports.listAnswersFilterCategory = function(req, res) {
    addressId: 44
  }
  *******************************************************************************/
-exports.createAddress = function (req, res) {
+exports.createAddress = function (req, res, next) {
     req.checkBody('addressLine1', 'Please provide a street address').notEmpty();
     req.checkBody('city', 'Please provide a city').notEmpty();
     req.checkBody('province', 'Please provide a province').notEmpty();
     req.checkBody('postalCode', 'Please provide a postal code').notEmpty();
     req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); };
 
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var addressLine1 = req.body.addressLine1;
-        var addressLine2 = req.body.addressLine2;
-        var city = req.body.city;
-        var province = req.body.province;
-        var postalCode = req.body.postalCode;
-        var country = req.body.country;
-
-        var addressObj = {};
-        addressObj.addressLine1 = addressLine1;
-        addressObj.addressLine2 = addressLine2;
-        addressObj.city = city;
-        addressObj.province = province;
-        addressObj.postalCode = postalCode;
-        if ((country) && country.length > 0){
-          addressObj.country = country;
-        }
-        return Address.create(addressObj).then(function(addressId) {
-            var resultObj = {};
-            resultObj.addressId = addressId;
-            res.status(200).json(resultObj);
-
-            // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    var addressLine1 = req.body.addressLine1;
+    var addressLine2 = req.body.addressLine2;
+    var city = req.body.city;
+    var province = req.body.province;
+    var postalCode = req.body.postalCode;
+    var country = req.body.country;
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+
+    var addressObj = {};
+    addressObj.addressLine1 = addressLine1;
+    addressObj.addressLine2 = addressLine2;
+    addressObj.city = city;
+    addressObj.province = province;
+    addressObj.postalCode = postalCode;
+    if ((country) && country.length > 0){
+      addressObj.country = country;
+    }
+    return addressModel.create(addressObj).then(function(addressId) {
+        var resultObj = {};
+        resultObj.addressId = addressId;
+        res.status(200).json(resultObj);
+
+        // update the last User activity of the logged in user
+        userModel.updateLastUserActivity(req.user);
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -752,7 +687,7 @@ exports.createAddress = function (req, res) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.updateAddress = function (req, res) {
+exports.updateAddress = function (req, res, next) {
     req.checkBody('addressLine1', 'Please provide a street address').notEmpty();
     req.checkBody('city', 'Please provide a city').notEmpty();
     req.checkBody('province', 'Please provide a province').notEmpty();
@@ -760,43 +695,43 @@ exports.updateAddress = function (req, res) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('addressId', 'Please provide an addressId').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var addressLine1 = req.body.addressLine1;
-        var addressLine2 = req.body.addressLine2;
-        var addressId = parseInt(req.params.addressId);
-        var city = req.body.city;
-        var province = req.body.province;
-        var postalCode = req.body.postalCode;
-        var country = req.body.country;
+     if (errors) { return res.status(400).send(errors); };
 
-        var addressObj = {};
-        if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
-        if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
-        if (req.body.city) { addressObj.city = req.body.city; }
-        if (req.body.province) { addressObj.providence = req.body.province; }
-        if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
-        if (req.body.country) { addressObj.country = req.body.country; }
-
-        return Address.update(addressId, addressObj).then(function(addressObjId) {
-            var resultObj = {};
-            resultObj.addressLine1 = addressLine1;
-            resultObj.addressLine2 = addressLine2;
-            resultObj.city = city;
-            resultObj.province = province;
-            resultObj.postalCode = postalCode;
-
-            res.status(200).json(resultObj);
-
-            // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    var addressLine1 = req.body.addressLine1;
+    var addressLine2 = req.body.addressLine2;
+    var addressId = parseInt(req.params.addressId);
+    var city = req.body.city;
+    var province = req.body.province;
+    var postalCode = req.body.postalCode;
+    var country = req.body.country;
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+
+    var addressObj = {};
+    if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
+    if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
+    if (req.body.city) { addressObj.city = req.body.city; }
+    if (req.body.province) { addressObj.providence = req.body.province; }
+    if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
+    if (req.body.country) { addressObj.country = req.body.country; }
+
+    return addressModel.update(addressId, addressObj).then(function(addressId) {
+        var resultObj = {};
+        resultObj.addressLine1 = addressLine1;
+        resultObj.addressLine2 = addressLine2;
+        resultObj.city = city;
+        resultObj.province = province;
+        resultObj.postalCode = postalCode;
+
+        res.status(200).json(resultObj);
+
+        // update the last User activity of the logged in user
+        userModel.updateLastUserActivity(req.user);
+    }).catch(function(err) {
+        next(err);
+    });
 };
 /*******************************************************************************
  ENDPOINT
@@ -817,26 +752,27 @@ exports.updateAddress = function (req, res) {
    "postalCode": "L4D 5D7"
  }
  *******************************************************************************/
-exports.findAddressById = function (req, res) {
+exports.findAddressById = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('addressId', 'Please provide a addressId').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var addressId = parseInt(req.params.addressId);
-        return Address.findById(addressId).then(function(address) {
-            if (address) {
-                res.status(200).send(address);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+
+    var addressId = parseInt(req.params.addressId);
+    return addressModel.findById(addressId).then(function(addressObj) {
+        if (addressObj) {
+            return res.status(200).send(addressObj);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -860,26 +796,24 @@ exports.findAddressById = function (req, res) {
  }
 ]
  *******************************************************************************/
-exports.listAddresses = function (req, res) {
+exports.listAddresses = function (req, res, next) {
     req.checkParams('id', 'Please provide a tax return id').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var taxReturnId = parseInt(req.params.id);
-        return Address.findAll(taxReturnId).then(function(addressArr) {
-            if (addressArr) {
-                res.status(200).send(addressArr);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    return addressModel.findAll(taxReturnId).then(function(addressArr) {
+        if (addressArr) {
+            return res.status(200).send(addressArr);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -894,52 +828,45 @@ exports.listAddresses = function (req, res) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.linkExistingAddresses = function (req, res) {
+exports.linkExistingAddresses = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('addressId', 'Please provide a addressId').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var addressId = parseInt(req.params.addressId);
-        var taxReturnId = parseInt(req.params.taxReturnId);
-        // check that addressId exists
-        return Address.findById(addressId).then(function(address) {
-            if ((!address) || (address.length === 0)) {
-                res.status(404).send({ msg: 'Invalid address' });
-            } else {
-                // check that taxReturnId exists
-                return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
-                    if ((!taxReturn) || (taxReturn.length === 0)) {
-                        res.status(404).send({ msg: 'Invalid taxReturn' });
-                    } else {
-                        var addressTaxReturnObj = {};
-                        addressTaxReturnObj.addressId = addressId;
-                        addressTaxReturnObj.taxReturnId = taxReturnId;
+    if (errors) { return res.status(400).send(errors); };
 
-                        return Address.createAssociation(addressTaxReturnObj).then(function() {
-                            res.status(200).send("OK");
-
-                            // update the last User activity of the logged in user
-                            User.updateLastUserActivity(req.user);
-                        }).catch(function(err) {
-                            logger.error(err.message);
-                            res.status(500).send({ msg: 'Something broke: check server logs.' });
-                            return;
-                        });
-                    }
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
-                });
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    var addressId = parseInt(req.params.addressId);
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    // check that addressId exists
+    return addressModel.findById(addressId).then(function(address) {
+        if ((!address) || (address.length === 0)) {
+            return res.status(404).send({ msg: 'Invalid address' });
+        }
+        // check that taxReturnId exists
+        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+            if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid taxReturn' });
+            }
+            var addressTaxReturnObj = {};
+            addressTaxReturnObj.addressId = addressId;
+            addressTaxReturnObj.taxReturnId = taxReturnId;
+
+            return addressModel.createAssociation(addressTaxReturnObj).then(function() {
+                res.status(200).send("OK");
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -963,42 +890,42 @@ exports.linkExistingAddresses = function (req, res) {
    dependantId: 4
  }
  *******************************************************************************/
-exports.createDependant = function (req, res) {
+exports.createDependant = function (req, res, next) {
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
     req.checkBody('lastName', 'Please provide a lastName').notEmpty();
     req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
     req.checkBody('relationship', 'Please provide a relationship').notEmpty();
-    req.checkParams('id', 'Please provide a dependantId').isInt();
+    req.checkParams('id', 'Please provide a taxReturnId').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var firstName = req.body.firstName;
-        var lastName = req.body.lastName;
-        var dateOfBirth = req.body.dateOfBirth;
-        var relationship = req.body.relationship;
-        var isShared = req.body.isShared;
+    if (errors) { return res.status(400).send(errors); };
 
-        var dependantObj = {};
-        dependantObj.firstName = firstName;
-        dependantObj.lastName = lastName;
-        dependantObj.dateOfBirth = dateOfBirth;
-        dependantObj.relationship = relationship;
-        dependantObj.isShared = isShared;
-
-        return Dependant.create(dependantObj).then(function(dependantId) {
-            var resultObj = {};
-            resultObj.dependantId = dependantId;
-            res.status(200).json(resultObj);
-
-            // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var dateOfBirth = req.body.dateOfBirth;
+    var relationship = req.body.relationship;
+    var isShared = req.body.isShared;
+
+    var dependantObj = {};
+    dependantObj.firstName = firstName;
+    dependantObj.lastName = lastName;
+    dependantObj.dateOfBirth = dateOfBirth;
+    dependantObj.relationship = relationship;
+    dependantObj.isShared = isShared;
+
+    return dependantModel.create(dependantObj).then(function(dependantId) {
+        var resultObj = {};
+        resultObj.dependantId = dependantId;
+        res.status(200).json(resultObj);
+
+        // update the last User activity of the logged in user
+        userModel.updateLastUserActivity(req.user);
+    }).catch(function(err) {
+        next(err);
+    });
 };
 /*******************************************************************************
  ENDPOINT
@@ -1018,7 +945,7 @@ exports.createDependant = function (req, res) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.updateDependant = function (req, res) {
+exports.updateDependant = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
@@ -1026,58 +953,52 @@ exports.updateDependant = function (req, res) {
     req.checkBody('dateOfBirth', 'Please provide a dateOfBirth').notEmpty();
     req.checkBody('relationship', 'Please provide a relationship').notEmpty();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var firstName = req.body.firstName;
-        var lastName = req.body.lastName;
-        var dateOfBirth = req.body.dateOfBirth;
-        var relationship = req.body.relationship;
-        var dependantId = parseInt(req.params.dependantId);
-        var taxReturnId = parseInt(req.params.taxReturnId);
-        var isShared = req.body.isShared;
-        var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
-        if(!isValidDate){
-            res.status(400).send({msg: "Invalid date format. Expected date format is " + API_DATE_INPUT_FORMAT});
-            res.end();
-            return;
-        }
-        // check that dependantId exists
-        return Dependant.findById(dependantId).then(function(dependant) {
-            if ((!dependant) || (dependant.length === 0)) {
-                res.status(404).send({ msg: 'Dependant not found' });
-            } else {
-                var dependantObj = {};
-                if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
-                if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
-                if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
-                if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
-                if (req.body.isShared) { dependantObj.is_shared = req.body.isShared; }
+    if (errors) { return res.status(400).send(errors); };
 
-                return Dependant.update(dependantId,dependantObj).then(function() {
-                    var resultObj = {};
-                    resultObj.firstName = firstName;
-                    resultObj.lastName = lastName;
-                    resultObj.dateOfBirth = dateOfBirth;
-                    resultObj.relationship = relationship;
-                    resultObj.isShared = isShared;
-
-                    res.status(200).json(resultObj);
-
-                    // update the last User activity of the logged in user
-                    User.updateLastUserActivity(req.user);
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
-                });
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    var firstName = req.body.firstName;
+    var lastName = req.body.lastName;
+    var dateOfBirth = req.body.dateOfBirth;
+    var relationship = req.body.relationship;
+    var dependantId = parseInt(req.params.dependantId);
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    var isShared = req.body.isShared;
+    var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
+    if(!isValidDate){
+        return res.status(400).send({msg: "Invalid date format. Expected date format is " + API_DATE_INPUT_FORMAT});
+    }
+    // check that dependantId exists
+    return dependantModel.findById(dependantId).then(function(dependant) {
+        if ((!dependant) || (dependant.length === 0)) {
+            return res.status(404).send({ msg: 'Dependant not found' });
+        }
+        var dependantObj = {};
+        if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
+        if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
+        if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
+        if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
+        if (req.body.isShared) { dependantObj.is_shared = req.body.isShared; }
+
+        return dependantModel.update(dependantId,dependantObj).then(function() {
+            var resultObj = {};
+            resultObj.firstName = firstName;
+            resultObj.lastName = lastName;
+            resultObj.dateOfBirth = dateOfBirth;
+            resultObj.relationship = relationship;
+            resultObj.isShared = isShared;
+
+            res.status(200).json(resultObj);
+
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -1090,28 +1011,26 @@ exports.updateDependant = function (req, res) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.deleteDependant = function (req, res) {
+exports.deleteDependant = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        const dependantId = parseInt(req.params.dependantId),
-            taxReturnId = parseInt(req.params.taxReturnId);
-        // check that dependantId exists
-        return Dependant.deleteById(dependantId, taxReturnId).then(function() {
-            res.status(200).send('OK');
+    if (errors) { return res.status(400).send(errors); };
 
-            // update the last User activity of the logged in user
-            User.updateLastUserActivity(req.user);
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    const dependantId = parseInt(req.params.dependantId),
+        taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    // check that dependantId exists
+    return dependantModel.deleteById(dependantId, taxReturnId).then(function() {
+        res.status(200).send('OK');
+
+        // update the last User activity of the logged in user
+        userModel.updateLastUserActivity(req.user);
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -1139,26 +1058,24 @@ exports.deleteDependant = function (req, res) {
 },
  ]
  *******************************************************************************/
-exports.getDependantsById = function (req, res) {
+exports.getDependantsById = function (req, res, next) {
     req.checkParams('id', 'Please provide a taxReturn Id').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var taxReturnId = parseInt(req.params.id);
-        return Dependant.getAllById(taxReturnId).then(function(dependant) {
-            if (dependant) {
-                res.status(200).send(dependant);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.id);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    return dependantModel.getAllById(taxReturnId).then(function(dependantArr) {
+        if (dependantArr) {
+            return res.status(200).send(dependantArr);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -1177,27 +1094,26 @@ exports.getDependantsById = function (req, res) {
    "relationship": "son"
  }
  *******************************************************************************/
-exports.findDependantById = function (req, res) {
+exports.findDependantById = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId').isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var dependantId = parseInt(req.params.dependantId);
-        return Dependant.findById(dependantId).then(function(dependant) {
-            if (dependant) {
-                res.status(200).send(dependant);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    var dependantId = parseInt(req.params.dependantId);
+    return DependantdependantModelfindById(dependantId).then(function(dependantObj) {
+        if (dependantObj) {
+            return res.status(200).send(dependantObj);
+        } else {
+            return res.status(404).send();
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 
@@ -1212,50 +1128,44 @@ exports.findDependantById = function (req, res) {
  200 OK
 
  *******************************************************************************/
-exports.linkExistingDependants = function (req, res) {
+exports.linkExistingDependants = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId id').isInt();
     req.checkParams('dependantId', 'Please provide a dependantId id').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var dependantId = parseInt(req.params.dependantId);
-        var taxReturnId = parseInt(req.params.taxReturnId);
-        // check that dependantId exists
-        return Dependant.findById(dependantId).then(function(dependant) {
-            if ((!dependant) || (dependant.length === 0)) {
-                res.status(404).send({ msg: 'Invalid dependant' });
-            } else {
-                // check that taxReturnId exists
-                return TaxReturn.findById(taxReturnId).then(function(taxReturn) {
-                    if ((!taxReturn) || (taxReturn.length === 0)) {
-                        res.status(404).send({ msg: 'Invalid taxReturn' });
-                    } else {
-                        var dependantTaxReturnObj = {};
-                        dependantTaxReturnObj.dependantId = dependantId;
-                        dependantTaxReturnObj.taxReturnId = taxReturnId;
-                        return Dependant.createAssociation(dependantTaxReturnObj).then(function() {
-                            res.status(200).send("OK");
-                            // update the last User activity of the logged in user
-                            User.updateLastUserActivity(req.user);
-                        }).catch(function(err) {
-                            logger.error(err.message);
-                            res.status(500).send({ msg: 'Something broke: check server logs.' });
-                            return;
-                        });
-                    }
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
-                });
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    if (errors) { return res.status(400).send(errors); };
+
+    var dependantId = parseInt(req.params.dependantId);
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
+        return res.status(403).send();
     }
+    // check that dependantId exists
+    return dependantModel.findById(dependantId).then(function(dependantObj) {
+        if ((!dependantObj) || (dependantObj.length === 0)) {
+            return res.status(404).send({ msg: 'Invalid dependant' });
+        }
+        // check that taxReturnId exists
+        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+            if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid taxReturn' });
+            }
+            var dependantTaxReturnObj = {};
+            dependantTaxReturnObj.dependantId = dependantId;
+            dependantTaxReturnObj.taxReturnId = taxReturnId;
+            return dependantModel.createAssociation(dependantTaxReturnObj).then(function() {
+                res.status(200).send("OK");
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
+
 };
 
 
@@ -1284,20 +1194,15 @@ exports.linkExistingDependants = function (req, res) {
   }]
 
  *******************************************************************************/
-exports.getAvailableTaxReturnStatuses = function (req, res) {
-  var errors = req.validationErrors();
-  if (errors) {
-    res.status(400).send(errors);
-  } else {
+exports.getAvailableTaxReturnStatuses = function (req, res, next) {
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); };
 
     // check that dependantId exists
-    return TaxReturn.getTaxReturnStatuses()
-      .then(function(results) {
-        return res.status(200).json(results);
+    return taxReturnModel.getTaxReturnStatuses()
+    .then(function(resultsArr) {
+        return res.status(200).json(resultsArr);
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
-  }
 };

@@ -4,11 +4,30 @@
 
 var db = require('../services/db');
 var Promise = require('bluebird');
+var userModel = require('./user.model');
 
 var TaxReturn = {
+    hasAccess: function(userObj, taxReturnId) {
+        if ((!userObj) || (userObj.length === 0)) return false;
+        if ((!taxReturnId) || (taxReturnId.length === 0)) return false;
+
+        var taxReturnSql = 'SELECT * FROM tax_returns WHERE id = ?';
+        return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
+            var taxReturn = taxReturnSqlResults[0][0];
+            if (!taxReturn) return false;
+            if ((userObj.account_id === taxReturn.account_id) ||
+                (userModel.isAdmin(userObj)) ||
+                (userModel.isTaxpro(userObj))) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+    },
+
     findById: function(taxReturnId) {
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
-            return Promise.reject(new Error('No messageId specified!'));
+            return Promise.reject(new Error('No taxReturnId specified!'));
         }
         var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.id = ? LIMIT 1';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {

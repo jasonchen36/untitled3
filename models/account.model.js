@@ -5,10 +5,28 @@
 var db = require('../services/db');
 var Promise = require('bluebird');
 var _ = require('lodash');
-
+var userModel = require('./user.model');
 const taxReturnModel = require('./tax_return.model');
 
 var Account = {
+    hasAccess: function(userObj, accountId) {
+        if ((!userObj) || (userObj.length === 0)) return false;
+        if ((!accountId) || (accountId.length === 0)) return false;
+
+        var accountSql = 'SELECT * FROM accounts WHERE id = ?';
+        return db.knex.raw(accountSql, [accountId]).then(function(accountSqlResults) {
+            var account = accountSqlResults[0][0];
+            if (!account) return false;
+            if ((userObj.account_id === account.id) ||
+                (userModel.isAdmin(userObj)) ||
+                (userModel.isTaxpro(userObj))) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+    },
+
     findById: function(id) {
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No id specified!'));
