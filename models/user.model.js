@@ -50,7 +50,7 @@ var User = {
 
       sql = concatenateSql(sql, filterByRole(filters));
 
-      var possibleOrderByValues=[{key:'lastName', val:'last_name'},{key:'lastUpdated', val:'user_updated_at'}];
+      var possibleOrderByValues=[{key:'lastName', val:'last_name'},{key:'lastUpdated', val:'last_user_activity'}];
 
       sql = concatenateSql(sql, getOrderBySQL(filters, possibleOrderByValues));
 
@@ -256,10 +256,28 @@ var User = {
       } else {
         var userId = user.id;
         trx = trx ? trx: db.knex;
-        return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
+        
+        return trx.raw('UPDATE users SET last_user_activity=CURRENT_TIMESTAMP WHERE id=?',[userId])
+          .then(function(userSqlResults) {
+            return userSqlResults[0];
+          });
       }
     },
+    clearLastUserActivity: function(user,trx) {
+      if(!user || !user.id) {
+        logger.info("user is missing, cannot clear last user activity.");
 
+        return Promise.resolve({});
+      } else {
+        var userId = user.id;
+        trx = trx ? trx: db.knex;
+        return trx.raw('UPDATE users SET last_user_activity=NULL WHERE id=?',[userId])
+          .then(function(userSqlResults) {
+            return userSqlResults[0];
+          });
+      }
+
+    },
     isAdmin: function(userObj) {
         if ((userObj.role) && (userObj.role === 'Admin')) {
             return true;
