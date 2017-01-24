@@ -252,7 +252,7 @@ var User = {
                         var migrateTaxReturn = 'INSERT INTO tax_returns \
                         (SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, account_id, product_id) \
                         SELECT SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, ?, ? \
-                        FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY tax_return_id';
+                        FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
 
                         var migrateTaxReturnParams = [accountId, newProductId, accountId, oldProductId];
                         return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
