@@ -81,6 +81,7 @@ exports.create = function (req, res, next) {
 
                     // update the last User activity of the logged in user
                     userModel.updateLastUserActivity(req.user);
+                    userModel.clearLastUserActivity(targetUserObj);
                 }).catch(function(err) {
                     next(err);
                 });
