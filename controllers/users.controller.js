@@ -78,35 +78,29 @@ INPUT BODY:
 RESPONSE:
 200 OK/400/404
 *******************************************************************************/
-exports.resetPassword = function(req, res) {
+exports.resetPassword = function(req, res, next) {
     var password = req.body.password;
 
-    if ((password) && (password.length > 0)) {
+        if ((!password) || (password.length === 0)) {
+            res.status(400).send({ msg: 'No password provided' });
+        }
         var reset_key = req.params.reset_key;
-        return User.findByResetKey(reset_key).then(function(user) {
-            if (user) {
-                var new_salt = User.makeSalt();
-                var hashed_password = User.encryptPassword(new_salt, password);
-                user.hashed_password = hashed_password;
-                user.reset_key = null;
+        return userModel.findByResetKey(reset_key).then(function(userObj) {
+            if (!userObj) {
+                return res.status(404).send();
+            }
+            var new_salt = userModel.makeSalt();
+            var hashed_password = userModel.encryptPassword(new_salt, password);
+            userObj.hashed_password = hashed_password;
+            userObj.reset_key = null;
                 return User.updatePassword(user.migrated_user, user.id, user.account_id, hashed_password, new_salt).then(function() {
                     res.status(200).send();
                 }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
+                    next(err);
                 });
-            } else {
-                res.status(404).send();
-            }
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
+            next(err);
         });
-    } else {
-        res.status(400).send({ msg: 'No password provided' });
-    }
 };
 
 /*******************************************************************************
