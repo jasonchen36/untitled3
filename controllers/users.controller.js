@@ -93,7 +93,7 @@ exports.resetPassword = function(req, res, next) {
             var hashed_password = userModel.encryptPassword(new_salt, password);
             userObj.hashed_password = hashed_password;
             userObj.reset_key = null;
-                return User.updatePassword(user.migrated_user, user.id, user.account_id, hashed_password, new_salt).then(function() {
+                return userObj.updatePassword(userObj.migrated_user, userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
                     res.status(200).send();
                 }).catch(function(err) {
                     next(err);
@@ -464,7 +464,7 @@ exports.update_password = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var password = req.body.password;
 
-    if (!(req.user.id === userId) && (!userModel.isAdmin(req.user))) {
+    if ((req.user.id !== userId) && (!userModel.isAdmin(req.user))) {
         return res.status(403).send();
     }
     var new_salt = userModel.makeSalt();
@@ -500,13 +500,13 @@ exports.update = function(req, res, next) {
     if (req.user.id === userId || req.user.role === 'Admin') {
         //var keys = ['name', 'birthday', 'address', 'phone'];
         var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id', 'migrated_user']; //v2
-        if (User.isAdmin(req.user)) {
+        if (userObj.isAdmin(req.user)) {
             keys.push('role');
         }
-        if ((user.role) && ((user.role !== 'Admin') && (user.role !== 'Customer') && user.role !== 'TaxPro')) {
+        if ((userObj.role) && ((userObj.role !== 'Admin') && (userObj.role !== 'Customer') && userObj.role !== 'TaxPro')) {
             return res.status(409).json(new Error('Invalid role'));
         }
-        var params = _.pick(user, keys);
+        var params = _.pick(userObj, keys);
 
     return userModel.findById(userId).then(function(foundUserObj) {
         if ((!foundUserObj) || (foundUserObj.length === 0)) {
@@ -528,6 +528,7 @@ exports.update = function(req, res, next) {
     }).catch(function(err) {
         next(err);
     });
+}
 };
 
 /******************************************************************************
