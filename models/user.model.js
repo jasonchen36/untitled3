@@ -237,13 +237,13 @@ var User = {
         var updateUserSql = 'UPDATE users SET reset_key = null, migrated_user = "No", hashed_password = ?, salt = ? WHERE id = ?';
         var updateUserSqlParams = [hashed_password, new_salt, userId];
         if (migratedUser === "Yes"){
-          var taxReturns = 'SELECT id FROM tax_returns WHERE account_id =' + accountId;
+          var taxReturns = db.knex.raw('SELECT id FROM tax_returns WHERE account_id =' + accountId);
           if (taxReturns){
             var migrateTaxReturn = 'INSERT INTO tax_returns(SIN,middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, account_id, product_id) SELECT SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, ?, 10 FROM tax_returns WHERE account_id = ?';
             var migrateTaxReturnParams = [accountId];
             return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams);
           }
-          var addresses = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id IN(' + taxReturns + ')';
+          var addresses = db.knew.raw('SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id IN(' + taxReturns + ')');
           if (addresses){
             var migrateAddress = 'INSERT INTO addresses(address_line1, address_line2, city, providence, postal_code, country) SELECT address_line1, address_line2, city, providence, postal_code, country FROM addresses WHERE id IN(' + addresses + ')';
             var migrateAddressParams = [];
