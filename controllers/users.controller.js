@@ -509,7 +509,7 @@ exports.update = function(req, res, next) {
     if ((userObj.role) && (!userModel.isValidRole(userObj.role))) {
         return res.status(409).json(new Error('Invalid role'));
     }
-    var params = _.pick(user, keys);
+    var params = _.pick(userObj, keys);
 
     return userModel.findById(userId).then(function(foundUserObj) {
         if ((!foundUserObj) || (foundUserObj.length === 0)) {
