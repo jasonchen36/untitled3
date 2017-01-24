@@ -260,10 +260,10 @@ var User = {
                             return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
 
                                 var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
-                                    var oldAddressesSql = 'SELECT addresses_id FROM addresses_tax_returns WHERE tax_return_id = ?';
+                                    var oldAddressesSql = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?';
                                     return db.knex.raw(oldAddressesSql, [oldTaxReturnId]).then(function(oldAddressObj) {
                                         var addressId = oldAddressObj.addresses_id;
-                                        var insertAddressSql = 'INSERT INTO addresses_tax_returns (tax_return_id, address_id) VALUES (?, ?)';
+                                        var insertAddressSql = 'INSERT INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES (?, ?)';
                                         var insertAddressSqlParams = [newTaxReturnId, addressId];
                                         return db.knex.raw(insertAddressSql, insertAddressSqlParams);
                                     });
