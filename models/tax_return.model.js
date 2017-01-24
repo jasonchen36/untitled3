@@ -143,7 +143,7 @@ var TaxReturn = {
     getTaxReturnStatuses: function(data,trx) {
       var content = trx ? trx : db.knex;
 
-      return content.raw('SELECT * FROM taxplan_dev.status')
+      return content.raw('SELECT * FROM status')
         .then(function(results) {
           return results[0];
         });
