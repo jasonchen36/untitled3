@@ -93,7 +93,7 @@ exports.resetPassword = function(req, res, next) {
         var hashed_password = userModel.encryptPassword(new_salt, password);
         userObj.hashed_password = hashed_password;
         userObj.reset_key = null;
-        return userObj.updatePassword(userObj.migrated_user, userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
+        return userModel.updatePassword(userObj.migrated_user, userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
             res.status(200).send();
         }).catch(function(err) {
             next(err);
@@ -497,16 +497,18 @@ exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var userObj = req.body;
 
-    if (req.user.id === userId || req.user.role === 'Admin') {
-        //var keys = ['name', 'birthday', 'address', 'phone'];
-        var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id', 'migrated_user']; //v2
-        if (userObj.isAdmin(req.user)) {
-            keys.push('role');
-        }
-        if ((userObj.role) && ((userObj.role !== 'Admin') && (userObj.role !== 'Customer') && userObj.role !== 'TaxPro')) {
-            return res.status(409).json(new Error('Invalid role'));
-        }
-        var params = _.pick(userObj, keys);
+    if (req.user.id !== userId && (!userModel.isAdmin(req.user))) {
+       return res.status(403).send();
+    }
+    var keys = ['first_name', 'last_name', 'email', 'phone', 'taxpro_id', 'migrated_user'];
+
+    if (userModel.isAdmin(req.user)) {
+       keys.push('role');
+    }
+    if ((userObj.role) && (!userModel.isValidRole(userObj.role))) {
+       return res.status(409).json(new Error('Invalid role'));
+    }
+    var params = _.pick(userObj, keys);
 
     return userModel.findById(userId).then(function(foundUserObj) {
         if ((!foundUserObj) || (foundUserObj.length === 0)) {
@@ -528,7 +530,6 @@ exports.update = function(req, res, next) {
     }).catch(function(err) {
         next(err);
     });
-}
 };
 
 /******************************************************************************
