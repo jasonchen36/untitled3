@@ -90,7 +90,7 @@ exports.findById = function (req, res, next) {
         resultObj.emailNotifications = accountObj.emailNotifications;
         resultObj.taxProId = accountObj.taxProId;
 
-        return res.status(200).send(accountObj);
+        return res.status(200).send(resultObj);
     }).catch(function(err) {
         next(err);
     });
