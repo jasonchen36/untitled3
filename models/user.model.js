@@ -6,6 +6,7 @@ var db = require('../services/db');
 var crypto = require('crypto');
 var _ = require('lodash');
 var logger = require('../services/logger.service');
+var config = require('../config/config');
 
 
 var User = {
@@ -240,28 +241,28 @@ var User = {
 
             var userSql = 'SELECT migrated_user FROM users WHERE id = ?';
             return db.knex.raw(userSql, [userId]).then(function(userObj) {
-                var migratedUser = userObj.migrated_user;
+                var migratedUser = userObj[0][0].migrated_user;
                 if (migratedUser === 'Yes') {
 
                     // CARRY FORWARD ...
                     var oldProductId = config.api.oldProductId;
                     var newProductId = config.api.currentProductId;
                     var oldTaxReturnsSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ?';
-                    return db.knex.raw(taxReturnsSql, [accountId, oldProductId]).then(function(oldTaxReturnIds) {
+                    return db.knex.raw(oldTaxReturnsSql, [accountId, oldProductId]).then(function(oldTaxReturnIds) {
                         var migrateTaxReturn = 'INSERT INTO tax_returns \
                         (SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, account_id, product_id) \
                         SELECT SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, ?, ? \
                         FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY tax_return_id';
 
-                        var migrateTaxReturnParams = [accountId, currentProductID, accountId, oldProductId];
+                        var migrateTaxReturnParams = [accountId, newProductId, accountId, oldProductId];
                         return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
                             var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY tax_return_id';
-                            return db.knex.raw(newTaxReturnSql, [accountId, currentProductId]).then(function(newTaxReturnIds) {
+                            return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
 
                                 var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
-                                    oldAddressesSql = 'SELECT addresses_id FROM addresses_tax_returns WHERE tax_return_id = ?';
+                                    var oldAddressesSql = 'SELECT addresses_id FROM addresses_tax_returns WHERE tax_return_id = ?';
                                     return db.knex.raw(oldAddressesSql, [oldTaxReturnId]).then(function(oldAddressObj) {
-                                        var addressId = oldAdderessObj.addresses_id;
+                                        var addressId = oldAddressObj.addresses_id;
                                         var insertAddressSql = 'INSERT INTO addresses_tax_returns (tax_return_id, address_id) VALUES (?, ?)';
                                         var insertAddressSqlParams = [newTaxReturnId, addressId];
                                         return db.knex.raw(insertAddressSql, insertAddressSqlParams);
@@ -269,7 +270,7 @@ var User = {
                                 };
 
                                 var addressPromises = [];
-                                i = 0;
+                                var i = 0;
                                 for(i=0; i<oldTaxReturnIds.length; i++) {
                                     addressPromises.push(copyAddressPromise(oldTaxReturnIds[i], newTaxReturnIds[i]));
                                 }
