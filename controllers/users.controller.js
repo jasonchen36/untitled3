@@ -245,10 +245,12 @@ function createUserAndSendEmail(userObj) {
             return mailService.send(userObj, config.email.templates.profile_created, config.email.admin, variables);
         };
 
+        var productId = userObj.productId;
+        var accountId = userObj.accountId;
         return userModel.findByEmail(userObj.email).then(function(userResultObj) {
             // update the last User activity of the logged in user
             userModel.updateLastUserActivity(userResultObj);
-            return quoteModel.getEmailFieldsByProductIdAccountId(userResultObj.productId, userResultObj.accountId).then(function(quote) {
+            return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
                 userResultObj.quote = quote;
                 return sendWelcomeEmailTo(userResultObj).then(function() {
 //                  return notifyAdminAbout(user);
