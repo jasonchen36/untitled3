@@ -96,7 +96,7 @@ exports.resetPassword = function(req, res) {
                 var hashed_password = User.encryptPassword(new_salt, password);
                 user.hashed_password = hashed_password;
                 user.reset_key = null;
-                return User.updatePassword(user.id, hashed_password, new_salt).then(function() {
+                return User.updatePassword(user.migrated_user, user.id, user.account_id, hashed_password, new_salt).then(function() {
                     res.status(200).send();
                 }).catch(function(err) {
                     logger.error(err.message);
