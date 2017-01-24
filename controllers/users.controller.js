@@ -81,26 +81,26 @@ RESPONSE:
 exports.resetPassword = function(req, res, next) {
     var password = req.body.password;
 
-        if ((!password) || (password.length === 0)) {
-            res.status(400).send({ msg: 'No password provided' });
+    if ((!password) || (password.length === 0)) {
+        res.status(400).send({ msg: 'No password provided' });
+    }
+    var reset_key = req.params.reset_key;
+    return userModel.findByResetKey(reset_key).then(function(userObj) {
+        if (!userObj) {
+            return res.status(404).send();
         }
-        var reset_key = req.params.reset_key;
-        return userModel.findByResetKey(reset_key).then(function(userObj) {
-            if (!userObj) {
-                return res.status(404).send();
-            }
-            var new_salt = userModel.makeSalt();
-            var hashed_password = userModel.encryptPassword(new_salt, password);
-            userObj.hashed_password = hashed_password;
-            userObj.reset_key = null;
-                return userObj.updatePassword(userObj.migrated_user, userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
-                    res.status(200).send();
-                }).catch(function(err) {
-                    next(err);
-                });
+        var new_salt = userModel.makeSalt();
+        var hashed_password = userModel.encryptPassword(new_salt, password);
+        userObj.hashed_password = hashed_password;
+        userObj.reset_key = null;
+        return userObj.updatePassword(userObj.migrated_user, userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
+            res.status(200).send();
         }).catch(function(err) {
             next(err);
         });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
