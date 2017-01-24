@@ -249,6 +249,7 @@ var User = {
             return(userSqlResults[0][0]);
         });
     },
+
     updateLastUserActivity: function(user,trx) {
       if(!user || !user.id) {
         logger.info("user is missing, cannot update for last user activity.");
@@ -260,6 +261,7 @@ var User = {
         return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
       }
     },
+    
     isAdmin: function(userObj) {
         if ((userObj.role) && (userObj.role === 'Admin')) {
             return true;
@@ -268,9 +270,16 @@ var User = {
         }
     },
 
-
     isTaxpro: function(userObj) {
-        if ((userObj.role) && (userObj.role === 'Taxpro')) {
+        if ((userObj.role) && (userObj.role === 'TaxPro')) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    isValidRole: function(userObj) {
+        if ((userObj.role) && ((userObj.role === 'Admin') || (userObj.role === 'Customer') || (userObj.role === 'TaxPro')) ) {
             return true;
         } else {
             return false;
