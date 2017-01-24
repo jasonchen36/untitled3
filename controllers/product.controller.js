@@ -3,13 +3,13 @@
 'use strict';
 
 var config = require('../config/config');
-var Product = require('../models/product.model');
+var productModel = require('../models/product.model');
 
-exports.getCurrentProduct = function(req, res) {
+exports.getCurrentProduct = function(req, res, next) {
     if (config.api.currentProductId) {
-        return Product.findById(config.api.currentProductId)
-        .then(function(result) {
-            return res.status(200).send(result);
+        return productModel.findById(config.api.currentProductId)
+        .then(function(resultObj) {
+            return res.status(200).send(resultObj);
         });
     } else {
         logger.error('Configuration error: config.api.currentProductId not set');

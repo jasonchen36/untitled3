@@ -1,19 +1,13 @@
 /*jslint node: true */
 
 'use strict';
-
-// message controller
-
 /**
  * Module dependencies.
  */
-//var db = require('../services/db');
-var logger = require('../services/logger.service');
-var Categories = require('../models/categories.model');
-
-// boilerplate
-var _ = require('underscore');
 var config = require('../config/config');
+var _ = require('underscore');
+var categoriesModel = require('../models/categories.model');
+var logger = require('../services/logger.service');
 
 /*******************************************************************************
 ENDPOINT
@@ -41,17 +35,14 @@ RESPONSE:
 ]
 
 *******************************************************************************/
-exports.list = function (req, res) {
-    return Categories.list().then(function(categories) {
-        if (categories) {
-            res.status(200).send(categories);
-        } else {
-            res.status(404).send();
+exports.list = function (req, res, next) {
+    return categoriesModel.list().then(function(categoriesArr) {
+        if (!categoriesArr) {
+            return res.status(404).send();
         }
+        return res.status(200).send(categoriesArr);
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 };
 
@@ -74,23 +65,17 @@ exports.list = function (req, res) {
 
  *******************************************************************************/
 
-exports.getCategoryById = function (req, res){
-    req.checkBody('id', 'Please provide a category id').isInt();
-
+exports.getCategoryById = function (req, res, next){
+    req.checkParams('id', 'Please provide a category id').isInt();
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        return Categories.getCategoryById(req.params.id).then(function(category){
-            if (category) {
-                res.status(200).send(category);
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
-    }
+    if (errors) { return res.status(400).send(errors); }
+
+    return categoriesModel.getCategoryById(req.params.id).then(function(categoryObj){
+        if (!categoryObj) {
+            return res.status(404).send();
+        }
+        return res.status(200).send(categoryObj);
+    }).catch(function(err) {
+        next(err);
+    });
 };

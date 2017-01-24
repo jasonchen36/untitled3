@@ -5,6 +5,7 @@
 var db = require('../services/db');
 var Promise = require('bluebird');
 var userModel = require('./user.model');
+var logger = require('../services/logger.service');
 
 var TaxReturn = {
     hasAccess: function(userObj, taxReturnId) {
@@ -14,12 +15,17 @@ var TaxReturn = {
         var taxReturnSql = 'SELECT * FROM tax_returns WHERE id = ?';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturn = taxReturnSqlResults[0][0];
-            if (!taxReturn) return false;
+            if (!taxReturn) {
+                logger.debug('ACCESS DENIED: taxReturnId: ' + taxReturnId + 'does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                return false;
+            }
             if ((userObj.account_id === taxReturn.account_id) ||
                 (userModel.isAdmin(userObj)) ||
                 (userModel.isTaxpro(userObj))) {
+                logger.debug('userId: ' + userObj.id + ' granted access to taxReturnId: ' + taxReturnId);
                 return true;
             } else {
+                logger.debug('ACCESS DENIED: taxReturnId: ' + taxReturnId + ' belongs to accountId: ' + taxReturn.account_id + ' not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
         });
@@ -140,7 +146,7 @@ var TaxReturn = {
     getTaxReturnStatuses: function(data,trx) {
       var content = trx ? trx : db.knex;
 
-      return content.raw('SELECT * FROM taxplan_dev.status')
+      return content.raw('SELECT * FROM status')
         .then(function(results) {
           return results[0];
         });

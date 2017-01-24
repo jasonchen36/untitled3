@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var _ = require('lodash');
 var userModel = require('./user.model');
 const taxReturnModel = require('./tax_return.model');
+var logger = require('../services/logger.service');
 
 var Account = {
     hasAccess: function(userObj, accountId) {
@@ -16,12 +17,17 @@ var Account = {
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
         return db.knex.raw(accountSql, [accountId]).then(function(accountSqlResults) {
             var account = accountSqlResults[0][0];
-            if (!account) return false;
+            if (!account) {
+                logger.debug('ACCESS DENIED: accountId: ' + accountId + 'does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                return false;
+            }
             if ((userObj.account_id === account.id) ||
                 (userModel.isAdmin(userObj)) ||
                 (userModel.isTaxpro(userObj))) {
+                logger.debug('userId: ' + userObj.id + ' granted access to accountId: ' + accountId);
                 return true;
             } else {
+                logger.debug('ACCESS DENIED: accountId: ' + accountId +  ' is not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
         });
@@ -84,8 +90,8 @@ var Account = {
            accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
            accountInsertSqlParams = [accountObj.name];
        }
-       return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(messageInsertSqlResults) {
-           return messageInsertSqlResults[0].insertId;
+       return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(accountInsertSqlResults) {
+           return accountInsertSqlResults[0].insertId;
        });
     },
 

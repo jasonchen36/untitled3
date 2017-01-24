@@ -26,6 +26,7 @@ var User = {
             return(usersSqlResults[0]);
         });
     },
+
     findAllCustomersFiltered: function(filters, taxProId, trx) {
       // if taxpro not included, take from filter
       var connection = trx ? trx : db.knex;
@@ -71,6 +72,7 @@ var User = {
         });
       });
     },
+
     findById: function(id,trx) {
         if ((!id) || (id.length === 0)) {
           return Promise.reject(new Error('findById() No id specified!'));
@@ -91,7 +93,6 @@ var User = {
         return db.knex.raw(userDeleteSql, [id]);
     },
 
-
     deleteByEmail: function(email) {
         if ((!email) || (email.length === 0)) {
           return Promise.reject(new Error('deleteByEmail() No email specified!'));
@@ -99,8 +100,6 @@ var User = {
         var userSql = 'DELETE FROM users WHERE email = ?';
         return db.knex.raw(userSql, [email]);
     },
-
-
 
     findByEmail: function(email) {
         if ((!email) || (email.length === 0)) {
@@ -111,7 +110,6 @@ var User = {
             return(userSqlResults[0][0]);
         });
     },
-
 
     create: function(userObj) {
         if ((!userObj.provider) || (userObj.provider.length === 0)) {
@@ -264,6 +262,7 @@ var User = {
             return(userSqlResults[0][0]);
         });
     },
+
     updateLastUserActivity: function(user,trx) {
       if(!user || !user.id) {
         logger.info("user is missing, cannot update for last user activity.");
@@ -275,6 +274,7 @@ var User = {
         return trx.raw('UPDATE users SET last_user_activity=NOW() WHERE id=?',[userId]);
       }
     },
+
     isAdmin: function(userObj) {
         if ((userObj.role) && (userObj.role === 'Admin')) {
             return true;
@@ -283,9 +283,16 @@ var User = {
         }
     },
 
-
     isTaxpro: function(userObj) {
-        if ((userObj.role) && (userObj.role === 'Taxpro')) {
+        if ((userObj.role) && (userObj.role === 'TaxPro')) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    isValidRole: function(role) {
+        if ((role) && ((role === 'Admin') || (role === 'Customer') || (role === 'TaxPro')) ) {
             return true;
         } else {
             return false;
