@@ -256,7 +256,7 @@ var User = {
 
                         var migrateTaxReturnParams = [accountId, newProductId, accountId, oldProductId];
                         return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
-                            var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY tax_return_id';
+                            var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
                             return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
 
                                 var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
