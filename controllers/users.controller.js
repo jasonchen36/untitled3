@@ -498,7 +498,7 @@ exports.update = function(req, res, next) {
     var userObj = req.body;
 
 
-    if (req.user.id !== userId || (!userModel.isAdmin(req.user))) {
+    if (req.user.id !== userId && (!userModel.isAdmin(req.user))) {
         return res.status(403).send();
     }
     var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id'];
