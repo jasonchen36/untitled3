@@ -197,8 +197,8 @@ exports.create = function(req, res, next) {
             // create a new account for this user
             var accountObj = {};
             accountObj.name = userObj.first_name;
-            return accountModel.create(accountObj).then(function(accountResultObj) {
-                userObj.accountId = accountResultObj;
+            return accountModel.create(accountObj).then(function(accountId) {
+                userObj.accountId = accountId;
                 return createUserAndSendEmail(userObj).then(function(token) {
                     return res.json({ token : token });
                 }).catch(function(err) {

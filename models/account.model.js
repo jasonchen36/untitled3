@@ -87,8 +87,8 @@ var Account = {
            accountInsertSql = 'INSERT INTO accounts (name) VALUES(?)';
            accountInsertSqlParams = [accountObj.name];
        }
-       return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(messageInsertSqlResults) {
-           return messageInsertSqlResults[0].insertId;
+       return db.knex.raw(accountInsertSql, accountInsertSqlParams).then(function(accountInsertSqlResults) {
+           return accountInsertSqlResults[0].insertId;
        });
     },
 
