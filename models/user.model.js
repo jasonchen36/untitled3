@@ -276,8 +276,8 @@ var User = {
         }
     },
 
-    isValidRole: function(userObj) {
-        if ((userObj.role) && ((userObj.role === 'Admin') || (userObj.role === 'Customer') || (userObj.role === 'TaxPro')) ) {
+    isValidRole: function(role) {
+        if ((role) && ((role === 'Admin') || (role === 'Customer') || (role === 'TaxPro')) ) {
             return true;
         } else {
             return false;
