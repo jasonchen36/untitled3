@@ -22,7 +22,7 @@ var TaxReturn = {
                 logger.debug('userId: ' + userObj.id + ' granted access to taxReturnId: ' + taxReturnId);
                 return true;
             } else {
-                logger.debug('taxReturnId: ' + taxReturnId + ' belongs to accountId: ' + taxReturn.account_id + ' not this users accountId: ' + userObj.account_id);
+                logger.debug('ACCESS DENIED: taxReturnId: ' + taxReturnId + ' belongs to accountId: ' + taxReturn.account_id + ' not this users accountId: ' + userObj.account_id);
                 return false;
             }
         });
