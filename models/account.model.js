@@ -17,14 +17,17 @@ var Account = {
         var accountSql = 'SELECT * FROM accounts WHERE id = ?';
         return db.knex.raw(accountSql, [accountId]).then(function(accountSqlResults) {
             var account = accountSqlResults[0][0];
-            if (!account) return false;
+            if (!account) {
+                logger.debug('ACCESS DENIED: accountId: ' + accountId + 'does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                return false;
+            }
             if ((userObj.account_id === account.id) ||
                 (userModel.isAdmin(userObj)) ||
                 (userModel.isTaxpro(userObj))) {
                 logger.debug('userId: ' + userObj.id + ' granted access to accountId: ' + accountId);
                 return true;
             } else {
-                logger.debug('ACCESS DENIED: accountId: ' + accountId + ' belongs to accountId: ' + account.id + ' not this users accountId: ' + userObj.account_id);
+                logger.debug('ACCESS DENIED: accountId: ' + accountId +  ' is not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
         });
