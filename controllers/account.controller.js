@@ -75,9 +75,9 @@ exports.findById = function (req, res, next) {
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
-    var id = parseInt(req.params.id);
+    var accountId = parseInt(req.params.id);
 
-    return accountModel.findById(id).then(function(accountObj) {
+    return accountModel.findById(accountId).then(function(accountObj) {
         if ((!accountObj) || (accountObj.length === 0)) {
             return res.status(404).send();
         }
