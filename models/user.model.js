@@ -295,6 +295,7 @@ var User = {
         if ((role) && ((role === 'Admin') || (role === 'Customer') || (role === 'TaxPro')) ) {
             return true;
         } else {
+            logger.debug('INVALID ROLE: ' + role);
             return false;
         }
     }
