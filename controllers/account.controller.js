@@ -116,6 +116,7 @@ exports.update = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var accountId = parseInt(req.params.id);
+
     var keys = ['name', 'push_notifications', 'email_notifications', 'taxpro_id'];
 
     return accountModel.findById(accountId).then(function(accountObj) {

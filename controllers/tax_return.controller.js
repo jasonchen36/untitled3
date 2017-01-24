@@ -239,52 +239,54 @@ exports.updateTaxReturnById = function (req, res, next) {
     var productId = req.body.productId;
     var taxReturnObj = {};
 
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
 
-    if ((!req.body.firstName) &&
-        (!req.body.lastName) &&
-        (!req.body.provinceOfResidence) &&
-        (!req.body.dateOfBirth) &&
-        (!req.body.canadianCitizen) &&
-        (!req.body.authorizeCra) &&
-        (!req.body.filerType) &&
-        (!req.body.status) &&
-        (!req.body.sin) &&
-        (!req.body.prefix) &&
-        (!req.body.middleInitial)
-    ) {
-        return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
-    } else {
-      if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
-      if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
-      if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
-      if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
-      if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
-      if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
-      if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
-      if (req.body.status) {taxReturnObj.status = req.body.status; }
-      if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
-      if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
-      if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
+        if ((!req.body.firstName) &&
+            (!req.body.lastName) &&
+            (!req.body.provinceOfResidence) &&
+            (!req.body.dateOfBirth) &&
+            (!req.body.canadianCitizen) &&
+            (!req.body.authorizeCra) &&
+            (!req.body.filerType) &&
+            (!req.body.status) &&
+            (!req.body.sin) &&
+            (!req.body.prefix) &&
+            (!req.body.middleInitial)
+        ) {
+            return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
+        } else {
+          if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
+          if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
+          if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
+          if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
+          if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
+          if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
+          if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
+          if (req.body.status) {taxReturnObj.status = req.body.status; }
+          if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
+          if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
+          if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
 
-      return taxReturnModel.update(taxReturnId, taxReturnObj)
-        .then(function(taxReturnId) {
-          return taxReturnModel.findById(taxReturnId);
-        })
-        .then(function(taxReturn) {
-          if (!taxReturn) {
-            return res.status(404).send();
-          }
-          res.status(200).send(taxReturn);
+          return taxReturnModel.update(taxReturnId, taxReturnObj)
+            .then(function(taxReturnId) {
+              return taxReturnModel.findById(taxReturnId);
+            })
+            .then(function(taxReturn) {
+              if (!taxReturn) {
+                return res.status(404).send();
+              }
+              res.status(200).send(taxReturn);
 
-          // update the last User activity of the logged in user
-          userModel.updateLastUserActivity(req.user);
-        }).catch(function(err) {
-            next(err);
-        });
-    }
+              // update the last User activity of the logged in user
+              userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }
+    });
 };
 
 /*******************************************************************************
@@ -313,16 +315,18 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
         taxReturnObj = {
             status_id: parseInt(req.body.statusId)
         };
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
-        res.status(200).send('OK');
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
+            res.status(200).send('OK');
 
-        // update the last User activity of the logged in user
-        userModel.updateLastUserActivity(req.user);
-    }).catch(function(err) {
-        next(err);
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -351,16 +355,18 @@ exports.findTaxReturnById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
-        if (!taxReturnObj) {
-            return res.status(404).send();
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(taxReturnObj);
-    }).catch(function(err) {
-        next(err);
+        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+            if (!taxReturnObj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(taxReturnObj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -396,87 +402,91 @@ exports.createAnswer = function(req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    var answers = req.body.answers;
-    // check that taxReturnId exists
-    return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
-        if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
-            return res.status(404).send({msg: 'Invalid taxReturnId'});
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
-            return cacheService.get('questions', questionModel.populateQuestions()).then(function(questionsCache) {
-                var answersArr = answers;
-                var answerErrors = [];
-                var answerPromises = [];
-                _.each(answersArr, function(answerObj) {
-                    var questionId = parseInt(answerObj.questionId);
-                    var question = _.find(questionsCache, {id: questionId});
-                    if (!question) {
-                        answerErrors.push({
-                            taxReturnId: taxReturnId,
-                            questionID: questionId,
-                            error: 'questionId = ' + questionId + ' is not valid.'});
-                    } else {
-                        var filteredValues = _.filter(valuesCache, {question_id: questionId});
-                        var answerText = answerObj.text;
-                        var questionType = question.type;
-                        var foundValue = _.find(filteredValues, {text: answerText});
-                        var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
-                        var validChoice = ((questionType === 'Choice') && (foundValue));
-                        var validDate = false;
-                        if (questionType === 'Date') {
-                            var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
-                            validDate = ((questionType === 'Date') && (isValidDate));
-                        }
-                        var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
-                        var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
+        var answers = req.body.answers;
+        // check that taxReturnId exists
+        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+            if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
+                return res.status(404).send({msg: 'Invalid taxReturnId'});
+            }
+            return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
+                return cacheService.get('questions', questionModel.populateQuestions()).then(function(questionsCache) {
+                    var answersArr = answers;
+                    var answerErrors = [];
+                    var answerPromises = [];
+                    _.each(answersArr, function(answerObj) {
+                        var questionId = parseInt(answerObj.questionId);
+                        var question = _.find(questionsCache, {id: questionId});
+                        if (!question) {
+                            answerErrors.push({
+                                taxReturnId: taxReturnId,
+                                questionID: questionId,
+                                error: 'questionId = ' + questionId + ' is not valid.'});
+                        } else {
+                            var filteredValues = _.filter(valuesCache, {question_id: questionId});
+                            var answerText = answerObj.text;
+                            var questionType = question.type;
+                            var foundValue = _.find(filteredValues, {text: answerText});
+                            var validBool = ((questionType === 'Bool') && isYesNoAnswer(answerText));
+                            var validChoice = ((questionType === 'Choice') && (foundValue));
+                            var validDate = false;
+                            if (questionType === 'Date') {
+                                var isValidDate = moment(answerText, API_DATE_INPUT_FORMAT, true).isValid();
+                                validDate = ((questionType === 'Date') && (isValidDate));
+                            }
+                            var validNotSure = ((questionType === 'NotSure') && isYesNoAnswer(answerText));
+                            var validNoneApply = ((questionType === 'NoneApply') && isYesNoAnswer(answerText));
 
-                        if ((answerObj.text) &&
-                            (validBool ||
-                            validChoice ||
-                            validDate ||
-                            validNotSure ||
-                            validNoneApply)
-                        ) {
-                            var questionIdparsed = parseInt(questionId);
-                            if (!isNaN(questionIdparsed) && (questionId)) {
-                                var createAnswerObj = {};
-                                createAnswerObj.questionId = questionIdparsed;
-                                createAnswerObj.text = answerText;
-                                createAnswerObj.taxReturnId = taxReturnId;
+                            if ((answerObj.text) &&
+                                (validBool ||
+                                validChoice ||
+                                validDate ||
+                                validNotSure ||
+                                validNoneApply)
+                            ) {
+                                var questionIdparsed = parseInt(questionId);
+                                if (!isNaN(questionIdparsed) && (questionId)) {
+                                    var createAnswerObj = {};
+                                    createAnswerObj.questionId = questionIdparsed;
+                                    createAnswerObj.text = answerText;
+                                    createAnswerObj.taxReturnId = taxReturnId;
 
-                                answerPromises.push(answerModel.create(createAnswerObj));
+                                    answerPromises.push(answerModel.create(createAnswerObj));
+                                } else {
+                                    answerErrors.push({taxReturnId: taxReturnId,
+                                        questionID: questionId,
+                                        error: 'questionId = ' + questionId + ' is not valid.'});
+                                }
                             } else {
+                                var msg = '';
+                                if (questionType === 'Date') {
+                                    msg = 'Invalid text value for answer (questionId=' + questionId +
+                                        ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
+                                } else {
+                                    msg = 'Invalid text value for answer (questionId=' + questionId +
+                                        ', questionType=' + questionType + ', answer.text=' + answerText + ')';
+
+                                }
                                 answerErrors.push({taxReturnId: taxReturnId,
                                     questionID: questionId,
-                                    error: 'questionId = ' + questionId + ' is not valid.'});
+                                    error: msg});
                             }
-                        } else {
-                            var msg = '';
-                            if (questionType === 'Date') {
-                                msg = 'Invalid text value for answer (questionId=' + questionId +
-                                    ', questionType=' + questionType + ', answer.text=' + answerText + '). API Date Format is ' + API_DATE_INPUT_FORMAT;
-                            } else {
-                                msg = 'Invalid text value for answer (questionId=' + questionId +
-                                    ', questionType=' + questionType + ', answer.text=' + answerText + ')';
-
-                            }
-                            answerErrors.push({taxReturnId: taxReturnId,
-                                questionID: questionId,
-                                error: msg});
                         }
+                    });
+                    if (answerErrors.length > 0) {
+                        return res.status(400).send(answerErrors);
                     }
-                });
-                if (answerErrors.length > 0) {
-                    return res.status(400).send(answerErrors);
-                }
-                return Promise.all(answerPromises).then(function() {
-                    res.status(200).send('OK');
+                    return Promise.all(answerPromises).then(function() {
+                        res.status(200).send('OK');
 
-                    // update the last User activity of the logged in user
-                    userModel.updateLastUserActivity(req.user);
+                        // update the last User activity of the logged in user
+                        userModel.updateLastUserActivity(req.user);
+                    }).catch(function(err) {
+                        next(err);
+                    });
                 }).catch(function(err) {
                     next(err);
                 });
@@ -486,8 +496,6 @@ exports.createAnswer = function(req, res, next) {
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -517,17 +525,19 @@ exports.findAnswerById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    var answerId = parseInt(req.params.answerId);
-    return answerModel.findById(answerId).then(function(answerObj) {
-        if (!answerObj) {
-            return res.status(404).send();
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(answerObj);
-    }).catch(function(err) {
-        next(err);
+        var answerId = parseInt(req.params.answerId);
+        return answerModel.findById(answerId).then(function(answerObj) {
+            if (!answerObj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(answerObj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -554,22 +564,24 @@ exports.listAnswers = function(req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
-        return answerModel.listAnswers(valuesCache, taxReturnId).then(function(answersArr) {
-            if (!answersArr) {
-                return res.status(404).send();
-            }
-            var answersObj = {};
-            answersObj.answers = answersArr;
-            return res.status(200).send(answersObj);
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
+            return answerModel.listAnswers(valuesCache, taxReturnId).then(function(answersArr) {
+                if (!answersArr) {
+                    return res.status(404).send();
+                }
+                var answersObj = {};
+                answersObj.answers = answersArr;
+                return res.status(200).send(answersObj);
+            }).catch(function(err) {
+                next(err);
+            });
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -580,23 +592,25 @@ exports.listAnswersFilterCategory = function(req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    var categoryId = parseInt(req.params.categoryId);
-    return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
-        return answerModel.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answersArr) {
-            if (!answersArr) {
-                return res.status(404).send();
-            }
-            var answersObj = {};
-            answersObj.answers = answersArr;
-            return res.status(200).send(answersObj);
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        var categoryId = parseInt(req.params.categoryId);
+        return cacheService.get('values', answerModel.populateValues()).then(function(valuesCache) {
+            return answerModel.listAnswers(valuesCache, taxReturnId, categoryId).then(function(answersArr) {
+                if (!answersArr) {
+                    return res.status(404).send();
+                }
+                var answersObj = {};
+                answersObj.answers = answersArr;
+                return res.status(200).send(answersObj);
+            }).catch(function(err) {
+                next(err);
+            });
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -638,28 +652,30 @@ exports.createAddress = function (req, res, next) {
     var postalCode = req.body.postalCode;
     var country = req.body.country;
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
 
-    var addressObj = {};
-    addressObj.addressLine1 = addressLine1;
-    addressObj.addressLine2 = addressLine2;
-    addressObj.city = city;
-    addressObj.province = province;
-    addressObj.postalCode = postalCode;
-    if ((country) && country.length > 0){
-      addressObj.country = country;
-    }
-    return addressModel.create(addressObj).then(function(addressId) {
-        var resultObj = {};
-        resultObj.addressId = addressId;
-        res.status(200).json(resultObj);
+        var addressObj = {};
+        addressObj.addressLine1 = addressLine1;
+        addressObj.addressLine2 = addressLine2;
+        addressObj.city = city;
+        addressObj.province = province;
+        addressObj.postalCode = postalCode;
+        if ((country) && country.length > 0){
+          addressObj.country = country;
+        }
+        return addressModel.create(addressObj).then(function(addressId) {
+            var resultObj = {};
+            resultObj.addressId = addressId;
+            res.status(200).json(resultObj);
 
-        // update the last User activity of the logged in user
-        userModel.updateLastUserActivity(req.user);
-    }).catch(function(err) {
-        next(err);
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -700,32 +716,34 @@ exports.updateAddress = function (req, res, next) {
     var postalCode = req.body.postalCode;
     var country = req.body.country;
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
 
-    var addressObj = {};
-    if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
-    if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
-    if (req.body.city) { addressObj.city = req.body.city; }
-    if (req.body.province) { addressObj.providence = req.body.province; }
-    if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
-    if (req.body.country) { addressObj.country = req.body.country; }
+        var addressObj = {};
+        if (req.body.addressLine1) { addressObj.address_line1 = req.body.addressLine1; }
+        if (req.body.addressLine2) { addressObj.address_line2 = req.body.addressLine2; }
+        if (req.body.city) { addressObj.city = req.body.city; }
+        if (req.body.province) { addressObj.providence = req.body.province; }
+        if (req.body.postalCode) { addressObj.postal_code = req.body.postalCode; }
+        if (req.body.country) { addressObj.country = req.body.country; }
 
-    return addressModel.update(addressId, addressObj).then(function(addressId) {
-        var resultObj = {};
-        resultObj.addressLine1 = addressLine1;
-        resultObj.addressLine2 = addressLine2;
-        resultObj.city = city;
-        resultObj.province = province;
-        resultObj.postalCode = postalCode;
+        return addressModel.update(addressId, addressObj).then(function(addressId) {
+            var resultObj = {};
+            resultObj.addressLine1 = addressLine1;
+            resultObj.addressLine2 = addressLine2;
+            resultObj.city = city;
+            resultObj.province = province;
+            resultObj.postalCode = postalCode;
 
-        res.status(200).json(resultObj);
+            res.status(200).json(resultObj);
 
-        // update the last User activity of the logged in user
-        userModel.updateLastUserActivity(req.user);
-    }).catch(function(err) {
-        next(err);
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 /*******************************************************************************
@@ -754,18 +772,20 @@ exports.findAddressById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-
-    var addressId = parseInt(req.params.addressId);
-    return addressModel.findById(addressId).then(function(addressObj) {
-        if (!addressObj) {
-            return res.status(404).send();
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(addressObj);
-    }).catch(function(err) {
-        next(err);
+
+        var addressId = parseInt(req.params.addressId);
+        return addressModel.findById(addressId).then(function(addressObj) {
+            if (!addressObj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(addressObj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -796,16 +816,18 @@ exports.listAddresses = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    return addressModel.findAll(taxReturnId).then(function(addressArr) {
-        if (!addressArr) {
-            return res.status(404).send();
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(addressArr);
-    }).catch(function(err) {
-        next(err);
+        return addressModel.findAll(taxReturnId).then(function(addressArr) {
+            if (!addressArr) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(addressArr);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -829,36 +851,38 @@ exports.linkExistingAddresses = function (req, res, next) {
 
     var addressId = parseInt(req.params.addressId);
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    // check that addressId exists
-    return addressModel.findById(addressId).then(function(address) {
-        if ((!address) || (address.length === 0)) {
-            return res.status(404).send({ msg: 'Invalid address' });
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        // check that taxReturnId exists
-        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
-            if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
-                return res.status(404).send({ msg: 'Invalid taxReturn' });
+        // check that addressId exists
+        return addressModel.findById(addressId).then(function(address) {
+            if ((!address) || (address.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid address' });
             }
-            var addressTaxReturnObj = {};
-            addressTaxReturnObj.addressId = addressId;
-            addressTaxReturnObj.taxReturnId = taxReturnId;
+            // check that taxReturnId exists
+            return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+                if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
+                    return res.status(404).send({ msg: 'Invalid taxReturn' });
+                }
+                var addressTaxReturnObj = {};
+                addressTaxReturnObj.addressId = addressId;
+                addressTaxReturnObj.taxReturnId = taxReturnId;
 
-            return addressModel.createAssociation(addressTaxReturnObj).then(function() {
-                res.status(200).send("OK");
+                return addressModel.createAssociation(addressTaxReturnObj).then(function() {
+                    res.status(200).send("OK");
 
-                // update the last User activity of the logged in user
-                userModel.updateLastUserActivity(req.user);
+                    // update the last User activity of the logged in user
+                    userModel.updateLastUserActivity(req.user);
+                }).catch(function(err) {
+                    next(err);
+                });
             }).catch(function(err) {
                 next(err);
             });
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -893,31 +917,33 @@ exports.createDependant = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    var firstName = req.body.firstName;
-    var lastName = req.body.lastName;
-    var dateOfBirth = req.body.dateOfBirth;
-    var relationship = req.body.relationship;
-    var isShared = req.body.isShared;
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        var firstName = req.body.firstName;
+        var lastName = req.body.lastName;
+        var dateOfBirth = req.body.dateOfBirth;
+        var relationship = req.body.relationship;
+        var isShared = req.body.isShared;
 
-    var dependantObj = {};
-    dependantObj.firstName = firstName;
-    dependantObj.lastName = lastName;
-    dependantObj.dateOfBirth = dateOfBirth;
-    dependantObj.relationship = relationship;
-    dependantObj.isShared = isShared;
+        var dependantObj = {};
+        dependantObj.firstName = firstName;
+        dependantObj.lastName = lastName;
+        dependantObj.dateOfBirth = dateOfBirth;
+        dependantObj.relationship = relationship;
+        dependantObj.isShared = isShared;
 
-    return dependantModel.create(dependantObj).then(function(dependantId) {
-        var resultObj = {};
-        resultObj.dependantId = dependantId;
-        res.status(200).json(resultObj);
+        return dependantModel.create(dependantObj).then(function(dependantId) {
+            var resultObj = {};
+            resultObj.dependantId = dependantId;
+            res.status(200).json(resultObj);
 
-        // update the last User activity of the logged in user
-        userModel.updateLastUserActivity(req.user);
-    }).catch(function(err) {
-        next(err);
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 /*******************************************************************************
@@ -954,43 +980,45 @@ exports.updateDependant = function (req, res, next) {
     var relationship = req.body.relationship;
     var dependantId = parseInt(req.params.dependantId);
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    var isShared = req.body.isShared;
-    var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
-    if(!isValidDate){
-        return res.status(400).send({msg: "Invalid date format. Expected date format is " + API_DATE_INPUT_FORMAT});
-    }
-    // check that dependantId exists
-    return dependantModel.findById(dependantId).then(function(dependant) {
-        if ((!dependant) || (dependant.length === 0)) {
-            return res.status(404).send({ msg: 'Dependant not found' });
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        var dependantObj = {};
-        if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
-        if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
-        if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
-        if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
-        if (req.body.isShared) { dependantObj.is_shared = req.body.isShared; }
+        var isShared = req.body.isShared;
+        var isValidDate = moment(dateOfBirth, API_DATE_INPUT_FORMAT, true).isValid();
+        if(!isValidDate){
+            return res.status(400).send({msg: "Invalid date format. Expected date format is " + API_DATE_INPUT_FORMAT});
+        }
+        // check that dependantId exists
+        return dependantModel.findById(dependantId).then(function(dependant) {
+            if ((!dependant) || (dependant.length === 0)) {
+                return res.status(404).send({ msg: 'Dependant not found' });
+            }
+            var dependantObj = {};
+            if (req.body.firstName) { dependantObj.first_name = req.body.firstName; }
+            if (req.body.lastName) { dependantObj.last_name = req.body.lastName; }
+            if (req.body.dateOfBirth) { dependantObj.date_of_birth = req.body.dateOfBirth; }
+            if (req.body.relationship) { dependantObj.relationship = req.body.relationship; }
+            if (req.body.isShared) { dependantObj.is_shared = req.body.isShared; }
 
-        return dependantModel.update(dependantId,dependantObj).then(function() {
-            var resultObj = {};
-            resultObj.firstName = firstName;
-            resultObj.lastName = lastName;
-            resultObj.dateOfBirth = dateOfBirth;
-            resultObj.relationship = relationship;
-            resultObj.isShared = isShared;
+            return dependantModel.update(dependantId,dependantObj).then(function() {
+                var resultObj = {};
+                resultObj.firstName = firstName;
+                resultObj.lastName = lastName;
+                resultObj.dateOfBirth = dateOfBirth;
+                resultObj.relationship = relationship;
+                resultObj.isShared = isShared;
 
-            res.status(200).json(resultObj);
+                res.status(200).json(resultObj);
 
-            // update the last User activity of the logged in user
-            userModel.updateLastUserActivity(req.user);
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -1012,17 +1040,19 @@ exports.deleteDependant = function (req, res, next) {
 
     const dependantId = parseInt(req.params.dependantId),
         taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    // check that dependantId exists
-    return dependantModel.deleteById(dependantId, taxReturnId).then(function() {
-        res.status(200).send('OK');
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        // check that dependantId exists
+        return dependantModel.deleteById(dependantId, taxReturnId).then(function() {
+            res.status(200).send('OK');
 
-        // update the last User activity of the logged in user
-        userModel.updateLastUserActivity(req.user);
-    }).catch(function(err) {
-        next(err);
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -1057,16 +1087,18 @@ exports.getDependantsById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.id);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    return dependantModel.getAllById(taxReturnId).then(function(dependantArr) {
-        if (!dependantArr) {
-            return res.status(404).send();
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(dependantArr);
-    }).catch(function(err) {
-        next(err);
+        return dependantModel.getAllById(taxReturnId).then(function(dependantArr) {
+            if (!dependantArr) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(dependantArr);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -1093,17 +1125,19 @@ exports.findDependantById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    var dependantId = parseInt(req.params.dependantId);
-    return DependantdependantModelfindById(dependantId).then(function(dependantObj) {
-        if (!dependantObj) {
-            return res.status(404).send();
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(dependantObj);
-    }).catch(function(err) {
-        next(err);
+        var dependantId = parseInt(req.params.dependantId);
+        return DependantdependantModelfindById(dependantId).then(function(dependantObj) {
+            if (!dependantObj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(dependantObj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -1127,36 +1161,37 @@ exports.linkExistingDependants = function (req, res, next) {
 
     var dependantId = parseInt(req.params.dependantId);
     var taxReturnId = parseInt(req.params.taxReturnId);
-    if (!taxReturnModel.hasAccess(req.user, taxReturnId)) {
-        return res.status(403).send();
-    }
-    // check that dependantId exists
-    return dependantModel.findById(dependantId).then(function(dependantObj) {
-        if ((!dependantObj) || (dependantObj.length === 0)) {
-            return res.status(404).send({ msg: 'Invalid dependant' });
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        // check that taxReturnId exists
-        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
-            if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
-                return res.status(404).send({ msg: 'Invalid taxReturn' });
+        // check that dependantId exists
+        return dependantModel.findById(dependantId).then(function(dependantObj) {
+            if ((!dependantObj) || (dependantObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid dependant' });
             }
-            var dependantTaxReturnObj = {};
-            dependantTaxReturnObj.dependantId = dependantId;
-            dependantTaxReturnObj.taxReturnId = taxReturnId;
-            return dependantModel.createAssociation(dependantTaxReturnObj).then(function() {
-                res.status(200).send("OK");
-                // update the last User activity of the logged in user
-                userModel.updateLastUserActivity(req.user);
+            // check that taxReturnId exists
+            return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+                if ((!taxReturnObj) || (taxReturnObj.length === 0)) {
+                    return res.status(404).send({ msg: 'Invalid taxReturn' });
+                }
+                var dependantTaxReturnObj = {};
+                dependantTaxReturnObj.dependantId = dependantId;
+                dependantTaxReturnObj.taxReturnId = taxReturnId;
+                return dependantModel.createAssociation(dependantTaxReturnObj).then(function() {
+                    res.status(200).send("OK");
+                    // update the last User activity of the logged in user
+                    userModel.updateLastUserActivity(req.user);
+                }).catch(function(err) {
+                    next(err);
+                });
             }).catch(function(err) {
                 next(err);
             });
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
-
 };
 
 

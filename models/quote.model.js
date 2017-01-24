@@ -5,8 +5,30 @@
 var db = require('../services/db');
 var Promise = require('bluebird');
 var _ = require('lodash');
+var userModel = require('./user.model');
+var logger = require('../services/logger.service');
 
 var Quote = {
+    hasAccess: function(userObj, quoteId) {
+        if ((!userObj) || (userObj.length === 0)) return false;
+        if ((!quoteId) || (quoteId.length === 0)) return false;
+
+        var quoteSql = 'SELECT * FROM quote WHERE id = ?';
+        return db.knex.raw(quoteSql, [quoteId]).then(function(quoteSqlResults) {
+            var quote = quoteSqlResults[0][0];
+            if (!quote) return false;
+            if ((userObj.account_id === quote.account_id) ||
+                (userModel.isAdmin(userObj)) ||
+                (userModel.isTaxpro(userObj))) {
+                logger.debug('userId: ' + userObj.id + ' granted access to quoteId: ' + quoteId);
+                return true;
+            } else {
+                logger.debug('ACCESS DENIED: quoteId: ' + quoteId + ' belongs to accountId: ' + quote.account_id + ' not this users accountId: ' + userObj.account_id);
+                return false;
+            }
+        });
+    },
+
     findById: function(id) {
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No id specified!'));

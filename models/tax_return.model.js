@@ -5,6 +5,7 @@
 var db = require('../services/db');
 var Promise = require('bluebird');
 var userModel = require('./user.model');
+var logger = require('../services/logger.service');
 
 var TaxReturn = {
     hasAccess: function(userObj, taxReturnId) {
@@ -18,8 +19,10 @@ var TaxReturn = {
             if ((userObj.account_id === taxReturn.account_id) ||
                 (userModel.isAdmin(userObj)) ||
                 (userModel.isTaxpro(userObj))) {
+                logger.debug('userId: ' + userObj.id + ' granted access to taxReturnId: ' + taxReturnId);
                 return true;
             } else {
+                logger.debug('taxReturnId: ' + taxReturnId + ' belongs to accountId: ' + taxReturn.account_id + ' not this users accountId: ' + userObj.account_id);
                 return false;
             }
         });

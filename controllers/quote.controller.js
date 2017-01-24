@@ -337,29 +337,32 @@ exports.submit = function (req, res, next) {
     var accountId = parseInt(req.body.accountId);
     var productId = parseInt(req.body.productId);
     var quoteId = parseInt(req.params.id);
-
-    if (accountId !== req.user.account_id) {
-        return res.status(401).send();
-    }
-
-    // check that accountId exists
-    return accountModel.findById(accountId).then(function(accountObj) {
-        if ((!accountObj) || (accountObj.length === 0)) {
-            return res.status(404).send({ msg: 'Invalid accountID' });
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        // check that productId exists
-        return productModel.findById(productId).then(function(productObj) {
-            if ((!productObj) || (productObj.length === 0)) {
-                return res.status(404).send({ msg: 'Invalid productID' });
-            }
-            return taxReturnModel.setAllsubmittedForAccountId(accountId, productId).then(function() {
-                var data = {};
-                data.name = req.user.first_name;
-                return notificationService.sendNotification(req.user, notificationService.NotificationType.TAX_RETURN_SUBMITTED, data).then(function() {
-                    res.status(200).send();
 
-                    // update the last User activity of the logged in user
-                    userModel.updateLastUserActivity(req.user);
+        // check that accountId exists
+        return accountModel.findById(accountId).then(function(accountObj) {
+            if ((!accountObj) || (accountObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid accountID' });
+            }
+            // check that productId exists
+            return productModel.findById(productId).then(function(productObj) {
+                if ((!productObj) || (productObj.length === 0)) {
+                    return res.status(404).send({ msg: 'Invalid productID' });
+                }
+                return taxReturnModel.setAllsubmittedForAccountId(accountId, productId).then(function() {
+                    var data = {};
+                    data.name = req.user.first_name;
+                    return notificationService.sendNotification(req.user, notificationService.NotificationType.TAX_RETURN_SUBMITTED, data).then(function() {
+                        res.status(200).send();
+
+                        // update the last User activity of the logged in user
+                        userModel.updateLastUserActivity(req.user);
+                    });
+                }).catch(function(err) {
+                    next(err);
                 });
             }).catch(function(err) {
                 next(err);
@@ -367,8 +370,6 @@ exports.submit = function (req, res, next) {
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -450,14 +451,19 @@ exports.findById = function (req, res, next) {
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
-    var id = parseInt(req.params.id);
-    return quoteModel.findById(id).then(function(quoteQbj) {
-        if (!quoteQbj) {
-            return res.status(404).send();
+    var quoteId = parseInt(req.params.id);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(quoteQbj);
-    }).catch(function(err) {
-        next(err);
+        return quoteModel.findById(quoteId).then(function(quoteQbj) {
+            if (!quoteQbj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(quoteQbj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -497,59 +503,67 @@ exports.createDocument = function (req, res, next) {
     logger.debug(req.file);
 
     var quoteId = parseInt(req.params.id);
-    var taxReturnId = parseInt(req.body.taxReturnId);
-    var checklistItemId = parseInt(req.body.checklistItemId);
-    var originalname = req.file.originalname;
-    var sourcePath = req.file.path;
-    var fileName = path.basename(sourcePath);
-    var destPath = config.thumbnail.destPath + '/' + fileName;
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
 
-    return quoteModel.checkIdExists(quoteId).then(function(quoteIdExists) {
-        return taxReturnModel.checkIdExists(taxReturnId).then(function(taxReturnIdExists) {
-            return checklistModel.checkIdExists(checklistItemId).then(function(checklistItemExists) {
-                if ((quoteId) && (!quoteIdExists)) {
-                    return res.status(404).send({ msg: 'quoteId not found' });
-                }
+        var taxReturnId = parseInt(req.body.taxReturnId);
+        var checklistItemId = parseInt(req.body.checklistItemId);
+        var originalname = req.file.originalname;
+        var sourcePath = req.file.path;
+        var fileName = path.basename(sourcePath);
+        var destPath = config.thumbnail.destPath + '/' + fileName;
 
-                if ((taxReturnId) && (!taxReturnIdExists)) {
-                    return res.status(404).send({ msg: 'taxReturnId not found' });
-                }
-
-                if ((checklistItemId) && (!checklistItemExists)) {
-                    return res.status(404).send({ msg: 'checklistItemId not found' });
-                }
-
-                var documentObj = {};
-                documentObj.quoteId = quoteId;
-                if (taxReturnId) {
-                    documentObj.taxReturnId = taxReturnId;
-                }
-                documentObj.checklistItemId = checklistItemId;
-                documentObj.name = originalname;
-                documentObj.url = fileName;
-                documentObj.thumbnailUrl = fileName;
-                return documentModel.create(documentObj).then(function(insertId) {
-                    res.writeHead(200, {'content-type': 'text/plain'});
-                    res.write('received upload:\n\n');
-                    if ((taxReturnId) && (taxReturnId.length > 0)) {
-                        res.end(util.inspect({
-                            quoteId: quoteId,
-                            taxReturnId: taxReturnId,
-                            checklistItemId: checklistItemId,
-                            file: req.file
-                        }));
-                    } else {
-                        res.end(util.inspect({
-                            quoteId: quoteId,
-                            checklistItemId: checklistItemId,
-                            file: req.file
-                        }));
+        return quoteModel.checkIdExists(quoteId).then(function(quoteIdExists) {
+            return taxReturnModel.checkIdExists(taxReturnId).then(function(taxReturnIdExists) {
+                return checklistModel.checkIdExists(checklistItemId).then(function(checklistItemExists) {
+                    if ((quoteId) && (!quoteIdExists)) {
+                        return res.status(404).send({ msg: 'quoteId not found' });
                     }
 
-                    // update the last User activity of the logged in user
-                    userModel.updateLastUserActivity(req.user);
+                    if ((taxReturnId) && (!taxReturnIdExists)) {
+                        return res.status(404).send({ msg: 'taxReturnId not found' });
+                    }
 
-                    return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                    if ((checklistItemId) && (!checklistItemExists)) {
+                        return res.status(404).send({ msg: 'checklistItemId not found' });
+                    }
+
+                    var documentObj = {};
+                    documentObj.quoteId = quoteId;
+                    if (taxReturnId) {
+                        documentObj.taxReturnId = taxReturnId;
+                    }
+                    documentObj.checklistItemId = checklistItemId;
+                    documentObj.name = originalname;
+                    documentObj.url = fileName;
+                    documentObj.thumbnailUrl = fileName;
+                    return documentModel.create(documentObj).then(function(insertId) {
+                        res.writeHead(200, {'content-type': 'text/plain'});
+                        res.write('received upload:\n\n');
+                        if ((taxReturnId) && (taxReturnId.length > 0)) {
+                            res.end(util.inspect({
+                                quoteId: quoteId,
+                                taxReturnId: taxReturnId,
+                                checklistItemId: checklistItemId,
+                                file: req.file
+                            }));
+                        } else {
+                            res.end(util.inspect({
+                                quoteId: quoteId,
+                                checklistItemId: checklistItemId,
+                                file: req.file
+                            }));
+                        }
+
+                        // update the last User activity of the logged in user
+                        userModel.updateLastUserActivity(req.user);
+
+                        return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                    }).catch(function(err) {
+                        next(err);
+                    });
                 }).catch(function(err) {
                     next(err);
                 });
@@ -559,8 +573,6 @@ exports.createDocument = function (req, res, next) {
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -581,21 +593,27 @@ exports.deleteDocumentById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var quoteId = parseInt(req.params.quoteId);
-    var documentId = parseInt(req.params.documentId);
-    return documentModel.findById(documentId).then(function(documentObj) {
-        if (!documentObj) {
-            return res.status(404).send();
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return documentModel.deleteById(quoteId, documentId).then(function() {
-            res.status(200).send('Ok');
 
-            // update the last User activity of the logged in user
-            userModel.updateLastUserActivity(req.user);
+        var documentId = parseInt(req.params.documentId);
+        return documentModel.findById(documentId).then(function(documentObj) {
+            if (!documentObj) {
+                return res.status(404).send();
+            }
+            return documentModel.deleteById(quoteId, documentId).then(function() {
+                res.status(200).send('Ok');
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
         }).catch(function(err) {
             next(err);
         });
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -648,14 +666,19 @@ exports.getChecklist = function (req, res, next) {
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
-    var id = parseInt(req.params.id);
-    return checklistModel.getCheckListForQuoteId(id).then(function(checklistObj) {
-        if (!checklistObj) {
-            return res.status(404).send();
+    var quoteId = parseInt(req.params.id);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(checklistObj);
-    }).catch(function(err) {
-        next(err);
+        return checklistModel.getCheckListForQuoteId(quoteId).then(function(checklistObj) {
+            if (!checklistObj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(checklistObj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
 
@@ -675,50 +698,56 @@ exports.getChecklistPDF = function(req, res, next) {
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
-    var id = parseInt(req.params.id);
-    return checklistModel.getCheckListForQuoteId(id).then(function(checklistObj) {
-        if (!checklistObj) {
-            return res.status(404).send();
+    var quoteId = parseInt(req.params.id);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        var doc = new PDFDocument({
-            Title: 'Export'
-        });
 
-        res.writeHead(200, {
-            'Content-Type': 'application/pdf',
-            'Access-Control-Allow-Origin': '*',
-            'Content-Disposition': 'attachment; filename=checklist.pdf'
-        });
+        return checklistModel.getCheckListForQuoteId(quoteId).then(function(checklistObj) {
+            if (!checklistObj) {
+                return res.status(404).send();
+            }
+            var doc = new PDFDocument({
+                Title: 'Export'
+            });
 
-        doc.pipe(res);
-        doc.fontSize(14);
-        doc.moveDown();
-        doc.text('My TAXitem Checklist', {align: 'center'});
-        doc.moveDown();
-        doc.fontSize(12);
-        doc.text('This checklist is a guide based on the answers from your TAXprofile.  If there are other items you feel are relevant please send them as well.  You can upload and send us the items that apply to you by attaching them along with a comment on My Dasboard.');
-        doc.moveDown();
-        var indent = doc.x + 20;
+            res.writeHead(200, {
+                'Content-Type': 'application/pdf',
+                'Access-Control-Allow-Origin': '*',
+                'Content-Disposition': 'attachment; filename=checklist.pdf'
+            });
 
-        _.forEach(checklistObj.checklistitems, function(itemObj) {
+            doc.pipe(res);
+            doc.fontSize(14);
+            doc.moveDown();
+            doc.text('My TAXitem Checklist', {align: 'center'});
+            doc.moveDown();
             doc.fontSize(12);
-            var r = Math.round((doc._font.ascender / 1000 * doc._fontSize) / 3);
-            doc.rect(indent + r - 20, doc.y, 10, 10).stroke();
-            doc.text(itemObj.name, indent);
-            doc.fontSize(10);
-            _.forEach(itemObj.filers, function(filerObj) {
-                var fullname = filerObj.first_name + ' ' + filerObj.last_name;
-                doc.text(fullname);
+            doc.text('This checklist is a guide based on the answers from your TAXprofile.  If there are other items you feel are relevant please send them as well.  You can upload and send us the items that apply to you by attaching them along with a comment on My Dasboard.');
+            doc.moveDown();
+            var indent = doc.x + 20;
+
+            _.forEach(checklistObj.checklistitems, function(itemObj) {
+                doc.fontSize(12);
+                var r = Math.round((doc._font.ascender / 1000 * doc._fontSize) / 3);
+                doc.rect(indent + r - 20, doc.y, 10, 10).stroke();
+                doc.text(itemObj.name, indent);
+                doc.fontSize(10);
+                _.forEach(itemObj.filers, function(filerObj) {
+                    var fullname = filerObj.first_name + ' ' + filerObj.last_name;
+                    doc.text(fullname);
+                    doc.moveDown();
+                });
+
                 doc.moveDown();
             });
 
-            doc.moveDown();
+
+            doc.end();
+        }).catch(function(err) {
+            next(err);
         });
-
-
-        doc.end();
-    }).catch(function(err) {
-        next(err);
     });
 };
 
@@ -730,12 +759,17 @@ exports.findByAccountId = function(req, res, next) {
 
     var productId = parseInt(req.params.productId);
     var accountId = parseInt(req.params.accountId);
-    return quoteModel.findByProductIdAccountId(productId, accountId).then(function(accountObj) {
-        if (!accountObj) {
-            return res.status(404).send();
+    return accountModel.hasAccess(req.user, accountId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
         }
-        return res.status(200).send(accountObj);
-    }).catch(function(err) {
-        next(err);
+        return quoteModel.findByProductIdAccountId(productId, accountId).then(function(accountObj) {
+            if (!accountObj) {
+                return res.status(404).send();
+            }
+            return res.status(200).send(accountObj);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
