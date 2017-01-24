@@ -5,19 +5,18 @@
 /**
  * Module dependencies.
  */
+var config = require('../config/config');
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var _ = require('lodash');
-var config = require('../config/config');
-var mailService = require('../services/mail.service');
-var async = require("async");
-var db = require('../services/db');
 var validator = require('express-validator');
-var User = require('../models/user.model');
-var Account = require('../models/account.model');
-var Quote = require('../models/quote.model');
+var userModel = require('../models/user.model');
+var accountModel = require('../models/account.model');
+var quoteModel = require('../models/quote.model');
 var logger = require('../services/logger.service');
+var db = require('../services/db');
 var notificationService = require('../services/notification.service');
+var mailService = require('../services/mail.service');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -38,39 +37,33 @@ INPUT BODY:
 RESPONSE:
 200 OK/404/400
 *******************************************************************************/
-exports.createResetKey = function(req, res) {
+exports.createResetKey = function(req, res, next) {
     var userToReset = req.body;
 
-    if ((userToReset.email) && (userToReset.email.length > 0)) {
-        return User.findByEmail(userToReset.email).then(function(user) {
-            if (user) {
-                user.reset_key = User.createResetKey();
-                return User.updateResetKey(user.id, user.reset_key).then(function() {
-
-                    var variables = {
-                        name: user.first_name,
-                        reset_url: config.domain + '/password-reset/' + user.reset_key
-                    };
-                    logger.info('Sending password reset email to user ' + user.email);
-                    logger.debug('reset_url: ' + variables.reset_url);
-                    return notificationService.sendNotification(user, notificationService.NotificationType.PASSWORD_RESET, variables)
-                    res.status(200).send();
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
-                });
-            } else {
-                res.status(404).send({ msg: 'unknown user' });
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
-    } else {
-        res.status(400).send({ msg: 'No email provided' });
+    if ((!userToReset) || (!userToReset.email) || (userToReset.email.length === 0)) {
+        return res.status(400).send({ msg: 'No email provided' });
     }
+    return userModel.findByEmail(userToReset.email).then(function(userObj) {
+        if (!userObj) {
+            return res.status(404).send({ msg: 'unknown user' });
+        }
+        userObj.reset_key = userModel.createResetKey();
+        return userModel.updateResetKey(userObj.id, userObj.reset_key).then(function() {
+            var variables = {
+                name: userObj.first_name,
+                reset_url: config.domain + '/password-reset/' + userObj.reset_key
+            };
+            logger.info('Sending password reset email to user ' + userObj.email);
+            logger.debug('reset_url: ' + variables.reset_url);
+            return notificationService.sendNotification(userObj, notificationService.NotificationType.PASSWORD_RESET, variables).then(function() {
+                return res.status(200).send();
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -85,35 +78,29 @@ INPUT BODY:
 RESPONSE:
 200 OK/400/404
 *******************************************************************************/
-exports.resetPassword = function(req, res) {
+exports.resetPassword = function(req, res, next) {
     var password = req.body.password;
 
-    if ((password) && (password.length > 0)) {
-        var reset_key = req.params.reset_key;
-        return User.findByResetKey(reset_key).then(function(user) {
-            if (user) {
-                var new_salt = User.makeSalt();
-                var hashed_password = User.encryptPassword(new_salt, password);
-                user.hashed_password = hashed_password;
-                user.reset_key = null;
-                return User.updatePassword(user.id, hashed_password, new_salt).then(function() {
-                    res.status(200).send();
-                }).catch(function(err) {
-                    logger.error(err.message);
-                    res.status(500).send({ msg: 'Something broke: check server logs.' });
-                    return;
-                });
-            } else {
-                res.status(404).send();
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
-    } else {
+    if ((!password) || (password.length === 0)) {
         res.status(400).send({ msg: 'No password provided' });
     }
+    var reset_key = req.params.reset_key;
+    return userModel.findByResetKey(reset_key).then(function(userObj) {
+        if (!userObj) {
+            return res.status(404).send();
+        }
+        var new_salt = userModel.makeSalt();
+        var hashed_password = userModel.encryptPassword(new_salt, password);
+        userObj.hashed_password = hashed_password;
+        userObj.reset_key = null;
+        return userModel.updatePassword(userObj.id, hashed_password, new_salt).then(function() {
+            return res.status(200).send();
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -136,20 +123,19 @@ The token is valid for 1 hour (default from config) and can be attached to
 the headers of further requests so endpoints may be called as the validated user
 *******************************************************************************/
 exports.logUserIn = function(req, res, next) {
-    passport.authenticate('local-login', function(err, user, info) {
+    passport.authenticate('local-login', function(err, userObj, info) {
         if (err) {
             return next(err);
         }
 
         if (!user) {
             return res.status(400).json([{ msg: 'Invalid email or password' }]);
-        } else if (user.migrated_user === 'Yes'){
+        } else if (userObj.migrated_user === 'Yes'){
             return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.' }]);
         }
 
         //Add token to user
         var token = createToken(user);
-        //var accounts = user.accounts;, accounts: accounts
         return res.json({ token : token });
 
     })(req, res, next);
@@ -186,101 +172,87 @@ exports.create = function(req, res, next) {
     req.checkBody('last_name', 'Last Name not provided').notEmpty();
     req.checkBody('email', 'Email is invalid').isEmail();
     req.checkBody('accountId', 'Account ID is invalid').optional().isInt();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var userObj = {};
-        userObj.username = req.body.username;
-        userObj.salt = User.makeSalt();
-        userObj.hashed_password = User.encryptPassword(userObj.salt, req.body.password);
-        userObj.first_name = req.body.first_name;
-        userObj.last_name = req.body.last_name;
-        userObj.email = req.body.email;
-        if (req.body.accountId) {
-            userObj.accountId = parseInt(req.body.accountId); // link account to user
-        }
-        userObj.productId = config.api.currentProductId;
+    if (errors) { return res.status(400).send(errors); }
 
-        return User.findByEmail(userObj.email).then(function(existingUser) {
-            if (existingUser) {
-                res.status(400).send({ 'message': 'User exists!' });
-            } else {
-                userObj.provider = 'local';
-                userObj.role = 'Customer';
-                if (!userObj.accountId) {
-                    // create a new account for this user
-                    var accountObj = {};
-                    accountObj.name = userObj.first_name;
-                    return Account.create(accountObj).then(function(accountResult) {
-                        userObj.accountId = accountResult;
-                        return createUserAndSendEmail(userObj).then(function(token) {
-                            res.json({ token : token });
-                        }).catch(function(err) {
-                            logger.error(err.message);
-                            res.status(500).send({ msg: 'Something broke: check server logs.' });
-                            return;
-                        });
-                    }).catch(function(err) {
-                        logger.error(err.message);
-                        res.status(500).send({ msg: 'Something broke: check server logs.' });
-                        return;
-                    });
-                } else {
-                    return createUserAndSendEmail(userObj).then(function(token) {
-                        res.json({ token : token });
-                    }).catch(function(err) {
-                        logger.error(err.message);
-                        res.status(500).send({ msg: 'Something broke: check server logs.' });
-                        return;
-                    });
-                }
-            }
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
+    var userObj = {};
+    userObj.username = req.body.username;
+    userObj.salt = userModel.makeSalt();
+    userObj.hashed_password = userModel.encryptPassword(userObj.salt, req.body.password);
+    userObj.first_name = req.body.first_name;
+    userObj.last_name = req.body.last_name;
+    userObj.email = req.body.email;
+    if (req.body.accountId) {
+        userObj.accountId = parseInt(req.body.accountId); // link account to user
     }
+    userObj.productId = config.api.currentProductId;
+
+    return userModel.findByEmail(userObj.email).then(function(existingUser) {
+        if (existingUser) {
+            return res.status(400).send({ 'message': 'User exists!' });
+        }
+        userObj.provider = 'local';
+        userObj.role = 'Customer';
+        if (!userObj.accountId) {
+            // create a new account for this user
+            var accountObj = {};
+            accountObj.name = userObj.first_name;
+            return accountModel.create(accountObj).then(function(accountResultObj) {
+                userObj.accountId = accountResultObj;
+                return createUserAndSendEmail(userObj).then(function(token) {
+                    return res.json({ token : token });
+                }).catch(function(err) {
+                    next(err);
+                });
+            }).catch(function(err) {
+                next(err);
+            });
+        } else {
+            return createUserAndSendEmail(userObj).then(function(token) {
+                return res.json({ token : token });
+            }).catch(function(err) {
+                next(err);
+            });
+        }
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 function createUserAndSendEmail(userObj) {
-    return User.create(userObj).then(function(userInsertResult) {
-        //userObj.id = userInsertResult;
-        var sendWelcomeEmailTo = function(user) {
+    return userModel.create(userObj).then(function(userInsertResult) {
+        var sendWelcomeEmailTo = function(userObj) {
             var variables = {
-                name: user.first_name
+                name: userObj.first_name
             };
             var i = 1;
             var total = 0;
-            _.forEach(user.quote, function(quoteLineItem) {
+            _.forEach(userObj.quote, function(quoteLineItem) {
                 variables['quote_text' + i] = quoteLineItem.text;
                 variables['quote_value' + i] = quoteLineItem.value;
                 total = total + quoteLineItem.value;
                 i = i + 1;
             });
             variables.total_value = total;
-            return notificationService.sendNotification(user, notificationService.NotificationType.WELCOME, variables);
+            return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
         };
 
-        var notifyAdminAbout = function(user) {
+        var notifyAdminAbout = function(userObj) {
             var variables = {
-                name: user.first_name,
-                email: user.email
+                name: userObj.first_name,
+                email: userObj.email
             };
-            return mailService.send(user, config.email.templates.profile_created, config.email.admin, variables);
+            return mailService.send(userObj, config.email.templates.profile_created, config.email.admin, variables);
         };
 
-        return User.findByEmail(userObj.email).then(function(user) {
+        return userModel.findByEmail(userObj.email).then(function(userResultObj) {
             // update the last User activity of the logged in user
-            User.updateLastUserActivity(user);
-            return Quote.getEmailFieldsByProductIdAccountId(userObj.productId, userObj.accountId).then(function(quote) {
-                user.quote = quote;
-                return sendWelcomeEmailTo(user).then(function() {
+            userModel.updateLastUserActivity(userResultObj);
+            return quoteModel.getEmailFieldsByProductIdAccountId(userResultObj.productId, userResultObj.accountId).then(function(quote) {
+                userResultObj.quote = quote;
+                return sendWelcomeEmailTo(userResultObj).then(function() {
 //                  return notifyAdminAbout(user);
-
-                    var token = createToken(user);
+                    var token = createToken(userResultObj);
                     return token;
                 });
             });
@@ -312,27 +284,25 @@ RESPONSE:
   "reset_key": null
 }
 *******************************************************************************/
-exports.me = function(req, res) {
-  var user = req.user;
+exports.me = function(req, res, next) {
+  var userObj = req.user;
 
-    user.taxpro_pic = null;
-    user.taxpro_desc = null;
-    if(user.taxpro_id !== null){
-        return User.findById(user.taxpro_id).then(function(taxpro) {
-            if (taxpro) {
-                user.taxpro_pic = taxpro.profile_picture;
-                user.taxpro_desc = taxpro.description;
-                user.taxpro_name = taxpro.first_name + " " + taxpro.last_name;
-                user.taxpro_title = taxpro.title;
-                res.jsonp(user ? cleanUserData(user) : null);
+    userObj.taxpro_pic = null;
+    userObj.taxpro_desc = null;
+    if(userObj.taxpro_id !== null){
+        return userModel.findById(userObj.taxpro_id).then(function(taxproObj) {
+            if (taxproObj) {
+                userObj.taxpro_pic = taxproObj.profile_picture;
+                userObj.taxpro_desc = taxproObj.description;
+                userObj.taxpro_name = taxproObj.first_name + " " + taxproObj.last_name;
+                userObj.taxpro_title = taxproObj.title;
+                res.jsonp(userObj ? cleanUserData(userObj) : null);
             }
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
+            next(err);
         });
     } else {
-        res.jsonp(user ? cleanUserData(user) : null);
+        res.jsonp(userObj ? cleanUserData(userObj) : null);
     }
 
 };
@@ -363,32 +333,27 @@ RESPONSE:
   }
 ]
 *******************************************************************************/
-exports.list = function(req, res) {
+exports.list = function(req, res, next) {
     var queryParams = req.query ? req.query: {};
-    var userRole = req.user.role;
 
     // TODO look into passport and roles
-    if (req.user.role === 'Admin') {
-        return User.findAllCustomersFiltered(queryParams).then(function(users) {
-            res.status(200).send(cleanUsersData(users));
+    if (userModel.isAdmin(req.user)) {
+        return userModel.findAllCustomersFiltered(queryParams).then(function(usersArr) {
+            return res.status(200).send(cleanUsersData(usersArr));
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
+            next(err);
         });
-    } else if(req.user.role === 'TaxPro') {
+    } else if(userModel.isTaxpro(req.user)) {
         // filter out for users with this taxpro's id.
         queryParams.taxPro=req.user.id;
 
-        return User.findAllCustomersFiltered(queryParams, req.user.id).then(function(users) {
-            res.status(200).send(cleanUsersData(users));
+        return userModel.findAllCustomersFiltered(queryParams, req.user.id).then(function(usersArr) {
+            return res.status(200).send(cleanUsersData(usersArr));
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
+            next(err);
         });
     } else {
-        res.status(404).send();
+        return res.status(404).send();
     }
 };
 
@@ -422,23 +387,22 @@ RESPONSE:
   "reset_key": "202bb88282e64298916a0963fcb3143d0c21cb5257856b18632014eedefd0134"
 }
 *******************************************************************************/
-exports.find = function(req, res, err) {
-    // TODO figure out how to get errors from next
+exports.find = function(req, res, next) {
+    req.checkParams('userId', 'Please provide a userId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
     var userId = parseInt(req.params.userId);
     if (req.user.id === userId) {
-        res.status(200).send(req.user);
+        return res.status(200).send(req.user);
     } else {
-        // TODO need service for this
-        return User.findById(userId).then(function(user) {
-            if (user) {
-                res.status(200).send(cleanUserData(user));
-            } else {
-                res.status(404).send();
+         return userModel.findById(userId).then(function(userObj) {
+            if (!userObj) {
+                return res.status(404).send();
             }
+            return res.status(200).send(cleanUserData(userObj));
         }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
+            next(err);
         });
     }
 };
@@ -456,21 +420,22 @@ RESPONSE:
 delete is ADMIN ONLY and should only delete other users (not self)
 *******************************************************************************/
 exports.delete = function(req, res, next) {
-    if (User.isAdmin(req.user)) {
+    req.checkParams('userId', 'Please provide a userId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    if (userModel.isAdmin(req.user)) {
         var userId = parseInt(req.params.userId);
         if (req.user.id === userId) {
-            res.status(400).send({ msg: 'Unable to remove yourself' });
-        } else {
-            return User.deleteById(userId).then(function() {
-                res.status(204).send();
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
-            });
+            return res.status(400).send({ msg: 'Unable to remove yourself' });
         }
+        return userModel.deleteById(userId).then(function() {
+            return res.status(204).send();
+        }).catch(function(err) {
+            next(err);
+        });
     } else {
-        res.status(404).send();
+        return res.status(403).send();
     }
 };
 
@@ -488,31 +453,25 @@ RESPONSE:
 
 Users can reset their own password. Admins can reset any users password.
 *******************************************************************************/
-exports.update_password = function(req, res) {
+exports.update_password = function(req, res, next) {
     req.checkParams('userId', 'Please provide a userId').isInt();
     req.checkBody('password', 'Please provide a password').notEmpty();
-
     var errors = req.validationErrors();
-    if (errors) {
-        res.status(400).send(errors);
-    } else {
-        var userId = parseInt(req.params.userId);
-        var password = req.body.password;
+    if (errors) { return res.status(400).send(errors); }
 
-        if (req.user.id === userId || req.user.role === 'Admin') {
-            var new_salt = User.makeSalt();
-            var hashed_password = User.encryptPassword(new_salt, password);
-            return User.updatePassword(userId, hashed_password, new_salt).then(function() {
-                res.status(200).send();
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
-            });
-        } else {
-            res.status(404).send();
-        }
+    var userId = parseInt(req.params.userId);
+    var password = req.body.password;
+
+    if (!(req.user.id === userId) && (!userModel.isAdmin(req.user))) {
+        return res.status(403).send();
     }
+    var new_salt = userModel.makeSalt();
+    var hashed_password = userModel.encryptPassword(new_salt, password);
+    return userModel.updatePassword(userId, hashed_password, new_salt).then(function() {
+        return res.status(200).send();
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /*******************************************************************************
@@ -534,45 +493,42 @@ Admins can update role for other users.
 *******************************************************************************/
 exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
-    var user = req.body;
+    var userObj = req.body;
 
 
-    if (req.user.id === userId || req.user.role === 'Admin') {
-        //var keys = ['name', 'birthday', 'address', 'phone'];
-        var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id']; //v2
-
-        if (User.isAdmin(req.user)) {
-            keys.push('role');
-        }
-        if ((user.role) && ((user.role !== 'Admin') && (user.role !== 'Customer') && user.role !== 'TaxPro')) {
-            return res.status(409).json(new Error('Invalid role'));
-        }
-        var params = _.pick(user, keys);
-
-        return User.findById(userId).then(function(user) {
-            _.each(params, function(value, key) {
-                user[key] = value;
-            });
-
-            return User.updateById(userId,params)
-            .then(function(userResult) {
-                // update the last User activity of the logged in user
-                User.updateLastUserActivity(req.user);
-
-                return res.json(cleanUserData(userResult));
-            }).catch(function(err) {
-                logger.error(err.message);
-                res.status(500).send({ msg: 'Something broke: check server logs.' });
-                return;
-            });
-        }).catch(function(err) {
-            logger.error(err.message);
-            res.status(500).send({ msg: 'Something broke: check server logs.' });
-            return;
-        });
-    } else {
-        res.status(404).send();
+    if (req.user.id !== userId || (!userModel.isAdmin(req.user))) {
+        return res.status(403).send();
     }
+    var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id'];
+
+    if (userModel.isAdmin(req.user)) {
+        keys.push('role');
+    }
+    if ((userObj.role) && (!userModel.isValidRole(userObj.role))) {
+        return res.status(409).json(new Error('Invalid role'));
+    }
+    var params = _.pick(user, keys);
+
+    return userModel.findById(userId).then(function(foundUserObj) {
+        if ((!foundUserObj) || (foundUserObj.length === 0)) {
+            return res.status(404).send();
+        }
+        _.each(params, function(value, key) {
+            foundUserObj[key] = value;
+        });
+
+        return userModel.updateById(userId, params)
+        .then(function(userResultObj) {
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+
+            return res.json(cleanUserData(userResultObj));
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
 };
 
 /******************************************************************************
@@ -583,34 +539,32 @@ exports.update = function(req, res, next) {
 
 // router.param  user
 exports.user = function(req, res, next, id) {
-    return User.findById(id).then(function(user) {
-        if (!user) return next({ message: 'Failed to load User ' + id, status: 404 });
-        req.user = user;
+    return userModel.findById(id).then(function(userObj) {
+        if (!userObj) return next({ message: 'Failed to load User ' + id, status: 404 });
+        req.user = userObj;
         next();
     }).catch(function(err) {
-        logger.error(err.message);
-        res.status(500).send({ msg: 'Something broke: check server logs.' });
-        return;
+        next(err);
     });
 };
 
 // create a JWT token from payload
-var createToken = function (user) {
+var createToken = function (userObj) {
     var payloadObj = {};
-    payloadObj.email = user.email;
-    payloadObj.id = user.id;
+    payloadObj.email = userObj.email;
+    payloadObj.id = userObj.id;
 
     return jwt.sign(payloadObj, config.sessionSecret, { expiresIn: config.JWTExpires });
 };
 
-var cleanUsersData = function (users) {
-  return _.map(users, function(ul) {
+var cleanUsersData = function (usersArr) {
+  return _.map(usersArr, function(ul) {
     return cleanUserData(ul);
   });
 };
 
-var cleanUserData = function (user) {
-  var cleanedUser = _.merge({},user);
+var cleanUserData = function (userObj) {
+  var cleanedUser = _.merge({},userObj);
 
   delete cleanedUser.hashed_password;
   delete cleanedUser.salt;
