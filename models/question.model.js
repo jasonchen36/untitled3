@@ -73,7 +73,8 @@ var Question = {
                          FROM products_questions AS pq \
                          JOIN questions AS q ON q.id = pq.question_id AND q.category_id = ? \
                          JOIN categories AS c ON c.id = q.category_id \
-                         WHERE pq.product_id = ?';
+                         WHERE pq.product_id = ? \
+                         ORDER BY sort_order';
       return db.knex.raw(questionSql, [categoryId, productId]).then(function(questionSqlResults) {
           return questionSqlResults[0];
       });
