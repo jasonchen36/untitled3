@@ -294,7 +294,7 @@ exports.me = function(req, res, next) {
     if(userObj.taxpro_id !== null){
         return userModel.findById(userObj.taxpro_id).then(function(taxproObj) {
             if (taxproObj) {
-                userObj.taxpro_pic = taxproObj.profile_picture;
+                userObj.taxpro_pic = config.profilepic + '/' + taxproObj.profile_picture;
                 userObj.taxpro_desc = taxproObj.description;
                 userObj.taxpro_name = taxproObj.first_name + " " + taxproObj.last_name;
                 userObj.taxpro_title = taxproObj.title;

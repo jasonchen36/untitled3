@@ -30,7 +30,7 @@ var Checklist = {
             return Promise.reject(new Error('No quoteId specified!'));
         }
 
-        var checklistSQL = 'SELECT DISTINCT cr.checklist_item_id, ci.name FROM answers AS a \
+        var checklistSQL = 'SELECT DISTINCT cr.checklist_item_id, ci.name, ci.description FROM answers AS a \
                             JOIN checklist_rules AS cr \
                                  ON a.question_id = cr.question_id \
                                  AND a.text = cr.value \
@@ -84,7 +84,7 @@ var Checklist = {
                 });
                 var filerSql = 'SELECT DISTINCT\
                                   cr.checklist_item_id, \
-                                  ci.name, tr.id, \
+                                  ci.name, ci.description, tr.id, \
                                   tr.first_name, \
                                   tr.last_name \
                                 FROM answers AS a \

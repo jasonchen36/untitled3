@@ -9,11 +9,11 @@ if (config.email.enabled === 'false') {
 } else {
     logger.info('postageapp API KEY: ' + config.postageapp.api_key);
     PostageApp = require('postageapp');
-    var postageapp = new PostageApp(config.postageapp.api_key);
+    postageapp = new PostageApp(config.postageapp.api_key);
 }
 
 exports.send = function(user, template, variables, overrideUserPreferences=false) {
-    if (!PostageApp) {
+    if (!postageapp) {
         logger.warn('mail.service: emails disabled by API config.');
         return Promise.resolve();
     }
