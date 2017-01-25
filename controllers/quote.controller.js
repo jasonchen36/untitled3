@@ -31,7 +31,6 @@ var thumbnailService = require('../services/thumbnailService');
 var SMALL_BUSINESS_PACKAGE_ID = 1;
 var LANDLORD_PACKAGE_ID = 2;
 var COMPLEX_CASE_PACKAGE_ID = 3;
-var VERY_COMPLEX_CASE_PACKAGE_ID = 4;
 var TYPICAL_PACKAGE_ID = 5;
 var STUDENT_PACKAGE_ID = 6;
 var SMALL_BUSINESS_PLUS_LANDLORD_PACKAGE_ID = 7;
@@ -325,21 +324,17 @@ var getPackageId = function(answers) {
             if (hasRentalProperty) {
                 packageId = LANDLORD_PACKAGE_ID;
             } else {
-                if ((hasMovingOrMedicalExpenses) && (hasCapitalGains) && (hasEmploymentRelatedExpenses) && (isImmigrantOrEmigrant)) {
-                    packageId = VERY_COMPLEX_CASE_PACKAGE_ID;
+                if ((hasCapitalGains) ||
+                    (hasMovingOrMedicalExpenses) ||
+                    (hasEmploymentRelatedExpenses) ||
+                    (isImmigrantOrEmigrant)) {
+                    packageId = COMPLEX_CASE_PACKAGE_ID;
                 } else {
-                    if ((hasCapitalGains) ||
-                        (hasMovingOrMedicalExpenses) ||
-                        (hasEmploymentRelatedExpenses) ||
-                        (isImmigrantOrEmigrant)) {
-                        packageId = COMPLEX_CASE_PACKAGE_ID;
+                    if (NoneOfTheAbove) {
+                        packageId = TYPICAL_PACKAGE_ID;
                     } else {
-                        if (NoneOfTheAbove) {
-                            packageId = TYPICAL_PACKAGE_ID;
-                        } else {
-                            if (isPostSecondaryStudent) {
-                                packageId = STUDENT_PACKAGE_ID;
-                            }
+                        if (isPostSecondaryStudent) {
+                            packageId = STUDENT_PACKAGE_ID;
                         }
                     }
                 }
