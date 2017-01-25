@@ -464,7 +464,7 @@ exports.update_password = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var password = req.body.password;
 
-    if (!(req.user.id === userId) && (!userModel.isAdmin(req.user))) {
+    if ((req.user.id !== userId) && (!userModel.isAdmin(req.user))) {
         return res.status(403).send();
     }
     var new_salt = userModel.makeSalt();
@@ -497,11 +497,10 @@ exports.update = function(req, res, next) {
     var userId = parseInt(req.params.userId);
     var userObj = req.body;
 
-
     if (req.user.id !== userId && (!userModel.isAdmin(req.user))) {
         return res.status(403).send();
     }
-    var keys = ['first_name', 'last_name', 'email', 'phone','taxpro_id'];
+    var keys = ['first_name', 'last_name', 'email', 'phone', 'taxpro_id', 'migrated_user'];
 
     if (userModel.isAdmin(req.user)) {
         keys.push('role');

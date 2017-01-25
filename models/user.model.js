@@ -6,6 +6,7 @@ var db = require('../services/db');
 var crypto = require('crypto');
 var _ = require('lodash');
 var logger = require('../services/logger.service');
+var config = require('../config/config');
 
 
 var User = {
@@ -224,6 +225,7 @@ var User = {
     },
 
     updatePassword: function(userId, hashed_password, new_salt) {
+
         if ((!userId) || (userId.length === 0)) {
           return Promise.reject(new Error('updatePassword() No userId specified!'));
         }
@@ -235,7 +237,40 @@ var User = {
         }
         var updateUserSql = 'UPDATE users SET reset_key = null, hashed_password = ?, salt = ? WHERE id = ?';
         var updateUserSqlParams = [hashed_password, new_salt, userId];
-        return db.knex.raw(updateUserSql, updateUserSqlParams);
+        return db.knex.raw(updateUserSql, updateUserSqlParams).then(function() {
+
+            var userSql = 'SELECT account_id, migrated_user FROM users WHERE id = ?';
+            return db.knex.raw(userSql, [userId]).then(function(userObj) {
+                var migratedUser = userObj[0][0].migrated_user;
+                var accountId = userObj[0][0].account_id;
+                if (migratedUser === 'Yes') {
+
+                    // CARRY FORWARD ...
+                    var oldProductId = config.api.oldProductId;
+                    var newProductId = config.api.currentProductId;
+                    var oldTaxReturnsSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ?';
+                    return db.knex.raw(oldTaxReturnsSql, [accountId, oldProductId]).then(function(oldTaxReturnIds) {
+                        var migrateTaxReturn = 'INSERT INTO tax_returns \
+                        (SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, account_id, product_id) \
+                        SELECT SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, ?, ? \
+                        FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
+
+                        var migrateTaxReturnParams = [accountId, newProductId, accountId, oldProductId];
+                        return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
+                            var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
+                            return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
+                                var addressPromises = [];
+                                var i = 0;
+                                for(i=0; i<oldTaxReturnIds[0].length; i++) {
+                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[0][i].id, newTaxReturnIds[0][i].id));
+                                }
+                                return Promise.all(addressPromises);
+                            });
+                        });
+                    });
+                }
+            });
+        });
     },
 
     findByResetKey: function(reset_key) {
@@ -312,7 +347,15 @@ var User = {
 //    }
 };
 
-
+var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
+    var oldAddressesSql = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?';
+    return db.knex.raw(oldAddressesSql, [oldTaxReturnId]).then(function(oldAddressObj) {
+        var addressId = oldAddressObj[0][0].addresses_id;
+        var insertAddressSql = 'INSERT INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES (?, ?)';
+        var insertAddressSqlParams = [newTaxReturnId, addressId];
+        return db.knex.raw(insertAddressSql, insertAddressSqlParams);
+    });
+};
 
 /// Get OrderBySQL
 /// filters = {orderBy:'lastName',orderAscending:'true'}
