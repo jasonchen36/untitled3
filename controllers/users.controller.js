@@ -94,7 +94,7 @@ exports.resetPassword = function(req, res, next) {
         userObj.hashed_password = hashed_password;
         userObj.reset_key = null;
         return userModel.updatePassword(userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
-            res.status(200).send();
+            return res.status(200).send();
         }).catch(function(err) {
             next(err);
         });
