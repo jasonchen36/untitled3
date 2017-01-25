@@ -619,6 +619,40 @@ exports.deleteDocumentById = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
+GET /quote/:quoteId/document/documentId
+
+PARAMS
+quoteId
+documentId
+
+RESPONSE:
+Streamed document
+
+*******************************************************************************/
+exports.getDocumentById = function(req, res, next) {
+    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
+    req.checkParams('documentId', 'Please provide a documentId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var documentId = parseInt(req.params.documentId);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        return documentModel.findById(documentId).then(function(documentObj) {
+            var file = config.uploadDir + '/' + documentObj.url;
+            return res.download(file, documentObj.name); // Set disposition and send it
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
+/*******************************************************************************
+ENDPOINT
 GET /quote/:id/checklist
 
 PARAMS
