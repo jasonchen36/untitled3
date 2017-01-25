@@ -150,6 +150,17 @@ var TaxReturn = {
         .then(function(results) {
           return results[0];
         });
+    },
+    getTaxReturnsForAccountId: function(accountId){
+        if ((!accountId) || (accountId.length === 0)) {
+            return Promise.reject(new Error('No accountId specified!'));
+        }
+        var taxReturnInsertSql = 'SELECT * FROM tax_returns where account_id = ?';
+
+        return db.knex.raw(taxReturnInsertSql, [accountId]).then(function(taxReturnSQLResults) {
+            var taxReturns = taxReturnSQLResults[0];
+            return Promise.resolve(taxReturns);
+        });
     }
 };
 
