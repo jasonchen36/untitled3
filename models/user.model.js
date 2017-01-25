@@ -260,9 +260,9 @@ var User = {
                             return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
                                 var addressPromises = [];
                                 var i = 0;
-                                console.log((JSON.stringify(oldTaxReturnIds)), (JSON.stringify(newTaxReturnIds)));
+                                console.log((JSON.stringify(oldTaxReturnIds[0])), (JSON.stringify(newTaxReturnIds[0])));
                                 for(i=0; i<oldTaxReturnIds.length; i++) {
-                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[i], newTaxReturnIds[i]));
+                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[0][i], newTaxReturnIds[0][i]));
                                 }
                                 return Promise.all(addressPromises);
                             });
@@ -331,10 +331,10 @@ var User = {
 
 var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
     var oldAddressesSql = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?';
-    return db.knex.raw(oldAddressesSql, [oldTaxReturnId[0].id]).then(function(oldAddressObj) {
+    return db.knex.raw(oldAddressesSql, [oldTaxReturnId]).then(function(oldAddressObj) {
         var addressId = oldAddressObj.addresses_id;
         var insertAddressSql = 'INSERT INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES (?, ?)';
-        var insertAddressSqlParams = [newTaxReturnId[0].id, addressId];
+        var insertAddressSqlParams = [newTaxReturnId, addressId];
         return db.knex.raw(insertAddressSql, insertAddressSqlParams);
     });
 };
