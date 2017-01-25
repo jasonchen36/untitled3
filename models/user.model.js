@@ -261,6 +261,7 @@ var User = {
 
                                 var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
                                     var oldAddressesSql = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?';
+                                    console.log(oldTaxReturnId);
                                     return db.knex.raw(oldAddressesSql, [oldTaxReturnId[0].id]).then(function(oldAddressObj) {
                                         var addressId = oldAddressObj.addresses_id;
                                         var insertAddressSql = 'INSERT INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES (?, ?)';
@@ -272,7 +273,8 @@ var User = {
                                 var addressPromises = [];
                                 var i = 0;
                                 for(i=0; i<oldTaxReturnIds.length; i++) {
-                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[i], newTaxReturnIds[i]));
+                                    console.log(oldTaxReturnIds[i].id, newTaxReturnIds[i].id);
+                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[i].id, newTaxReturnIds[i].id));
                                 }
 
                                 return Promise.all(addressPromises);
