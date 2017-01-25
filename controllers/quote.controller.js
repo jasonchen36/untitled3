@@ -234,7 +234,6 @@ exports.create = function (req, res, next) {
                         _.forEach(packageResultsArr, function(packageResultObj) {
                             var lineItemArr = _.where(quoteObj.lineItems, {packageId: packageResultObj.id});
                             _.forEach(lineItemArr, function(lineItemObj) {
-console.log('lineItemObj = ' + JSON.stringify(lineItemObj, null, 2));
                                 lineItemObj.price = packageResultObj.price;
                                 lineItemObj.name = packageResultObj.name;
                                 lineItemObj.description = packageResultObj.description;
