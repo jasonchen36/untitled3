@@ -73,5 +73,6 @@ module.exports = {
         destPath: path.join(__dirname + '/../thumb'),
         width: 100
     },
+    profilepic: path.join(__dirname + '/../profile_pictures'),
     accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
 };
