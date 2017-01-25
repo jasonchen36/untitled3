@@ -227,13 +227,13 @@ var User = {
     updatePassword: function(userId, accountId, hashed_password, new_salt) {
 
         if ((!userId) || (userId.length === 0)) {
-            return Promise.reject(new Error('updatePassword() No userId specified!'));
+          return Promise.reject(new Error('updatePassword() No userId specified!'));
         }
         if ((!hashed_password) || (hashed_password.length === 0)) {
-            return Promise.reject(new Error('updatePassword() No hashed_password specified!'));
+          return Promise.reject(new Error('updatePassword() No hashed_password specified!'));
         }
         if ((!new_salt) || (new_salt.length === 0)) {
-            return Promise.reject(new Error('updatePassword() No new_salt specified!'));
+          return Promise.reject(new Error('updatePassword() No new_salt specified!'));
         }
         var updateUserSql = 'UPDATE users SET reset_key = null, hashed_password = ?, salt = ? WHERE id = ?';
         var updateUserSqlParams = [hashed_password, new_salt, userId];
