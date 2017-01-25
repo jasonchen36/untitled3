@@ -183,6 +183,7 @@ var Quote = {
             });
         });
     }
+
 };
 
 module.exports = Quote;

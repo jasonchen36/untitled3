@@ -21,10 +21,22 @@ var questionModel = require('../models/question.model');
 var answerModel = require('../models/answer.model');
 var taxReturnModel = require('../models/tax_return.model');
 var checklistModel = require('../models/checklist.model');
+var packageModel = require('../models/package.model');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
 var notificationService = require('../services/notification.service');
 var thumbnailService = require('../services/thumbnailService');
+
+
+var SMALL_BUSINESS_PACKAGE_ID = 1;
+var LANDLORD_PACKAGE_ID = 2;
+var COMPLEX_CASE_PACKAGE_ID = 3;
+var VERY_COMPLEX_CASE_PACKAGE_ID = 4;
+var TYPICAL_PACKAGE_ID = 5;
+var STUDENT_PACKAGE_ID = 6;
+var SMALL_BUSINESS_PLUS_LANDLORD_PACKAGE_ID = 7;
+
+
 
 /*******************************************************************************
 ENDPOINT
@@ -206,20 +218,40 @@ exports.create = function (req, res, next) {
                     quoteObj.quoteId = 0; // initialize to 0 (aka 'undefined')
                     quoteObj.totalPrice = 0;
                     quoteObj.lineItems = [];
+                    var getPackagePromises = [];
+
+
+
                     _.forEach(taxReturnsArr, function(taxReturnObj) {
                         var tmpLineItemObj = {};
                         tmpLineItemObj.taxReturnId = taxReturnObj.taxReturnId;
-                        tmpLineItemObj.price = calculatePrice(taxReturnObj.answers);
+                        tmpLineItemObj.packageId = getPackageId(taxReturnObj.answers);
+                        getPackagePromises.push(packageModel.findById(tmpLineItemObj.packageId));
                         quoteObj.lineItems.push(tmpLineItemObj);
                     });
 
-                    return quoteModel.create(quoteObj).then(function(quoteId) {
-                        quoteObj.quoteId = quoteId;
-                        _.forEach(quoteObj.lineItems, function(lineItemObj) {
-                            quoteObj.totalPrice = quoteObj.totalPrice + lineItemObj.price;
+                    return Promise.all(getPackagePromises).then(function(packageResultsArr) {
+                        _.forEach(packageResultsArr, function(packageResultObj) {
+                            var lineItemArr = _.where(quoteObj.lineItems, {packageId: packageResultObj.id});
+                            _.forEach(lineItemArr, function(lineItemObj) {
+console.log('lineItemObj = ' + JSON.stringify(lineItemObj, null, 2));
+                                lineItemObj.price = packageResultObj.price;
+                                lineItemObj.name = packageResultObj.name;
+                                lineItemObj.description = packageResultObj.description;
+                            });
                         });
-                        quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
-                        return res.status(200).json(quoteObj);
+
+
+                        return quoteModel.create(quoteObj).then(function(quoteId) {
+                            quoteObj.quoteId = quoteId;
+                            _.forEach(quoteObj.lineItems, function(lineItemObj) {
+                                quoteObj.totalPrice = quoteObj.totalPrice + lineItemObj.price;
+                            });
+                            quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
+                            return res.status(200).json(quoteObj);
+                        }).catch(function(err) {
+                            next(err);
+                        });
                     }).catch(function(err) {
                         next(err);
                     });
@@ -237,7 +269,7 @@ exports.create = function (req, res, next) {
     });
 };
 
-var calculatePrice = function(answers) {
+var getPackageId = function(answers) {
     var isSelfEmployed = false;
     var hasRentalProperty = false;
     var isPostSecondaryStudent = false;
@@ -283,27 +315,40 @@ var calculatePrice = function(answers) {
         }
     });
 
-    var price = 69.95; // default price is the same as if "None Apply" was selected
-    if ((isSelfEmployed) || (hasRentalProperty)) {
-        price = 149.95;
+    var packageId = TYPICAL_PACKAGE_ID; // default packageId
+    if ((isSelfEmployed) &&
+        (hasRentalProperty)) {
+        packageId = SMALL_BUSINESS_PLUS_LANDLORD_PACKAGE_ID;
     } else {
-        if ((hasCapitalGains) ||
-            (hasMovingOrMedicalExpenses) ||
-            (hasEmploymentRelatedExpenses) ||
-            (isImmigrantOrEmigrant)) {
-            price = 89.95;
+        if (isSelfEmployed) {
+            packageId = SMALL_BUSINESS_PACKAGE_ID;
         } else {
-            if (NoneOfTheAbove) {
-                price = 69.99;
+            if (hasRentalProperty) {
+                packageId = LANDLORD_PACKAGE_ID;
             } else {
-                if (isPostSecondaryStudent) {
-                    price = 0.00;
+                if ((hasMovingOrMedicalExpenses) && (hasCapitalGains) && (hasEmploymentRelatedExpenses) && (isImmigrantOrEmigrant)) {
+                    packageId = VERY_COMPLEX_CASE_PACKAGE_ID;
+                } else {
+                    if ((hasCapitalGains) ||
+                        (hasMovingOrMedicalExpenses) ||
+                        (hasEmploymentRelatedExpenses) ||
+                        (isImmigrantOrEmigrant)) {
+                        packageId = COMPLEX_CASE_PACKAGE_ID;
+                    } else {
+                        if (NoneOfTheAbove) {
+                            packageId = TYPICAL_PACKAGE_ID;
+                        } else {
+                            if (isPostSecondaryStudent) {
+                                packageId = STUDENT_PACKAGE_ID;
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    return price;
+    return packageId;
 };
 
 
