@@ -17,7 +17,7 @@ var Quote = {
         return db.knex.raw(quoteSql, [quoteId]).then(function(quoteSqlResults) {
             var quote = quoteSqlResults[0][0];
             if (!quote) {
-                logger.debug('ACCESS DENIED: quoteId: ' + quoteId + 'does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                logger.error('ACCESS DENIED: quoteId: ' + quoteId + ' does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
             if ((userObj.account_id === quote.account_id) ||
@@ -26,7 +26,7 @@ var Quote = {
                 logger.debug('userId: ' + userObj.id + ' granted access to quoteId: ' + quoteId);
                 return true;
             } else {
-                logger.debug('ACCESS DENIED: quoteId: ' + quoteId + ' belongs to accountId: ' + quote.account_id + ' not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                logger.error('ACCESS DENIED: quoteId: ' + quoteId + ' belongs to accountId: ' + quote.account_id + ' not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
         });

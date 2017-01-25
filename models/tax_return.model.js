@@ -16,7 +16,7 @@ var TaxReturn = {
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturn = taxReturnSqlResults[0][0];
             if (!taxReturn) {
-                logger.debug('ACCESS DENIED: taxReturnId: ' + taxReturnId + 'does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                logger.error('ACCESS DENIED: taxReturnId: ' + taxReturnId + ' does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
             if ((userObj.account_id === taxReturn.account_id) ||
@@ -25,7 +25,7 @@ var TaxReturn = {
                 logger.debug('userId: ' + userObj.id + ' granted access to taxReturnId: ' + taxReturnId);
                 return true;
             } else {
-                logger.debug('ACCESS DENIED: taxReturnId: ' + taxReturnId + ' belongs to accountId: ' + taxReturn.account_id + ' not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                logger.error('ACCESS DENIED: taxReturnId: ' + taxReturnId + ' belongs to accountId: ' + taxReturn.account_id + ' not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
         });

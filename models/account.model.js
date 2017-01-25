@@ -18,7 +18,7 @@ var Account = {
         return db.knex.raw(accountSql, [accountId]).then(function(accountSqlResults) {
             var account = accountSqlResults[0][0];
             if (!account) {
-                logger.debug('ACCESS DENIED: accountId: ' + accountId + 'does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                logger.error('ACCESS DENIED: accountId: ' + accountId + ' does not exist. This users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
             if ((userObj.account_id === account.id) ||
@@ -27,7 +27,7 @@ var Account = {
                 logger.debug('userId: ' + userObj.id + ' granted access to accountId: ' + accountId);
                 return true;
             } else {
-                logger.debug('ACCESS DENIED: accountId: ' + accountId +  ' is not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
+                logger.error('ACCESS DENIED: accountId: ' + accountId +  ' is not this users accountId: ' + userObj.account_id + ', userId: ' + userObj.id);
                 return false;
             }
         });
