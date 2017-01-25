@@ -258,25 +258,12 @@ var User = {
                         return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
                             var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
                             return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
-
-                                var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
-                                    var oldAddressesSql = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?';
-                                    console.log(oldTaxReturnId);
-                                    return db.knex.raw(oldAddressesSql, [oldTaxReturnId[0].id]).then(function(oldAddressObj) {
-                                        var addressId = oldAddressObj.addresses_id;
-                                        var insertAddressSql = 'INSERT INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES (?, ?)';
-                                        var insertAddressSqlParams = [newTaxReturnId[0].id, addressId];
-                                        return db.knex.raw(insertAddressSql, insertAddressSqlParams);
-                                    });
-                                };
-
                                 var addressPromises = [];
                                 var i = 0;
+                                console.log((JSON.stringify(oldTaxReturnIds)), (JSON.stringify(newTaxReturnIds)));
                                 for(i=0; i<oldTaxReturnIds.length; i++) {
-                                    console.log(oldTaxReturnIds[i].id, newTaxReturnIds[i].id);
-                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[i].id, newTaxReturnIds[i].id));
+                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[i], newTaxReturnIds[i]));
                                 }
-
                                 return Promise.all(addressPromises);
                             });
                         });
@@ -342,7 +329,15 @@ var User = {
 //    }
 };
 
-
+var copyAddressPromise = function(oldTaxReturnId, newTaxReturnId) {
+    var oldAddressesSql = 'SELECT addresses_id FROM tax_returns_addresses WHERE tax_return_id = ?';
+    return db.knex.raw(oldAddressesSql, [oldTaxReturnId[0].id]).then(function(oldAddressObj) {
+        var addressId = oldAddressObj.addresses_id;
+        var insertAddressSql = 'INSERT INTO tax_returns_addresses (tax_return_id, addresses_id) VALUES (?, ?)';
+        var insertAddressSqlParams = [newTaxReturnId[0].id, addressId];
+        return db.knex.raw(insertAddressSql, insertAddressSqlParams);
+    });
+};
 
 /// Get OrderBySQL
 /// filters = {orderBy:'lastName',orderAscending:'true'}
