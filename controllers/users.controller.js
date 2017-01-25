@@ -498,15 +498,15 @@ exports.update = function(req, res, next) {
     var userObj = req.body;
 
     if (req.user.id !== userId && (!userModel.isAdmin(req.user))) {
-       return res.status(403).send();
+        return res.status(403).send();
     }
     var keys = ['first_name', 'last_name', 'email', 'phone', 'taxpro_id', 'migrated_user'];
 
     if (userModel.isAdmin(req.user)) {
-       keys.push('role');
+        keys.push('role');
     }
     if ((userObj.role) && (!userModel.isValidRole(userObj.role))) {
-       return res.status(409).json(new Error('Invalid role'));
+        return res.status(409).json(new Error('Invalid role'));
     }
     var params = _.pick(userObj, keys);
 
