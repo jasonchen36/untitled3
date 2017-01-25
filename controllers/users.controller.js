@@ -93,7 +93,7 @@ exports.resetPassword = function(req, res, next) {
         var hashed_password = userModel.encryptPassword(new_salt, password);
         userObj.hashed_password = hashed_password;
         userObj.reset_key = null;
-        return userModel.updatePassword(userObj.id, userObj.account_id, hashed_password, new_salt).then(function() {
+        return userModel.updatePassword(userObj.id, hashed_password, new_salt).then(function() {
             return res.status(200).send();
         }).catch(function(err) {
             next(err);

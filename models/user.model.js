@@ -224,7 +224,7 @@ var User = {
         return db.knex.raw(updateUserSql, updateUserSqlParams);
     },
 
-    updatePassword: function(userId, accountId, hashed_password, new_salt) {
+    updatePassword: function(userId, hashed_password, new_salt) {
 
         if ((!userId) || (userId.length === 0)) {
           return Promise.reject(new Error('updatePassword() No userId specified!'));
@@ -239,9 +239,10 @@ var User = {
         var updateUserSqlParams = [hashed_password, new_salt, userId];
         return db.knex.raw(updateUserSql, updateUserSqlParams).then(function() {
 
-            var userSql = 'SELECT migrated_user FROM users WHERE id = ?';
+            var userSql = 'SELECT account_id, migrated_user FROM users WHERE id = ?';
             return db.knex.raw(userSql, [userId]).then(function(userObj) {
                 var migratedUser = userObj[0][0].migrated_user;
+                var accountId = userObj[0][0].account_id;
                 if (migratedUser === 'Yes') {
 
                     // CARRY FORWARD ...
