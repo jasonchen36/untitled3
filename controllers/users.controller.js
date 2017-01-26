@@ -340,27 +340,33 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.list = function(req, res, next) {
-    var queryParams = req.query ? req.query: {};
+  var queryParams = req.query ? req.query: {};
+  var findAllCustomersPromise = null;
+  var countAllCustomersPromise = null;
 
-    // TODO look into passport and roles
-    if (userModel.isAdmin(req.user)) {
-        return userModel.findAllCustomersFiltered(queryParams).then(function(usersArr) {
-            return res.status(200).send(cleanUsersData(usersArr));
-        }).catch(function(err) {
-            next(err);
-        });
-    } else if(userModel.isTaxpro(req.user)) {
-        // filter out for users with this taxpro's id.
-        queryParams.taxPro=req.user.id;
+  // TODO look into passport and roles
+  if (userModel.isAdmin(req.user)) {
+    findAllCustomersPromise = userModel.findAllCustomersFiltered(queryParams);
+    countAllCustomersPromise =  userModel.countAllCustomersFiltered(queryParams);
+  } else if(userModel.isTaxpro(req.user)) {
+    // filter out for users with this taxpro's id.
+    queryParams.taxPro=req.user.id;
 
-        return userModel.findAllCustomersFiltered(queryParams, req.user.id).then(function(usersArr) {
-            return res.status(200).send(cleanUsersData(usersArr));
-        }).catch(function(err) {
-            next(err);
-        });
-    } else {
-        return res.status(404).send();
-    }
+    findAllCustomersPromise = userModel.findAllCustomersFiltered(queryParams, req.user.id);
+    countAllCustomersPromise =  userModel.countAllCustomersFiltered(queryParams, req.user.id);
+  } else {
+    return res.status(404).send();
+  }
+
+  return Promise.all([findAllCustomersPromise,countAllCustomersPromise])
+    .then(function(results) {
+      const cleanedUsers = cleanUsersData(results[0]);
+      const usersCount = results[1].count;
+
+      return res.status(200).send({users:cleanedUsers, count:usersCount});
+    }).catch(function(err) {
+          next(err);
+      });
 };
 
 
