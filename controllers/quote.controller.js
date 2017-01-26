@@ -852,3 +852,28 @@ exports.findByAccountId = function(req, res, next) {
         });
     });
 };
+
+
+exports.setDocumentAsViewed = function(req, res, next) {
+    req.checkParams('quoteId', 'Please provide a product id').isInt();
+    req.checkParams('documentId', 'Please provide a account id').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+    
+    if(!userModel.isAdmin(req.user) && !userModel.isTaxpro(req.user)) {
+        return res.status(403).send();
+    }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var documentId = parseInt(req.params.documentId);
+    return documentModel.setDocumentAsViewedById(quoteId, documentId)
+      .then(function(accountObj) {
+        if(!accountObj) {
+          return res.status(404).send();
+        }
+
+        return res.status(200).send(accountObj);
+      }).catch(function(err) {
+        next(err);
+      });
+};

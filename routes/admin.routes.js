@@ -10,7 +10,7 @@ var logger = require('../services/logger.service');
 var passport = require('passport');
 var message = require('../controllers/message.controller');
 var taxReturn = require('../controllers/tax_return.controller');
-
+var quote = require('../controllers/quote.controller');
 
 
 module.exports = function (router) {
@@ -21,4 +21,7 @@ module.exports = function (router) {
 
     router.route('/admin/tax_returns/statuses')
       .get(PassportAuthMiddleware, taxReturn.getAvailableTaxReturnStatuses);
+
+    router.route('/admin/quote/:quoteId/document/:documentId/viewed')
+      .put(PassportAuthMiddleware, quote.setDocumentAsViewed);
 };
