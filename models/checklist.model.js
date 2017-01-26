@@ -76,6 +76,7 @@ var Checklist = {
                     docObj.lastName = dbDoc.last_name;
                     docObj.checkListItemId = dbDoc.checklist_item_id;
                     docObj.name = dbDoc.name;
+                    docObj.viewedByTaxPro = dbDoc.viewed_by_taxpro;
                     var utcCreatedAt = dbDoc.created_at;
                     docObj.createdAt = momentTz(utcCreatedAt, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
                     docObj.url = config.thumbnail.baseUploadUrl + dbDoc.url;
