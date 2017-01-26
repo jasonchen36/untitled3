@@ -222,7 +222,7 @@ exports.create = function(req, res, next) {
 
 function createUserAndSendEmail(userObj) {
     return userModel.create(userObj).then(function(userInsertResult) {
-        taxReturnModel.getTaxReturnsForAccountId(userObj.accountId).then(function(taxReturns){
+        return taxReturnModel.getTaxReturnsForAccountId(userObj.accountId).then(function(taxReturns){
             var sendWelcomeEmailTo = function(userObj) {
                 var variables = {
                     name: userObj.first_name
