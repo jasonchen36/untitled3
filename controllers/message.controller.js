@@ -195,7 +195,7 @@ exports.read = function (req, res, next) {
 
 // just here for initiaL TEST; may end up in separate cron or triggered process
 exports.emailtest = function (req, res, next) {
-    console.log('controller emailtest function');
+    logger.debug('controller emailtest function');
     var whatsit = mailclient.emailTest();
     return res.status(200).send('emailtest done');
 };

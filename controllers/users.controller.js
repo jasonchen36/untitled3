@@ -17,6 +17,7 @@ var logger = require('../services/logger.service');
 var db = require('../services/db');
 var notificationService = require('../services/notification.service');
 var mailService = require('../services/mail.service');
+var taxReturnModel = require('../models/tax_return.model');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -221,41 +222,44 @@ exports.create = function(req, res, next) {
 
 function createUserAndSendEmail(userObj) {
     return userModel.create(userObj).then(function(userInsertResult) {
-        var sendWelcomeEmailTo = function(userObj) {
-            var variables = {
-                name: userObj.first_name
+        return taxReturnModel.getTaxReturnsForAccountId(userObj.accountId).then(function(taxReturns){
+            var sendWelcomeEmailTo = function(userObj) {
+                var variables = {
+                    name: userObj.first_name
+                };
+                var i = 1;
+                var total = 0;
+                _.forEach(userObj.quote, function(quoteLineItem) {
+                    variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + taxReturns[i-1].first_name;
+                    variables['quote_value' + i] = quoteLineItem.value;
+                    variables['notes' + i] = quoteLineItem.notes;
+                    total = total + quoteLineItem.value;
+                    i = i + 1;
+                });
+                variables.total_value = total;
+                return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
             };
-            var i = 1;
-            var total = 0;
-            _.forEach(userObj.quote, function(quoteLineItem) {
-                variables['quote_text' + i] = quoteLineItem.text;
-                variables['quote_value' + i] = quoteLineItem.value;
-                total = total + quoteLineItem.value;
-                i = i + 1;
-            });
-            variables.total_value = total;
-            return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
-        };
 
-        var notifyAdminAbout = function(userObj) {
-            var variables = {
-                name: userObj.first_name,
-                email: userObj.email
+            var notifyAdminAbout = function(userObj) {
+                var variables = {
+                    name: userObj.first_name,
+                    email: userObj.email
+                };
+                return mailService.send(userObj, config.email.templates.profile_created, config.email.admin, variables);
             };
-            return mailService.send(userObj, config.email.templates.profile_created, config.email.admin, variables);
-        };
 
-        var productId = userObj.productId;
-        var accountId = userObj.accountId;
-        return userModel.findByEmail(userObj.email).then(function(userResultObj) {
-            // update the last User activity of the logged in user
-            userModel.updateLastUserActivity(userResultObj);
-            return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
-                userResultObj.quote = quote;
-                return sendWelcomeEmailTo(userResultObj).then(function() {
-//                  return notifyAdminAbout(user);
-                    var token = createToken(userResultObj);
-                    return token;
+            var productId = userObj.productId;
+            var accountId = userObj.accountId;
+            return userModel.findByEmail(userObj.email).then(function(userResultObj) {
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(userResultObj);
+                return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
+                    userResultObj.quote = quote;
+                    return sendWelcomeEmailTo(userResultObj).then(function() {
+    //                  return notifyAdminAbout(user);
+                        var token = createToken(userResultObj);
+                        return token;
+                    });
                 });
             });
         });
