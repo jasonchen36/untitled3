@@ -76,6 +76,19 @@ var document = {
 
         var quoteSql = 'DELETE FROM documents WHERE id = ? AND quote_id = ?';
         return db.knex.raw(quoteSql, [documentId, quoteId]);
+    },
+
+    setDocumentAsViewedById: function(quoteId, documentId) {
+        if ((!quoteId) || (quoteId.length === 0)) {
+            return Promise.reject(new Error('No quoteId specified!'));
+        }
+
+        if ((!documentId) || (documentId.length === 0)) {
+            return Promise.reject(new Error('No documentId specified!'));
+        }
+
+        var quoteSql = 'UPDATE documents SET viewed_by_taxpro=1 WHERE id = ? AND quote_id = ?';
+        return db.knex.raw(quoteSql, [documentId, quoteId]);
     }
 
 };
