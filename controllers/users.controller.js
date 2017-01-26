@@ -18,6 +18,7 @@ var db = require('../services/db');
 var notificationService = require('../services/notification.service');
 var mailService = require('../services/mail.service');
 var taxReturnModel = require('../models/tax_return.model');
+var stringHelper = require('../helpers/stringHelper');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -299,7 +300,7 @@ exports.me = function(req, res, next) {
         return userModel.findById(userObj.taxpro_id).then(function(taxproObj) {
             if (taxproObj) {
                 userObj.taxpro_pic = config.profilepic + '/' + taxproObj.profile_picture;
-                userObj.taxpro_desc = taxproObj.description;
+                userObj.taxpro_desc = stringHelper.cleanString(taxproObj.description);
                 userObj.taxpro_name = taxproObj.first_name + " " + taxproObj.last_name;
                 userObj.taxpro_title = taxproObj.title;
                 res.jsonp(userObj ? cleanUserData(userObj) : null);

@@ -26,7 +26,7 @@ var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
 var notificationService = require('../services/notification.service');
 var thumbnailService = require('../services/thumbnailService');
-
+var stringHelper = require('../helpers/stringHelper');
 
 var SMALL_BUSINESS_PACKAGE_ID = 1;
 var LANDLORD_PACKAGE_ID = 2;
@@ -234,9 +234,9 @@ exports.create = function (req, res, next) {
                             var lineItemArr = _.where(quoteObj.lineItems, {packageId: packageResultObj.id});
                             _.forEach(lineItemArr, function(lineItemObj) {
                                 lineItemObj.price = packageResultObj.price;
-                                lineItemObj.name = packageResultObj.name;
-                                lineItemObj.description = packageResultObj.description;
-                                lineItemObj.notes = packageResultObj.notes;
+                                lineItemObj.name = stringHelper.cleanString(packageResultObj.name);
+                                lineItemObj.description = stringHelper.cleanString(packageResultObj.description);
+                                lineItemObj.notes = stringHelper.cleanString(packageResultObj.notes);
                             });
                         });
 
@@ -749,7 +749,12 @@ exports.getChecklist = function (req, res, next) {
             if (!checklistObj) {
                 return res.status(404).send();
             }
-            return res.status(200).send(checklistObj);
+           checklistObj.name = stringHelper.cleanString(checklistObj.name);
+           checklistObj.title = stringHelper.cleanString(checklistObj.title);
+           checklistObj.subtitle = stringHelper.cleanString(checklistObj.subtitle);
+           checklistObj.description = stringHelper.cleanString(checklistObj.description);
+
+           return res.status(200).send(checklistObj);
         }).catch(function(err) {
             next(err);
         });
