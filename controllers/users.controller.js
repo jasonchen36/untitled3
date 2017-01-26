@@ -232,6 +232,7 @@ function createUserAndSendEmail(userObj) {
                 _.forEach(userObj.quote, function(quoteLineItem) {
                     variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + taxReturns[i-1].first_name;
                     variables['quote_value' + i] = quoteLineItem.value;
+                    variables['notes' + i] = quoteLineItem.notes;
                     total = total + quoteLineItem.value;
                     i = i + 1;
                 });

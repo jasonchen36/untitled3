@@ -85,19 +85,21 @@ var Quote = {
                 var lineItemPromises = [];
                 _.forEach(quoteObj.lineItems, function(lineItem) {
                     var lineItemInsertSql = 'INSERT INTO quotes_line_items \
-                                             (quote_id, tax_return_id, text, value) \
-                                             VALUES (?, ?, ?, ?) \
+                                             (quote_id, tax_return_id, text, value, notes) \
+                                             VALUES (?, ?, ?, ?, ?) \
                                              ON DUPLICATE KEY UPDATE \
                                              quote_id = ?, tax_return_id = ?, \
-                                             text = ?, value = ?';
+                                             text = ?, value = ?, notes = ?';
                     var lineItemInsertSqlParams = [quoteId,
                                                    lineItem.taxReturnId,
                                                    'Tax Prep.',
                                                    lineItem.price,
+                                                   lineItem.notes,
                                                    quoteId,
                                                    lineItem.taxReturnId,
                                                    'Tax Prep.',
-                                                   lineItem.price];
+                                                   lineItem.price,
+                                                   lineItem.notes];
                     lineItemPromises.push(db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams));
                 });
                 return Promise.all(lineItemPromises)

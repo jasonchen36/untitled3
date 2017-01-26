@@ -236,6 +236,7 @@ exports.create = function (req, res, next) {
                                 lineItemObj.price = packageResultObj.price;
                                 lineItemObj.name = packageResultObj.name;
                                 lineItemObj.description = packageResultObj.description;
+                                lineItemObj.notes = packageResultObj.notes;
                             });
                         });
 
