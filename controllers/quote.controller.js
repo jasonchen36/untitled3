@@ -237,6 +237,9 @@ exports.create = function (req, res, next) {
                                 lineItemObj.name = stringHelper.cleanString(packageResultObj.name);
                                 lineItemObj.description = stringHelper.cleanString(packageResultObj.description);
                                 lineItemObj.notes = stringHelper.cleanString(packageResultObj.notes);
+                                if (!lineItemObj.notes) {
+                                    lineItemObj.notes = ''; // fix undefined
+                                }
                             });
                         });
 
@@ -859,7 +862,7 @@ exports.setDocumentAsViewed = function(req, res, next) {
     req.checkParams('documentId', 'Please provide a account id').isInt();
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
-    
+
     if(!userModel.isAdmin(req.user) && !userModel.isTaxpro(req.user)) {
         return res.status(403).send();
     }
