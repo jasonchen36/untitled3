@@ -252,9 +252,15 @@ function createUserAndSendEmail(userObj) {
             var productId = userObj.productId;
             var accountId = userObj.accountId;
             return userModel.findByEmail(userObj.email).then(function(userResultObj) {
+                if (!userResultObj) {
+                    return promise.reject(new Error('error creating user with email: ' + userObj.email));
+                }
                 // update the last User activity of the logged in user
                 userModel.updateLastUserActivity(userResultObj);
                 return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
+                    if (!quote) {
+                        return promise.reject(new Error('error getting quote for user with email: ' + userObj.email));
+                    }
                     userResultObj.quote = quote;
                     return sendWelcomeEmailTo(userResultObj).then(function() {
     //                  return notifyAdminAbout(user);
