@@ -82,6 +82,7 @@ var Answer = {
             answerSql = answerSql + ' WHERE q.category_id = ?';
             answerSqlParams.push(categoryId);
         }
+        answerSql = answerSql + ' ORDER BY sort_order';
         return db.knex.raw(answerSql, answerSqlParams).then(function(answerSqlSqlResults) {
             var resultArr = answerSqlSqlResults[0];
 
