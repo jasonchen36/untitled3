@@ -6,6 +6,7 @@ exports.cleanString = function(str) {
     }
     str = str.replace(/\\n/g, '<br>');
     str = str.replace(/"/g, "&#39;");
+    str = str.replace(/'/g, "&#39;");
 
     return str;
 };
