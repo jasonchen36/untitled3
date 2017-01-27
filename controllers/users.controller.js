@@ -130,10 +130,10 @@ exports.logUserIn = function(req, res, next) {
             return next(err);
         }
 
-        if (!userObj) {
+        if (userObj.migrated_user === 'Yes'){
+            return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
+        } else if (!userObj) {
             return res.status(400).json([{ msg: 'Invalid email or password' }]);
-        } else if (userObj.migrated_user === 'Yes'){
-            return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.' }]);
         }
 
         //Add token to user
