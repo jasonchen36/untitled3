@@ -65,15 +65,15 @@ exports.createTaxReturns = function (req, res, next) {
     var createTaxReturnPromise = function(taxReturn) {
         var accountId = parseInt(taxReturn.accountId);
         if (!accountId) {
-            return res.status(404).send({ msg: 'No filerType specified' });
+            return res.status(404).send({ msg: 'No accountId specified' });
         }
         var productId = parseInt(taxReturn.productId);
         if (!productId) {
-            return res.status(404).send({ msg: 'No filerType specified' });
+            return res.status(404).send({ msg: 'No productId specified' });
         }
         var firstName = taxReturn.firstName;
         if (!firstName) {
-            return res.status(404).send({ msg: 'No filerType specified' });
+            return res.status(404).send({ msg: 'No firstName specified' });
         }
         var filerType = taxReturn.filerType;
         if (!filerType) {
