@@ -18,6 +18,7 @@ var db = require('../services/db');
 var notificationService = require('../services/notification.service');
 var mailService = require('../services/mail.service');
 var taxReturnModel = require('../models/tax_return.model');
+var stringHelper = require('../helpers/stringHelper');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -129,10 +130,10 @@ exports.logUserIn = function(req, res, next) {
             return next(err);
         }
 
-        if (!userObj) {
+        if (userObj.migrated_user === 'Yes'){
+            return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
+        } else if (!userObj) {
             return res.status(400).json([{ msg: 'Invalid email or password' }]);
-        } else if (userObj.migrated_user === 'Yes'){
-            return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.' }]);
         }
 
         //Add token to user
@@ -251,9 +252,15 @@ function createUserAndSendEmail(userObj) {
             var productId = userObj.productId;
             var accountId = userObj.accountId;
             return userModel.findByEmail(userObj.email).then(function(userResultObj) {
+                if (!userResultObj) {
+                    return promise.reject(new Error('error creating user with email: ' + userObj.email));
+                }
                 // update the last User activity of the logged in user
                 userModel.updateLastUserActivity(userResultObj);
                 return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
+                    if (!quote) {
+                        return promise.reject(new Error('error getting quote for user with email: ' + userObj.email));
+                    }
                     userResultObj.quote = quote;
                     return sendWelcomeEmailTo(userResultObj).then(function() {
     //                  return notifyAdminAbout(user);
@@ -299,7 +306,7 @@ exports.me = function(req, res, next) {
         return userModel.findById(userObj.taxpro_id).then(function(taxproObj) {
             if (taxproObj) {
                 userObj.taxpro_pic = config.profilepic + '/' + taxproObj.profile_picture;
-                userObj.taxpro_desc = taxproObj.description;
+                userObj.taxpro_desc = stringHelper.cleanString(taxproObj.description);
                 userObj.taxpro_name = taxproObj.first_name + " " + taxproObj.last_name;
                 userObj.taxpro_title = taxproObj.title;
                 res.jsonp(userObj ? cleanUserData(userObj) : null);
@@ -537,6 +544,54 @@ exports.update = function(req, res, next) {
         }).catch(function(err) {
             next(err);
         });
+    }).catch(function(err) {
+        next(err);
+    });
+};
+
+/*******************************************************************************
+ ENDPOINT
+ PUT /users/tapros
+
+
+ RESPONSE:
+ 200 OK
+ [{
+   "id": 1,
+   "role": "Admin",
+   "first_name": "test_admin",
+   "last_name": "test_admin",
+   "description": "I have been a taxpro 5 years",
+   "title": "CPA",
+   "profile_pic" : "URL/fox.jpg" // null if no pic in DB yet
+ },
+ ]
+
+
+ *******************************************************************************/
+
+exports.getAllTaxPros = function(req, res, next){
+    var query = {role: 'TaxPro'};
+    return userModel.findAllCustomersFiltered(query).then(function(response){
+        _.each(response, function(taxPro){
+            if(taxPro.profile_picture !== null) {
+                taxPro.taxpro_pic = config.profilepic + '/' + taxPro.profile_picture;
+            }else{
+                taxPro.taxpro_pic = null;
+            }
+            delete taxPro.hashed_password;
+            delete taxPro.salt;
+            delete taxPro.email;
+            delete taxPro.phone;
+            delete taxPro.provider;
+            delete taxPro.reset_key;
+            delete taxPro.account_id;
+            delete taxPro.last_user_activity;
+            delete taxPro.migrated_user;
+            delete taxPro.statuses;
+            delete taxPro.taxpro_id;
+        });
+        return res.status(200).send(response);
     }).catch(function(err) {
         next(err);
     });
