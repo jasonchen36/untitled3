@@ -249,7 +249,6 @@ exports.create = function (req, res, next) {
                             _.forEach(quoteObj.lineItems, function(lineItemObj) {
                                 quoteObj.totalPrice = quoteObj.totalPrice + lineItemObj.price;
                             });
-                            quoteObj.totalPrice = Math.round(quoteObj.totalPrice * 100) / 100;
                             return res.status(200).json(quoteObj);
                         }).catch(function(err) {
                             next(err);
