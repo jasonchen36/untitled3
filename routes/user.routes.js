@@ -17,6 +17,8 @@ module.exports = function(router) {
         .put(PassportAuthMiddleware, users.update_password);
     router.route('/users/me')
         .get(PassportAuthMiddleware, users.me);
+    router.route('/users/taxpros')
+        .get(PassportAuthMiddleware, users.getAllTaxPros);
     router.route('/users/:userId')
         .get(PassportAuthMiddleware, users.find)
         .put(PassportAuthMiddleware, users.update)
