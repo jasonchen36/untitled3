@@ -270,3 +270,40 @@ exports.emailMessage = function(req, res, next){
         res.status(200).send();
     });
 };
+
+exports.taxproAssignedlMessage = function(req, res, next){
+    if (!req.user) {
+        res.status(409).send('no user in request!');
+    }
+
+    if (!req.params.message) {
+        res.status(409).send('no message in params!');
+    }
+
+    if (!req.params.message.taxpro_id) {
+        res.status(409).send('no taxpro_id in message!');
+    }
+
+
+    if (!req.params.message.text) {
+        res.status(409).send('no text in message!');
+    }
+
+    var client = req.user;
+    var sender = req.params.message.from_id;
+    var receiver = req.params.message.client_id;
+
+    userModel.findById(sender).then(function(taxPro){
+        var variables = {
+            name: client.first_name,
+            email: client.email,
+            taxpro_first_name: taxPro.first_name,
+            taxpro_last_name: taxPro.last_name,
+            message: req.params.message.text
+
+        };
+
+        mailService.send(client, config.email.templates.message_from_taxpro, config.email.admin, variables);
+        res.status(200).send();
+    });
+};
