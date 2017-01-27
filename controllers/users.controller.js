@@ -549,6 +549,54 @@ exports.update = function(req, res, next) {
     });
 };
 
+/*******************************************************************************
+ ENDPOINT
+ PUT /users/tapros
+
+
+ RESPONSE:
+ 200 OK
+ [{
+   "id": 1,
+   "role": "Admin",
+   "first_name": "test_admin",
+   "last_name": "test_admin",
+   "description": "I have been a taxpro 5 years",
+   "title": "CPA",
+   "profile_pic" : "URL/fox.jpg" // null if no pic in DB yet
+ },
+ ]
+
+
+ *******************************************************************************/
+
+exports.getAllTaxPros = function(req, res, next){
+    var query = {role: 'TaxPro'};
+    return userModel.findAllCustomersFiltered(query).then(function(response){
+        _.each(response, function(taxPro){
+            if(taxPro.profile_picture !== null) {
+                taxPro.taxpro_pic = config.profilepic + '/' + taxPro.profile_picture;
+            }else{
+                taxPro.taxpro_pic = null;
+            }
+            delete taxPro.hashed_password;
+            delete taxPro.salt;
+            delete taxPro.email;
+            delete taxPro.phone;
+            delete taxPro.provider;
+            delete taxPro.reset_key;
+            delete taxPro.account_id;
+            delete taxPro.last_user_activity;
+            delete taxPro.migrated_user;
+            delete taxPro.statuses;
+            delete taxPro.taxpro_id;
+        });
+        return res.status(200).send(response);
+    }).catch(function(err) {
+        next(err);
+    });
+};
+
 /******************************************************************************
  *                                                                            *
  *                    HELPER FUNCTIONS                                        *
