@@ -235,7 +235,7 @@ exports.markAllRead = function(req, res, next) {
  {
        "from_id": 30,
        "client_id": 438,
-       "emailMessage": "This is my testing message."
+       "message": "This is my testing message."
  }
 
  AUTH TOKEN IS REQUIRED
@@ -256,11 +256,10 @@ exports.emailMessage = function(req, res, next){
         res.status(409).send('no client_id in message!');
     }
 
-    if (!req.body.emailMessage) {
-        res.status(409).send('no emailMessage in message!');
+    if (!req.body.message) {
+        res.status(409).send('no message!');
     }
 
-    var client = req.user;
     var sender = req.body.from_id;
     var receiver = req.body.client_id;
 
@@ -269,17 +268,19 @@ exports.emailMessage = function(req, res, next){
     }
 
     userModel.findById(sender).then(function(taxPro){
-        var variables = {
-            name: client.first_name,
-            email: client.email,
-            taxpro_first_name: taxPro.first_name,
-            taxpro_last_name: taxPro.last_name,
-            message: req.body.emailMessage
+        userModel.findById(receiver).then(function(user){
+            var variables = {
+                name: user.first_name,
+                email: user.email,
+                taxpro_first_name: taxPro.first_name,
+                taxpro_last_name: taxPro.last_name,
+                message: req.body.message
 
-        };
+            };
 
-        mailService.send(client, config.email.templates.message_from_taxpro, config.email.admin, variables);
-        res.status(200).send();
+            mailService.send(user, config.email.templates.message_from_taxpro, config.email.admin, variables);
+            res.status(200).send();
+        });
     }).catch(function(err) {
         next(err);
     });
@@ -291,9 +292,9 @@ exports.emailMessage = function(req, res, next){
 
  INPUT BODY:
  {
-       "from_id": 30,
-       "taxpro_id": 438,
-       "emailMessage": "This is my testing message."
+       "taxpro_id": 30,
+       "client_id": 438,
+       "message": "This is my testing message."
  }
 
  AUTH TOKEN IS REQUIRED
@@ -314,25 +315,28 @@ exports.taxproAssignedMessage = function(req, res, next){
         res.status(409).send('no client_id in message!');
     }
 
-    if (!req.body.emailMessage) {
-        res.status(409).send('no emailMessage in message!');
+    if (!req.body.message) {
+        res.status(409).send('no message!');
     }
 
-    var client = req.user;
     var sender = req.body.taxpro_id;
     var receiver = req.body.client_id;
 
-    userModel.findById(sender).then(function(taxPro){
-        var variables = {
-            name: client.first_name,
-            email: client.email,
-            taxpro_first_name: taxPro.first_name,
-            taxpro_last_name: taxPro.last_name,
-            message: req.body.emailMessage
+    userModel.findById(sender).then(function(taxPro) {
+        userModel.findById(receiver).then(function(user){
+            var variables = {
+                name: user.first_name,
+                email: user.email,
+                taxpro_first_name: taxPro.first_name,
+                taxpro_last_name: taxPro.last_name,
+                message: req.body.message
 
-        };
+            };
 
-        mailService.send(client, config.email.templates.message_from_taxpro, config.email.admin, variables);
-        res.status(200).send();
+            mailService.send(user, config.email.templates.taxpro_assigned, config.email.admin, variables);
+            res.status(200).send();
+        });
+    }).catch(function(err) {
+        next(err);
     });
 };

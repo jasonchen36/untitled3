@@ -50,7 +50,8 @@ module.exports = {
             payment: 'payment',
             profile_created: 'profile_created',
             document_uploaded: 'document_uploaded',
-            message_from_taxpro: 'message_from_taxpro'
+            message_from_taxpro: 'message_from_taxpro',
+            taxpro_assigned: 'taxpro_assigned'
         },
         submittedMessage: 'This is an automated message to let you know your taxpro will be assigned to you shortly.  In the meantime you can access your customized tax checklist by going to MY DOCUMENTS.  Once you have your documents ready you can easily upload them into MY DOCUMENTS for your taxpro to process.  If at any time you have a question for us simply leave us a message or call 1-855…..to be connected with a TAXplan Customer Service Rep.',
         submittedSubject: 'Tax return submitted',
