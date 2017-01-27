@@ -24,7 +24,7 @@ var multer = require('multer');
 var crypto = require('crypto');
 var path = require('path');
 
-morgan.token('api_timestamp', function(req, res){ return moment().format('DD MMM H:mm:ss'); });
+morgan.token('api_timestamp', function(req, res){ return moment().format('DD MMM HH:mm:ss'); });
 morgan.token('response-time', function getResponseTimeToken(req, res) {
   if (!req._startAt || !res._startAt) {
     // missing request and/or response start time

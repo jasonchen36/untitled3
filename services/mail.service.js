@@ -13,7 +13,7 @@ if (config.email.enabled === 'false') {
 }
 
 exports.send = function(user, template, variables, overrideUserPreferences=false) {
-    if (!postageapp) {
+    if (postageapp === null) {
         logger.warn('mail.service: emails disabled by API config.');
         return Promise.resolve();
     }

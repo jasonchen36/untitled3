@@ -9,6 +9,7 @@ var config = require('../config/config');
 var _ = require('underscore');
 var questionModel = require('../models/question.model');
 var logger = require('../services/logger.service');
+var stringHelper = require('../helpers/stringHelper');
 
 /*******************************************************************************
 ENDPOINT
@@ -57,6 +58,13 @@ exports.findByCategoryId = function(req, res, next) {
         if (!questionArr) {
             return res.status(404).send();
         }
+        _.forEach(questionArr, function(questionObj) {
+           questionObj.text = stringHelper.cleanString(questionObj.text);
+           questionObj.instructions = stringHelper.cleanString(questionObj.instructions);
+           questionObj.category_name = stringHelper.cleanString(questionObj.category_name);
+           questionObj.category_displaytext = stringHelper.cleanString(questionObj.category_displaytext);
+           questionObj.category_secondarytext = stringHelper.cleanString(questionObj.category_secondarytext);
+        });
         return res.status(200).send(questionArr);
     }).catch(function(err) {
         next(err);

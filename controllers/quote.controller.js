@@ -26,12 +26,11 @@ var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
 var notificationService = require('../services/notification.service');
 var thumbnailService = require('../services/thumbnailService');
-
+var stringHelper = require('../helpers/stringHelper');
 
 var SMALL_BUSINESS_PACKAGE_ID = 1;
 var LANDLORD_PACKAGE_ID = 2;
 var COMPLEX_CASE_PACKAGE_ID = 3;
-var VERY_COMPLEX_CASE_PACKAGE_ID = 4;
 var TYPICAL_PACKAGE_ID = 5;
 var STUDENT_PACKAGE_ID = 6;
 var SMALL_BUSINESS_PLUS_LANDLORD_PACKAGE_ID = 7;
@@ -234,10 +233,13 @@ exports.create = function (req, res, next) {
                         _.forEach(packageResultsArr, function(packageResultObj) {
                             var lineItemArr = _.where(quoteObj.lineItems, {packageId: packageResultObj.id});
                             _.forEach(lineItemArr, function(lineItemObj) {
-console.log('lineItemObj = ' + JSON.stringify(lineItemObj, null, 2));
                                 lineItemObj.price = packageResultObj.price;
-                                lineItemObj.name = packageResultObj.name;
-                                lineItemObj.description = packageResultObj.description;
+                                lineItemObj.name = stringHelper.cleanString(packageResultObj.name);
+                                lineItemObj.description = stringHelper.cleanString(packageResultObj.description);
+                                lineItemObj.notes = stringHelper.cleanString(packageResultObj.notes);
+                                if (!lineItemObj.notes) {
+                                    lineItemObj.notes = ''; // fix undefined
+                                }
                             });
                         });
 
@@ -326,21 +328,17 @@ var getPackageId = function(answers) {
             if (hasRentalProperty) {
                 packageId = LANDLORD_PACKAGE_ID;
             } else {
-                if ((hasMovingOrMedicalExpenses) && (hasCapitalGains) && (hasEmploymentRelatedExpenses) && (isImmigrantOrEmigrant)) {
-                    packageId = VERY_COMPLEX_CASE_PACKAGE_ID;
+                if ((hasCapitalGains) ||
+                    (hasMovingOrMedicalExpenses) ||
+                    (hasEmploymentRelatedExpenses) ||
+                    (isImmigrantOrEmigrant)) {
+                    packageId = COMPLEX_CASE_PACKAGE_ID;
                 } else {
-                    if ((hasCapitalGains) ||
-                        (hasMovingOrMedicalExpenses) ||
-                        (hasEmploymentRelatedExpenses) ||
-                        (isImmigrantOrEmigrant)) {
-                        packageId = COMPLEX_CASE_PACKAGE_ID;
+                    if (NoneOfTheAbove) {
+                        packageId = TYPICAL_PACKAGE_ID;
                     } else {
-                        if (NoneOfTheAbove) {
-                            packageId = TYPICAL_PACKAGE_ID;
-                        } else {
-                            if (isPostSecondaryStudent) {
-                                packageId = STUDENT_PACKAGE_ID;
-                            }
+                        if (isPostSecondaryStudent) {
+                            packageId = STUDENT_PACKAGE_ID;
                         }
                     }
                 }
@@ -754,7 +752,12 @@ exports.getChecklist = function (req, res, next) {
             if (!checklistObj) {
                 return res.status(404).send();
             }
-            return res.status(200).send(checklistObj);
+           checklistObj.name = stringHelper.cleanString(checklistObj.name);
+           checklistObj.title = stringHelper.cleanString(checklistObj.title);
+           checklistObj.subtitle = stringHelper.cleanString(checklistObj.subtitle);
+           checklistObj.description = stringHelper.cleanString(checklistObj.description);
+
+           return res.status(200).send(checklistObj);
         }).catch(function(err) {
             next(err);
         });
@@ -851,4 +854,29 @@ exports.findByAccountId = function(req, res, next) {
             next(err);
         });
     });
+};
+
+
+exports.setDocumentAsViewed = function(req, res, next) {
+    req.checkParams('quoteId', 'Please provide a product id').isInt();
+    req.checkParams('documentId', 'Please provide a account id').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    if(!userModel.isAdmin(req.user) && !userModel.isTaxpro(req.user)) {
+        return res.status(403).send();
+    }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var documentId = parseInt(req.params.documentId);
+    return documentModel.setDocumentAsViewedById(quoteId, documentId)
+      .then(function(accountObj) {
+        if(!accountObj) {
+          return res.status(404).send();
+        }
+
+        return res.status(200).send(accountObj);
+      }).catch(function(err) {
+        next(err);
+      });
 };

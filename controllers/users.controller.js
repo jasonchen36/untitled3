@@ -18,6 +18,7 @@ var db = require('../services/db');
 var notificationService = require('../services/notification.service');
 var mailService = require('../services/mail.service');
 var taxReturnModel = require('../models/tax_return.model');
+var stringHelper = require('../helpers/stringHelper');
 
 /**
  * Auth callback - for Facebook etc login strategies
@@ -222,7 +223,7 @@ exports.create = function(req, res, next) {
 
 function createUserAndSendEmail(userObj) {
     return userModel.create(userObj).then(function(userInsertResult) {
-        taxReturnModel.getTaxReturnsForAccountId(userObj.accountId).then(function(taxReturns){
+        return taxReturnModel.getTaxReturnsForAccountId(userObj.accountId).then(function(taxReturns){
             var sendWelcomeEmailTo = function(userObj) {
                 var variables = {
                     name: userObj.first_name
@@ -232,6 +233,7 @@ function createUserAndSendEmail(userObj) {
                 _.forEach(userObj.quote, function(quoteLineItem) {
                     variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + taxReturns[i-1].first_name;
                     variables['quote_value' + i] = quoteLineItem.value;
+                    variables['notes' + i] = quoteLineItem.notes;
                     total = total + quoteLineItem.value;
                     i = i + 1;
                 });
@@ -250,9 +252,15 @@ function createUserAndSendEmail(userObj) {
             var productId = userObj.productId;
             var accountId = userObj.accountId;
             return userModel.findByEmail(userObj.email).then(function(userResultObj) {
+                if (!userResultObj) {
+                    return promise.reject(new Error('error creating user with email: ' + userObj.email));
+                }
                 // update the last User activity of the logged in user
                 userModel.updateLastUserActivity(userResultObj);
                 return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
+                    if (!quote) {
+                        return promise.reject(new Error('error getting quote for user with email: ' + userObj.email));
+                    }
                     userResultObj.quote = quote;
                     return sendWelcomeEmailTo(userResultObj).then(function() {
     //                  return notifyAdminAbout(user);
@@ -298,7 +306,7 @@ exports.me = function(req, res, next) {
         return userModel.findById(userObj.taxpro_id).then(function(taxproObj) {
             if (taxproObj) {
                 userObj.taxpro_pic = config.profilepic + '/' + taxproObj.profile_picture;
-                userObj.taxpro_desc = taxproObj.description;
+                userObj.taxpro_desc = stringHelper.cleanString(taxproObj.description);
                 userObj.taxpro_name = taxproObj.first_name + " " + taxproObj.last_name;
                 userObj.taxpro_title = taxproObj.title;
                 res.jsonp(userObj ? cleanUserData(userObj) : null);
@@ -339,27 +347,33 @@ RESPONSE:
 ]
 *******************************************************************************/
 exports.list = function(req, res, next) {
-    var queryParams = req.query ? req.query: {};
+  var queryParams = req.query ? req.query: {};
+  var findAllCustomersPromise = null;
+  var countAllCustomersPromise = null;
 
-    // TODO look into passport and roles
-    if (userModel.isAdmin(req.user)) {
-        return userModel.findAllCustomersFiltered(queryParams).then(function(usersArr) {
-            return res.status(200).send(cleanUsersData(usersArr));
-        }).catch(function(err) {
-            next(err);
-        });
-    } else if(userModel.isTaxpro(req.user)) {
-        // filter out for users with this taxpro's id.
-        queryParams.taxPro=req.user.id;
+  // TODO look into passport and roles
+  if (userModel.isAdmin(req.user)) {
+    findAllCustomersPromise = userModel.findAllCustomersFiltered(queryParams);
+    countAllCustomersPromise =  userModel.countAllCustomersFiltered(queryParams);
+  } else if(userModel.isTaxpro(req.user)) {
+    // filter out for users with this taxpro's id.
+    queryParams.taxPro=req.user.id;
 
-        return userModel.findAllCustomersFiltered(queryParams, req.user.id).then(function(usersArr) {
-            return res.status(200).send(cleanUsersData(usersArr));
-        }).catch(function(err) {
-            next(err);
-        });
-    } else {
-        return res.status(404).send();
-    }
+    findAllCustomersPromise = userModel.findAllCustomersFiltered(queryParams, req.user.id);
+    countAllCustomersPromise =  userModel.countAllCustomersFiltered(queryParams, req.user.id);
+  } else {
+    return res.status(404).send();
+  }
+
+  return Promise.all([findAllCustomersPromise,countAllCustomersPromise])
+    .then(function(results) {
+      const cleanedUsers = cleanUsersData(results[0]);
+      const usersCount = results[1].count;
+
+      return res.status(200).send({users:cleanedUsers, count:usersCount});
+    }).catch(function(err) {
+          next(err);
+      });
 };
 
 
