@@ -227,30 +227,42 @@ exports.markAllRead = function(req, res, next) {
     });
 };
 
+/*******************************************************************************
+ ENDPOINT
+ POST /messages/emailMessage
+
+ INPUT BODY:
+ {
+       "from_id": 30,
+       "client_id": 438,
+       "emailMessage": "This is my testing message."
+ }
+
+ AUTH TOKEN IS REQUIRED
+
+ 200 OK
+ *******************************************************************************/
+
 exports.emailMessage = function(req, res, next){
     if (!req.user) {
         res.status(409).send('no user in request!');
     }
 
-    if (!req.params.message) {
-        res.status(409).send('no message in params!');
-    }
-
-    if (!req.params.message.from_id) {
+    if (!req.body.from_id) {
         res.status(409).send('no from_id in message!');
     }
 
-    if (!req.params.message.client_id) {
+    if (!req.body.client_id) {
         res.status(409).send('no client_id in message!');
     }
 
-    if (!req.params.message.text) {
-        res.status(409).send('no text in message!');
+    if (!req.body.emailMessage) {
+        res.status(409).send('no emailMessage in message!');
     }
 
     var client = req.user;
-    var sender = req.params.message.from_id;
-    var receiver = req.params.message.client_id;
+    var sender = req.body.from_id;
+    var receiver = req.body.client_id;
 
     if(sender === receiver){
         res.status(409).send('cannot send message to yourself!');
@@ -262,36 +274,53 @@ exports.emailMessage = function(req, res, next){
             email: client.email,
             taxpro_first_name: taxPro.first_name,
             taxpro_last_name: taxPro.last_name,
-            message: req.params.message.text
+            message: req.body.emailMessage
 
         };
 
         mailService.send(client, config.email.templates.message_from_taxpro, config.email.admin, variables);
         res.status(200).send();
+    }).catch(function(err) {
+        next(err);
     });
 };
 
-exports.taxproAssignedlMessage = function(req, res, next){
+/*******************************************************************************
+ ENDPOINT
+ POST /messages/taxProAssigned
+
+ INPUT BODY:
+ {
+       "from_id": 30,
+       "taxpro_id": 438,
+       "emailMessage": "This is my testing message."
+ }
+
+ AUTH TOKEN IS REQUIRED
+
+ 200 OK
+ *******************************************************************************/
+
+exports.taxproAssignedMessage = function(req, res, next){
     if (!req.user) {
         res.status(409).send('no user in request!');
     }
 
-    if (!req.params.message) {
-        res.status(409).send('no message in params!');
-    }
-
-    if (!req.params.message.taxpro_id) {
+    if (!req.body.taxpro_id) {
         res.status(409).send('no taxpro_id in message!');
     }
 
+    if (!req.body.client_id) {
+        res.status(409).send('no client_id in message!');
+    }
 
-    if (!req.params.message.text) {
-        res.status(409).send('no text in message!');
+    if (!req.body.emailMessage) {
+        res.status(409).send('no emailMessage in message!');
     }
 
     var client = req.user;
-    var sender = req.params.message.from_id;
-    var receiver = req.params.message.client_id;
+    var sender = req.body.taxpro_id;
+    var receiver = req.body.client_id;
 
     userModel.findById(sender).then(function(taxPro){
         var variables = {
@@ -299,7 +328,7 @@ exports.taxproAssignedlMessage = function(req, res, next){
             email: client.email,
             taxpro_first_name: taxPro.first_name,
             taxpro_last_name: taxPro.last_name,
-            message: req.params.message.text
+            message: req.body.emailMessage
 
         };
 
