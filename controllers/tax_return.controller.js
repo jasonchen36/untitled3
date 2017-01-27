@@ -64,9 +64,21 @@ exports.createTaxReturns = function (req, res, next) {
 
     var createTaxReturnPromise = function(taxReturn) {
         var accountId = parseInt(taxReturn.accountId);
+        if (!accountId) {
+            return res.status(404).send({ msg: 'No filerType specified' });
+        }
         var productId = parseInt(taxReturn.productId);
+        if (!productId) {
+            return res.status(404).send({ msg: 'No filerType specified' });
+        }
         var firstName = taxReturn.firstName;
+        if (!firstName) {
+            return res.status(404).send({ msg: 'No filerType specified' });
+        }
         var filerType = taxReturn.filerType;
+        if (!filerType) {
+            return res.status(404).send({ msg: 'No filerType specified' });
+        }
         var status = taxReturn.status;
         var sin = taxReturn.sin;
         var prefix = taxReturn.prefix;
@@ -153,6 +165,7 @@ exports.createTaxReturn = function (req, res, next) {
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
+    req.checkBody('filerType', 'Please provide a filerType').notEmpty();
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
