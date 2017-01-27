@@ -226,3 +226,4 @@ exports.markAllRead = function(req, res, next) {
         next(err);
     });
 };
+
