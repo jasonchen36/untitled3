@@ -31,14 +31,14 @@ var TaxReturn = {
         });
     },
 
-    findById: function(taxReturnId) {
+    findById: function(taxReturnId, isAdminOrTaxPro) {
         if ((!taxReturnId) || (taxReturnId.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
         var taxReturnSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.id = ? LIMIT 1';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
             var data = _.map(taxReturnSqlResults[0], function(entry){
-                return TaxReturn.formatData(entry);
+                return TaxReturn.formatData(entry, isAdminOrTaxPro);
             });
             return data[0];
         });
@@ -97,6 +97,7 @@ var TaxReturn = {
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
+    
         return db.knex('tax_returns').update(taxReturnObj).where('id', id);
     },
 
@@ -122,8 +123,10 @@ var TaxReturn = {
             }
         });
     },
-    formatData: function(data){
-        return {
+    formatData: function(data, isAdminOrTaxPro){
+        // if is admin, include all data.
+
+        var formattedData =  {
             id: data.id,
             product_id: data.product_id,
             account_id: data.account_id,
@@ -141,7 +144,18 @@ var TaxReturn = {
             created_at: data.created_at,
             updated_at: data.updated_at,
             filer_type: data.filer_type
+        };
+
+        if(isAdminOrTaxPro) {
+          formattedData = _.merge(formattedData,{
+            SIN: data.SIN,
+            prefix: data.prefix,
+            middle_initial: data.middle_initial
+          });
+
         }
+
+        return formattedData;
     },
     getTaxReturnStatuses: function(data,trx) {
       var content = trx ? trx : db.knex;

@@ -262,14 +262,14 @@ exports.updateTaxReturnById = function (req, res, next) {
           if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
           if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
           if (req.body.dateOfBirth) { taxReturnObj.date_of_birth = req.body.dateOfBirth; }
-          if (req.body.canadianCitizen) { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
-          if (req.body.authorizeCra) { taxReturnObj.authorize_cra = req.body.authorizeCra; }
+          if (typeof req.body.canadianCitizen !== "undefined") { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
+          if (typeof req.body.authorizeCra !== "undefined") { taxReturnObj.authorize_cra = req.body.authorizeCra; }
           if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
           if (req.body.status) {taxReturnObj.status = req.body.status; }
           if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
           if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
           if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
-
+  
           return taxReturnModel.update(taxReturnId, taxReturnObj)
             .then(function(taxReturnId) {
               return taxReturnModel.findById(taxReturnId);
@@ -359,7 +359,7 @@ exports.findTaxReturnById = function (req, res, next) {
         if (!allowed) {
             return res.status(403).send();
         }
-        return taxReturnModel.findById(taxReturnId).then(function(taxReturnObj) {
+        return taxReturnModel.findById(taxReturnId, userModel.isAdmin(req.user) || userModel.isTaxpro(req.user)).then(function(taxReturnObj) {
             if (!taxReturnObj) {
                 return res.status(404).send();
             }
