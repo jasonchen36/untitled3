@@ -50,10 +50,6 @@ module.exports = function (router) {
         .post(PassportAuthMiddleware, message.markRead);
     router.route('/messages/markAllRead')
         .post(PassportAuthMiddleware, message.markAllRead);
-    router.route('/messages/emailMessage')
-        .post(PassportAuthMiddleware, message.emailMessage);
-    router.route('/messages/taxProAssigned')
-        .post(PassportAuthMiddleware, message.taxproAssignedMessage);
     router.route('/messages')
         .post(PassportAuthMiddleware, message.create)
         .get(PassportAuthMiddleware, message.getMessageListForUser);

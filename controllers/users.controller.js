@@ -532,6 +532,20 @@ exports.update = function(req, res, next) {
             return res.status(404).send();
         }
         _.each(params, function(value, key) {
+            if(key === 'taxpro_id' && value !== null && value !== '') {
+                return userModel.findById(value).then(function (taxpro) {
+
+                    var variables = {
+                        name: req.user.first_name,
+                        taxpro_name: taxpro.first_name + ' ' + taxpro.last_name,
+                        taxpro_pic: config.profilepic + '/' + taxpro.profile_picture,
+                        taxpro_desc: taxpro.description,
+                        message: 'Hello, I am your taxpro.' //TODO update with actual copy
+                    };
+
+                    return notificationService.sendNotification(foundUserObj, notificationService.NotificationType.TAX_PRO_ASSIGNED, variables);
+                });
+            }
             foundUserObj[key] = value;
         });
 
