@@ -57,6 +57,7 @@ module.exports = {
         submittedSubject: 'Tax return submitted',
         welcomeMessage: '{{firstName}}, welcome to your TAXplan dashboard!  This is an automated message to let you know that your TAXpro will be assigned to you within 24 hours or by the next business day.  Your TAXprofile generated a checklist for you to use as a guide for the tax documents we will need from you in order to prepare your return.  Please feel free to start uploading your tax documents or leave a message for your TAXpro.',
         welcomeSubject: 'Thank you for choosing TAXplan--welcome to the TAXplanning Revolution!',
+        passwordResetMessage: 'To protect your account and confirm your identity we need you to click the link below to confirm your e-mail address.'
     },
     onesignal: {
         restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
