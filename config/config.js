@@ -57,6 +57,7 @@ module.exports = {
         submittedSubject: 'Tax return submitted',
         welcomeMessage: "Great job, {{firstName}}!  Now that you’ve completed the questions, it’s time to upload your documents.<br><br>Don’t give up! Simply follow the checklist we’ve provided in the Documents centre so you know which documents to upload. Not sure where to start? Help is on the way. You’ll hear from your assigned TAXpro within the next 24 hours (or by the next business day) on this message board. If you have questions or concerns, type your message below and your TAXpro will respond by the next business day.",
         welcomeSubject: 'Thank you for choosing TAXplan--welcome to the TAXplanning Revolution!',
+        passwordResetMessage: 'To protect your account and confirm your identity we need you to click the link below to confirm your e-mail address.'
     },
     onesignal: {
         restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
