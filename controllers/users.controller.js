@@ -565,7 +565,7 @@ exports.update = function(req, res, next) {
 
 /*******************************************************************************
  ENDPOINT
- PUT /users/tapros
+ GET /users/tapros
 
 
  RESPONSE:
