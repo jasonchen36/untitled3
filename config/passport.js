@@ -37,6 +37,9 @@ module.exports = function(passport) {
             if (!user) {
                 return done(null, false, { message: 'Unknown user' });
             }
+            if (user.migrated_user === 'Yes'){
+                return done(null, user);
+            }
 
             var isMatch = User.authenticate(user.salt, password, user.hashed_password);
             if (!isMatch) {
