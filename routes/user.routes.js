@@ -9,6 +9,8 @@ var _ = require('underscore');
 module.exports = function(router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session:false });
 
+    router.route('/users/deleteme/:delete_user_key')
+        .get(users.softDeleteUser);
     router.route('/users/reset/:reset_key')
         .put(users.resetPassword);
     router.route('/users/reset')

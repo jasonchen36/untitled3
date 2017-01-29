@@ -159,9 +159,9 @@ var User = {
         // ... other fields are validated by users.controller from req.body
 
         if (userObj.accountId) {
-            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, account_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
+            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, delete_user_key, account_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
         } else {
-            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email) VALUES(?, ?, ?, ?, ?, ?, ?)';
+            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, delete_user_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
         }
         var userInsertSqlParams = [
           userObj.provider,
@@ -170,7 +170,8 @@ var User = {
           userObj.salt,
           userObj.first_name,
           userObj.last_name,
-          userObj.email
+          userObj.email,
+          userObj.delete_user_key
         ];
         if (userObj.accountId) {
             userInsertSqlParams.push(userObj.accountId);
@@ -241,11 +242,11 @@ var User = {
     },
 
     /**
-     * Create Reset Key for password reset
+     * Create token for password reset or delete user link
      *
      * @return {object} Hash Object
      */
-    createResetKey: function() {
+    createGenericToken: function() {
         return crypto.createHash('sha256').update(this.makeSalt()).digest('hex');
     },
 
@@ -319,6 +320,16 @@ var User = {
         }
         var userSql = 'SELECT * FROM users WHERE reset_key = ? LIMIT 1';
         return db.knex.raw(userSql, [reset_key]).then(function(userSqlResults) {
+            return(userSqlResults[0][0]);
+        });
+    },
+
+    findByDeleteKey: function(delete_user_key) {
+        if ((!delete_user_key) || (delete_user_key.length === 0)) {
+          return Promise.reject(new Error('findByDeleteKey() No delete_user_key specified!'));
+        }
+        var userSql = 'SELECT * FROM users WHERE delete_user_key = ? LIMIT 1';
+        return db.knex.raw(userSql, [delete_user_key]).then(function(userSqlResults) {
             return(userSqlResults[0][0]);
         });
     },

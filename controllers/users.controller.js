@@ -46,10 +46,10 @@ exports.createResetKey = function(req, res, next) {
         return res.status(400).send({ msg: 'No email provided' });
     }
     return userModel.findByEmail(userToReset.email).then(function(userObj) {
-        if (!userObj) {
+        if ((!userObj) || (userObj.deleted_user === 1)) {
             return res.status(404).send({ msg: 'unknown user' });
         }
-        userObj.reset_key = userModel.createResetKey();
+        userObj.reset_key = userModel.createGenericToken();
         return userModel.updateResetKey(userObj.id, userObj.reset_key).then(function() {
             var variables = {
                 name: userObj.first_name,
@@ -88,7 +88,7 @@ exports.resetPassword = function(req, res, next) {
     }
     var reset_key = req.params.reset_key;
     return userModel.findByResetKey(reset_key).then(function(userObj) {
-        if (!userObj) {
+        if ((!userObj) || (userObj.deleted_user === 1)) {
             return res.status(404).send();
         }
         var new_salt = userModel.makeSalt();
@@ -96,6 +96,33 @@ exports.resetPassword = function(req, res, next) {
         userObj.hashed_password = hashed_password;
         userObj.reset_key = null;
         return userModel.updatePassword(userObj.id, hashed_password, new_salt).then(function() {
+            return res.status(200).send();
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
+};
+
+/*******************************************************************************
+ENDPOINT
+PUT /users/deleteme/:delete_user_key
+
+INPUT BODY:
+NONE
+
+RESPONSE:
+200 OK/400/404
+*******************************************************************************/
+exports.softDeleteUser = function(req, res, next) {
+    var delete_user_key = req.params.delete_user_key;
+    return userModel.findByDeleteKey(delete_user_key).then(function(userObj) {
+        if ((!userObj) || (userObj.deleted_user === 1)) {
+            return res.status(404).send();
+        }
+        userObj.deleted_user = 1;
+        return userModel.updateById(userObj.id, userObj).then(function() {
             return res.status(200).send();
         }).catch(function(err) {
             next(err);
@@ -195,6 +222,7 @@ exports.create = function(req, res, next) {
         }
         userObj.provider = 'local';
         userObj.role = 'Customer';
+        userObj.delete_user_key = userModel.createGenericToken();
         if (!userObj.accountId) {
             // create a new account for this user
             var accountObj = {};
@@ -226,7 +254,8 @@ function createUserAndSendEmail(userObj) {
         return taxReturnModel.getTaxReturnsForAccountId(userObj.accountId).then(function(taxReturns){
             var sendWelcomeEmailTo = function(userObj) {
                 var variables = {
-                    name: userObj.first_name
+                    name: userObj.first_name,
+                    delete_me_url: config.domain + '/deleteme/' + userObj.delete_user_key
                 };
                 var i = 1;
                 var total = 0;
