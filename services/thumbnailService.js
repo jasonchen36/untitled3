@@ -31,6 +31,19 @@ exports.resize = function(sourcePath, destinationPath, newWidth) {
     }
 };
 
+exports.identify = function(sourcePath) {
+    if (fileExists(sourcePath)) {
+        return im.identifyAsync(sourcePath)
+        .catch(function(err) {
+            logger.debug('FAILED TO IDENTIFY image format. Using default thumbnail');
+            // not a supported image format
+            return Promise.reject(new Error(err));
+        });
+    } else {
+      return Promise.reject(new Error('File does not exist'));
+    }
+};
+
 function fileExists(path) {
     try  {
         return fs.statSync(path).isFile();

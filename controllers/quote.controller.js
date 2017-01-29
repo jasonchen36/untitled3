@@ -581,29 +581,39 @@ exports.createDocument = function (req, res, next) {
                     documentObj.checklistItemId = checklistItemId;
                     documentObj.name = originalname;
                     documentObj.url = fileName;
-                    documentObj.thumbnailUrl = fileName;
-                    return documentModel.create(documentObj).then(function(insertId) {
-                        res.writeHead(200, {'content-type': 'text/plain'});
-                        res.write('received upload:\n\n');
-                        if ((taxReturnId) && (taxReturnId.length > 0)) {
-                            res.end(util.inspect({
-                                quoteId: quoteId,
-                                taxReturnId: taxReturnId,
-                                checklistItemId: checklistItemId,
-                                file: req.file
-                            }));
-                        } else {
-                            res.end(util.inspect({
-                                quoteId: quoteId,
-                                checklistItemId: checklistItemId,
-                                file: req.file
-                            }));
-                        }
+                    return identifyFormatPromise(sourcePath).then(function(thumbFileName) {
+                        documentObj.thumbnailUrl = thumbFileName;
+                        return documentModel.create(documentObj).then(function(insertId) {
+                            res.writeHead(200, {'content-type': 'text/plain'});
+                            res.write('received upload:\n\n');
+                            if ((taxReturnId) && (taxReturnId.length > 0)) {
+                                res.end(util.inspect({
+                                    quoteId: quoteId,
+                                    taxReturnId: taxReturnId,
+                                    checklistItemId: checklistItemId,
+                                    file: req.file
+                                }));
+                            } else {
+                                res.end(util.inspect({
+                                    quoteId: quoteId,
+                                    checklistItemId: checklistItemId,
+                                    file: req.file
+                                }));
+                            }
 
-                        // update the last User activity of the logged in user
-                        userModel.updateLastUserActivity(req.user);
+                            // update the last User activity of the logged in user
+                            userModel.updateLastUserActivity(req.user);
 
-                        return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                            if (thumbFileName !== config.thumbnail.defaultDocIconFileName) {
+console.log('thumbFileName: ' + thumbFileName);
+console.log('config.thumbnail.defaultDocIconFileName: ' + config.thumbnail.defaultDocIconFileName);
+                                thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                            } else {
+                                return Promise.resolve();
+                            }
+                        }).catch(function(err) {
+                            next(err);
+                        });
                     }).catch(function(err) {
                         next(err);
                     });
@@ -618,6 +628,14 @@ exports.createDocument = function (req, res, next) {
         });
     });
 };
+
+var identifyFormatPromise = function(sourcePath) {
+    return thumbnailService.identify(sourcePath).then(function() {
+        return path.basename(sourcePath);
+    }).catch(function(err) {
+        return config.thumbnail.defaultDocIconFileName;
+    });
+}
 
 /*******************************************************************************
 ENDPOINT

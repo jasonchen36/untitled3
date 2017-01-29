@@ -80,7 +80,11 @@ var Checklist = {
                     var utcCreatedAt = dbDoc.created_at;
                     docObj.createdAt = momentTz(utcCreatedAt, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
                     docObj.url = config.thumbnail.baseUploadUrl + dbDoc.url;
-                    docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
+                    if (dbDoc.thumbnail_url != config.thumbnail.defaultDocIconFileName) {
+                        docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
+                    } else {
+                        docObj.thumbnailUrl = config.domain + '/default_icons/' + dbDoc.thumbnail_url
+                    }
                     documents.push(docObj);
                 });
                 var filerSql = 'SELECT DISTINCT\

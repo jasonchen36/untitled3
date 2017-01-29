@@ -74,7 +74,8 @@ module.exports = {
         baseUploadUrl: process.env.TAXPLAN_API_BASE_UPLOAD_URL,
         baseThumbnailUrl: process.env.TAXPLAN_API_BASE_THUMB_URL,
         destPath: path.join(__dirname + '/../thumb'),
-        width: 100
+        width: 100,
+        defaultDocIconFileName: 'default_document.png'
     },
     profilepic: process.env.TAXPLAN_API_BASE_PROFILE_PIC_URL,
     accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
