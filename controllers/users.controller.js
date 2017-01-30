@@ -156,16 +156,31 @@ exports.logUserIn = function(req, res, next) {
         if (err) {
             return next(err);
         }
-
         if (userObj.migrated_user === 'Yes' && (!userObj.hashed_password) && (!userObj.salt)){
             return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
         } else if (!userObj) {
-            return res.status(400).json([{ msg: 'Invalid email or password' }]);
-        }
+            userModel.findByEmail(req.body.email).then(function(findUser) {
+                if(!findUser){
+                    return res.status(400).json([{ msg: 'Invalid email or password' }]);
+                }
+                if(findUser.migrated_user === 'Yes'){
+                    if (req.body.password === "" || (!req.body.password)){
+                        return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
+                    }
+                }
+                return res.status(400).json([{ msg: 'Invalid email or password' }]);
+            }
+
+
+
+        );
+    }else{
+        var token = createToken(userObj);
+    return res.json({ token : token });
+}
 
         //Add token to user
-        var token = createToken(userObj);
-        return res.json({ token : token });
+
 
     })(req, res, next);
 };

@@ -37,7 +37,7 @@ module.exports = function(passport) {
             if ((!user) || ((user.deleted_user === 1))) {
                 return done(null, false, { message: 'Unknown user' });
             }
-            if (user.migrated_user === 'Yes'){
+            if (user.migrated_user === 'Yes' && !user.salt && !user.hashed_password){
                 return done(null, user);
             }
 
