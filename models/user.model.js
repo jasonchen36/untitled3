@@ -55,7 +55,7 @@ var User = {
 
       sql = concatenateSql(sql, getOrderBySQL(filters, possibleOrderByValues));
 
-      sql = concatenateSql(sql, limitSql(filters));      
+      sql = concatenateSql(sql, limitSql(filters));
 
       return connection.raw(sql.sql, sql.params).then(function(usersSqlResults) {
         return(usersSqlResults[0]);
@@ -159,9 +159,9 @@ var User = {
         // ... other fields are validated by users.controller from req.body
 
         if (userObj.accountId) {
-            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, account_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
+            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, delete_user_key, account_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
         } else {
-            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email) VALUES(?, ?, ?, ?, ?, ?, ?)';
+            var userInsertSql = 'INSERT INTO users (provider, role, hashed_password, salt, first_name, last_name, email, delete_user_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
         }
         var userInsertSqlParams = [
           userObj.provider,
@@ -170,7 +170,8 @@ var User = {
           userObj.salt,
           userObj.first_name,
           userObj.last_name,
-          userObj.email
+          userObj.email,
+          userObj.delete_user_key
         ];
         if (userObj.accountId) {
             userInsertSqlParams.push(userObj.accountId);
@@ -241,11 +242,11 @@ var User = {
     },
 
     /**
-     * Create Reset Key for password reset
+     * Create token for password reset or delete user link
      *
      * @return {object} Hash Object
      */
-    createResetKey: function() {
+    createGenericToken: function() {
         return crypto.createHash('sha256').update(this.makeSalt()).digest('hex');
     },
 
@@ -281,27 +282,30 @@ var User = {
                 var migratedUser = userObj[0][0].migrated_user;
                 var accountId = userObj[0][0].account_id;
                 if (migratedUser === 'Yes') {
+                    // RESET migrated_user FLAG
+                    var resetFlagSql = 'UPDATE users SET migrated_user = "No" WHERE id = ?';
+                    db.knex.raw(resetFlagSql, [userId]).then(function() {
+                        // CARRY FORWARD ...
+                        var oldProductId = config.api.oldProductId;
+                        var newProductId = config.api.currentProductId;
+                        var oldTaxReturnsSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ?';
+                        return db.knex.raw(oldTaxReturnsSql, [accountId, oldProductId]).then(function(oldTaxReturnIds) {
+                            var migrateTaxReturn = 'INSERT INTO tax_returns \
+                            (SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, account_id, product_id) \
+                            SELECT SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, ?, ? \
+                            FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
 
-                    // CARRY FORWARD ...
-                    var oldProductId = config.api.oldProductId;
-                    var newProductId = config.api.currentProductId;
-                    var oldTaxReturnsSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ?';
-                    return db.knex.raw(oldTaxReturnsSql, [accountId, oldProductId]).then(function(oldTaxReturnIds) {
-                        var migrateTaxReturn = 'INSERT INTO tax_returns \
-                        (SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, account_id, product_id) \
-                        SELECT SIN, middle_initial, prefix, first_name, last_name, date_of_birth, filer_type, ?, ? \
-                        FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
-
-                        var migrateTaxReturnParams = [accountId, newProductId, accountId, oldProductId];
-                        return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
-                            var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
-                            return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
-                                var addressPromises = [];
-                                var i = 0;
-                                for(i=0; i<oldTaxReturnIds[0].length; i++) {
-                                    addressPromises.push(copyAddressPromise(oldTaxReturnIds[0][i].id, newTaxReturnIds[0][i].id));
-                                }
-                                return Promise.all(addressPromises);
+                            var migrateTaxReturnParams = [accountId, newProductId, accountId, oldProductId];
+                            return db.knex.raw(migrateTaxReturn, migrateTaxReturnParams).then(function() {
+                                var newTaxReturnSql = 'SELECT id FROM tax_returns WHERE account_id = ? AND product_id = ? ORDER BY id';
+                                return db.knex.raw(newTaxReturnSql, [accountId, newProductId]).then(function(newTaxReturnIds) {
+                                    var addressPromises = [];
+                                    var i = 0;
+                                    for(i=0; i<oldTaxReturnIds[0].length; i++) {
+                                        addressPromises.push(copyAddressPromise(oldTaxReturnIds[0][i].id, newTaxReturnIds[0][i].id));
+                                    }
+                                    return Promise.all(addressPromises);
+                                });
                             });
                         });
                     });
@@ -320,6 +324,16 @@ var User = {
         });
     },
 
+    findByDeleteKey: function(delete_user_key) {
+        if ((!delete_user_key) || (delete_user_key.length === 0)) {
+          return Promise.reject(new Error('findByDeleteKey() No delete_user_key specified!'));
+        }
+        var userSql = 'SELECT * FROM users WHERE delete_user_key = ? LIMIT 1';
+        return db.knex.raw(userSql, [delete_user_key]).then(function(userSqlResults) {
+            return(userSqlResults[0][0]);
+        });
+    },
+
     updateLastUserActivity: function(user,trx) {
       if(!user || !user.id) {
         logger.info("user is missing, cannot update for last user activity.");
@@ -328,7 +342,7 @@ var User = {
       } else {
         var userId = user.id;
         trx = trx ? trx: db.knex;
-        
+
         return trx.raw('UPDATE users SET last_user_activity=CURRENT_TIMESTAMP WHERE id=?',[userId])
           .then(function(userSqlResults) {
             return userSqlResults[0];
@@ -408,7 +422,7 @@ var limitSql = function(filters) {
 
 
   if(filters['perPage']) {
-    const filterPerPage = _.parseInt(filters['perPage']);  
+    const filterPerPage = _.parseInt(filters['perPage']);
 
     if(filterPerPage>0) {
       perPage = filterPerPage;

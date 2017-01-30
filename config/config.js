@@ -14,7 +14,7 @@ module.exports = {
         dateOutputFormat: 'MM/DD/YY hh:ss A',
         dateInputFormat: 'YYYY-MM-DD',
         currentProductId: 10,
-        oldProductId: 11
+        oldProductId: 9
     },
     api_root_path: process.env.TAXPLAN_API_ROOT,
     root: rootPath,
@@ -50,12 +50,14 @@ module.exports = {
             payment: 'payment',
             profile_created: 'profile_created',
             document_uploaded: 'document_uploaded',
-            message_from_taxpro: 'message_from_taxpro'
+            message_from_taxpro: 'message_from_taxpro',
+            taxpro_assigned: 'taxpro_assigned'
         },
         submittedMessage: 'This is an automated message to let you know your taxpro will be assigned to you shortly.  In the meantime you can access your customized tax checklist by going to MY DOCUMENTS.  Once you have your documents ready you can easily upload them into MY DOCUMENTS for your taxpro to process.  If at any time you have a question for us simply leave us a message or call 1-855…..to be connected with a TAXplan Customer Service Rep.',
         submittedSubject: 'Tax return submitted',
         welcomeMessage: "Great job, {{firstName}}!  Now that you’ve completed the questions, it’s time to upload your documents.<br><br>Don’t give up! Simply follow the checklist we’ve provided in the Documents centre so you know which documents to upload. Not sure where to start? Help is on the way. You’ll hear from your assigned TAXpro within the next 24 hours (or by the next business day) on this message board. If you have questions or concerns, type your message below and your TAXpro will respond by the next business day.",
         welcomeSubject: 'Thank you for choosing TAXplan--welcome to the TAXplanning Revolution!',
+        passwordResetMessage: 'To protect your account and confirm your identity we need you to click the link below to confirm your e-mail address.'
     },
     onesignal: {
         restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
@@ -72,7 +74,8 @@ module.exports = {
         baseUploadUrl: process.env.TAXPLAN_API_BASE_UPLOAD_URL,
         baseThumbnailUrl: process.env.TAXPLAN_API_BASE_THUMB_URL,
         destPath: path.join(__dirname + '/../thumb'),
-        width: 100
+        width: 100,
+        defaultDocIconFileName: 'default_document.png'
     },
     profilepic: process.env.TAXPLAN_API_BASE_PROFILE_PIC_URL,
     accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN

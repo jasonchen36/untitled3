@@ -34,8 +34,11 @@ module.exports = function(passport) {
         passReqToCallback : true // allows us to pass back the entire request to the callback
     }, function(req, email, password, done) {
         User.findByEmail(email).then(function(user) {
-            if (!user) {
+            if ((!user) || ((user.deleted_user === 1))) {
                 return done(null, false, { message: 'Unknown user' });
+            }
+            if (user.migrated_user === 'Yes'){
+                return done(null, false, { isMigrated: true, message: 'You are a migrated user. Please reset your password.'});
             }
 
             var isMatch = User.authenticate(user.salt, password, user.hashed_password);
@@ -66,7 +69,7 @@ module.exports = function(passport) {
                         return done(null, false);
                     }
                     User.findByEmail(decoded.email).then(function(user) {
-                        if (!user) {
+                        if ((!user) || (user.deleted_user === 1)) {
                             return done(null, false); //no such user
                         } else {
                             return done(null, user); //allows the call chain to continue to the intended route

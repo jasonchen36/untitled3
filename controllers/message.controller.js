@@ -47,6 +47,7 @@ exports.create = function (req, res, next) {
         messageObj.client = parseInt(req.user.id);
     } else {
         messageObj.client = parseInt(req.body.client); // client is passed in
+        messageObj.from_id = parseInt(req.user.id); // client is passed in
     }
 
     messageObj.subject = req.body.subject;
@@ -69,21 +70,27 @@ exports.create = function (req, res, next) {
     // if message OK, save it
     return messageModel.create(messageObj).then(function() {
         if (req.user.role !== 'Customer') { // message from Taxpro or Admin triggers notification
-            var variables = {
-                name: req.user.first_name,
-                message: messageObj.body,
-                dashboard_url: config.domain + '/dashboard'
-            }
 
-            return userModel.findById(messageObj.client).then(function(targetUserObj) {
-                return notificationService.sendNotification(targetUserObj, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
-                    res.status(200).send('OK');
+            return userModel.findById(messageObj.from_id).then(function(taxpro){
 
-                    // update the last User activity of the logged in user
-                    userModel.updateLastUserActivity(req.user);
-                    userModel.clearLastUserActivity(targetUserObj);
-                }).catch(function(err) {
-                    next(err);
+                var variables = {
+                    name: req.user.first_name,
+                    message: messageObj.body,
+                    dashboard_url: config.domain + '/dashboard',
+                    taxProName: taxpro.first_name,
+                    taxProPic: config.profilepic + '/' + taxpro.profile_picture
+                };
+
+                return userModel.findById(messageObj.client).then(function(targetUserObj) {
+                    return notificationService.sendNotification(targetUserObj, notificationService.NotificationType.CHAT_MESSAGE_FROM_TAXPRO, variables).then(function() {
+                        res.status(200).send('OK');
+
+                        // update the last User activity of the logged in user
+                        userModel.updateLastUserActivity(req.user);
+                        userModel.clearLastUserActivity(targetUserObj);
+                    }).catch(function(err) {
+                        next(err);
+                    });
                 });
             }).catch(function(err) {
                 next(err);
@@ -226,3 +233,4 @@ exports.markAllRead = function(req, res, next) {
         next(err);
     });
 };
+
