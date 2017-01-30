@@ -158,8 +158,6 @@ exports.logUserIn = function(req, res, next) {
         }
         if (!userObj && info.isMigrated === true){
             return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
-        } else if (!userObj){
-            return res.status(400).json([{ msg: 'Invalid email or password.'}]);
         } else if (!userObj && (req.body.email) && (req.body.password === "" || (typeof req.body.password) === "undefined")) {
             return userModel.findByEmail(req.body.email).then(function(user) {
                 if ((user) && user.migrated_user === 'Yes'){
@@ -170,6 +168,8 @@ exports.logUserIn = function(req, res, next) {
             }).catch(function(err){
                 return next(err);
             });
+        } else if (!userObj){
+            return res.status(400).json([{ msg: 'Invalid email or password.'}]);
         } else {
             var token = createToken(userObj);
             return res.json({ token : token });
