@@ -157,7 +157,7 @@ exports.logUserIn = function(req, res, next) {
             return next(err);
         }
 
-        if (userObj.migrated_user === 'Yes'){
+        if (userObj.migrated_user === 'Yes' && (!userObj.hashed_password) && (!userObj.salt)){
             return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
         } else if (!userObj) {
             return res.status(400).json([{ msg: 'Invalid email or password' }]);
