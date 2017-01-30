@@ -156,27 +156,24 @@ exports.logUserIn = function(req, res, next) {
         if (err) {
             return next(err);
         }
-        if (userObj.migrated_user === 'Yes'){
+        if (!userObj && info.isMigrated === true){
             return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
-        } else if (!userObj) {
-            userModel.findByEmail(req.body.email).then(function(findUser) {
-                if(!findUser){
-                    return res.status(400).json([{ msg: 'Invalid email' }]);
-                }
-                if(findUser.migrated_user === 'Yes'){
+        } else if (!userObj){
+            return res.status(400).json([{ msg: 'Invalid email or password.'}]);
+        } else if (!userObj && (req.body.email) && (req.body.password === "" || (typeof req.body.password) === "undefined")) {
+            return userModel.findByEmail(req.body.email).then(function(user) {
+                if ((user) && user.migrated_user === 'Yes'){
                     return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
                 } else {
-                    return res.status(400).json([{ msg: 'Invalid email or password' }]);
+                    return res.status(400).json([{ msg: 'Invalid email or password.'}]);
                 }
-            }
-
-
-
-        );
-    }else{
-        var token = createToken(userObj);
-    return res.json({ token : token });
-}
+            }).catch(function(err){
+                return next(err);
+            });
+        } else {
+            var token = createToken(userObj);
+            return res.json({ token : token });
+        }
 
         //Add token to user
 
