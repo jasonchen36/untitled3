@@ -51,7 +51,7 @@ var User = {
 
       sql = concatenateSql(sql, filterByRole(filters));
 
-      var possibleOrderByValues=[{key:'lastName', val:'last_name'},{key:'lastUpdated', val:'last_user_activity'}];
+      var possibleOrderByValues=[{key:'lastName', val:'last_name'},{key:'lastUpdated', val:'last_user_activity'},{key:'name', val:['last_name','first_name']}, {key:'id', val:'id'}];
 
       sql = concatenateSql(sql, getOrderBySQL(filters, possibleOrderByValues));
 
@@ -442,22 +442,42 @@ var limitSql = function(filters) {
 var getOrderBySQL = function(filters,possibleOrderByValues) {
   var result = {sql:'',params:[],hasSql:false};
 
+  var orderByAscending = filters['orderAscending'];
+
   var orderByVal = _.find(possibleOrderByValues, function(vals) { return vals.key===filters['orderBy']; });
 
   if ( filters['orderBy'] && orderByVal) {
-      result.hasSql=true;
-      result.sql+=' ORDER BY '+orderByVal.val;
+    result.hasSql=true;
+    result.sql+=' ORDER BY ';
 
-      if ( filters['orderAscending'] ) {
-          if(filters['orderAscending'] === 'false') {
-              result.sql+=' DESC';
-          } else {
-              result.sql+=' ASC';
-          }
-      }
+    var vals = orderByVal.val;
+
+    if(!Array.isArray(orderByVal.val)) {
+      vals = [orderByVal.val];
+    }
+
+    var sqlVals = _.map(vals, function(val) {
+      return addOrderByVal(val,orderByAscending);
+    });
+
+    result.sql+= _.join(sqlVals,', ');
   }
 
   return result;
+};
+
+var addOrderByVal = function(orderByVal, orderAscending) {
+  var val = ' ' + orderByVal ;
+
+   if ( orderAscending ) {
+          if(orderAscending === 'false') {
+              val+=' DESC';
+          } else {
+              val+=' ASC';
+          }
+      }
+
+  return val;
 };
 
 var filterUserPermissions = function(taxProId) {
