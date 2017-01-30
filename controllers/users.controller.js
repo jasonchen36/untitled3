@@ -161,7 +161,7 @@ exports.logUserIn = function(req, res, next) {
         } else if (!userObj) {
             userModel.findByEmail(req.body.email).then(function(findUser) {
                 if(!findUser){
-                    return res.status(400).json([{ msg: 'Invalid email or password' }]);
+                    return res.status(400).json([{ msg: 'Invalid email' }]);
                 }
                 if(findUser.migrated_user === 'Yes'){
                     return res.status(400).json([{ msg: 'You are a migrated user. Please reset your password.'}]);
