@@ -47,6 +47,7 @@ exports.create = function (req, res, next) {
         messageObj.client = parseInt(req.user.id);
     } else {
         messageObj.client = parseInt(req.body.client); // client is passed in
+        messageObj.from_id = parseInt(req.user.id); // client is passed in
     }
 
     messageObj.subject = req.body.subject;
