@@ -593,7 +593,8 @@ exports.getAllTaxPros = function(req, res, next){
             delete taxPro.delete_user_key;
             delete taxPro.deleted_user;
         });
-        return res.status(200).send(response);
+        var out = { "taxPros": response };
+        return res.status(200).send(out);
     }).catch(function(err) {
         next(err);
     });
