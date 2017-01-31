@@ -590,6 +590,8 @@ exports.getAllTaxPros = function(req, res, next){
             delete taxPro.migrated_user;
             delete taxPro.statuses;
             delete taxPro.taxpro_id;
+            delete taxPro.delete_user_key;
+            delete taxPro.deleted_user;
         });
         return res.status(200).send(response);
     }).catch(function(err) {
