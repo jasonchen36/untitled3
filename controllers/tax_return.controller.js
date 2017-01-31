@@ -282,19 +282,19 @@ exports.updateTaxReturnById = function (req, res, next) {
           if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
           if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
           if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
-  
-          return taxReturnModel.update(taxReturnId, taxReturnObj)
-            .then(function(taxReturnId) {
-              return taxReturnModel.findById(taxReturnId);
-            })
-            .then(function(taxReturn) {
-              if (!taxReturn) {
-                return res.status(404).send();
-              }
-              res.status(200).send(taxReturn);
 
-              // update the last User activity of the logged in user
-              userModel.updateLastUserActivity(req.user);
+          return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
+              return taxReturnModel.findById(taxReturnId).then(function(taxReturn) {
+                  if (!taxReturn) {
+                    return res.status(404).send();
+                  }
+                  res.status(200).send(taxReturn);
+
+                  // update the last User activity of the logged in user
+                  userModel.updateLastUserActivity(req.user);
+                }).catch(function(err) {
+                    next(err);
+                });
             }).catch(function(err) {
                 next(err);
             });
