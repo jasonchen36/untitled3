@@ -37,14 +37,17 @@ module.exports = function(passport) {
             if ((!user) || ((user.deleted_user === 1))) {
                 return done(null, false, { message: 'Unknown user' });
             }
-            if (user.migrated_user === 'Yes'){
-                return done(null, false, { isMigrated: true, message: 'You are a migrated user. Please reset your password.'});
+            var isMatch = false;
+            if ((user.salt) && (user.hashed_password)){
+                isMatch = User.authenticate(user.salt, password, user.hashed_password);
             }
-
-            var isMatch = User.authenticate(user.salt, password, user.hashed_password);
-            if (!isMatch) {
+            if (!isMatch || (typeof (user.salt) === "undefined") || (typeof (user.hashed_password) === "undefined")) {
+                if (user.migrated_user === 'Yes'){
+                    return done(null, false, { isMigrated: true, message: 'You are a migrated user. Please reset your password.'});
+                }
                 return done(null, false, { message: 'Invalid password' });
             }
+
             return done(null, user);
         });
     })),
