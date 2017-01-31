@@ -282,9 +282,6 @@ var User = {
                 var migratedUser = userObj[0][0].migrated_user;
                 var accountId = userObj[0][0].account_id;
                 if (migratedUser === 'Yes') {
-                    // RESET migrated_user FLAG
-                    var resetFlagSql = 'UPDATE users SET migrated_user = "No" WHERE id = ?';
-                    db.knex.raw(resetFlagSql, [userId]).then(function() {
                         // CARRY FORWARD ...
                         var oldProductId = config.api.oldProductId;
                         var newProductId = config.api.currentProductId;
@@ -308,7 +305,6 @@ var User = {
                                 });
                             });
                         });
-                    });
                 }
             });
         });
