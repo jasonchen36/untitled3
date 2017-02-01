@@ -576,7 +576,7 @@ exports.update = function(req, res, next) {
                 return userModel.findById(value).then(function (taxpro) {
 
                     var variables = {
-                        name: req.user.first_name,
+                        name: foundUserObj.first_name,
                         taxpro_name: taxpro.first_name + ' ' + taxpro.last_name,
                         taxpro_pic: config.profilepic + '/' + taxpro.profile_picture,
                         taxpro_desc: taxpro.description,

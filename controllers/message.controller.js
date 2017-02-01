@@ -71,14 +71,14 @@ exports.create = function (req, res, next) {
     return messageModel.create(messageObj).then(function() {
         if (req.user.role !== 'Customer') { // message from Taxpro or Admin triggers notification
 
-            return userModel.findById(messageObj.from_id).then(function(taxpro){
+            return userModel.findById(messageObj.client).then(function(client){
 
                 var variables = {
-                    name: req.user.first_name,
+                    name: client.first_name,
                     message: messageObj.body,
                     dashboard_url: config.domain + '/dashboard',
-                    taxpro_name: taxpro.first_name,
-                    taxpro_pic: config.profilepic + '/' + taxpro.profile_picture
+                    taxpro_name: req.user.first_name,
+                    taxpro_pic: config.profilepic + '/' + req.user.profile_picture
                 };
 
                 return userModel.findById(messageObj.client).then(function(targetUserObj) {
