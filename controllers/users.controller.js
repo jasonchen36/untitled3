@@ -557,23 +557,28 @@ exports.update = function(req, res, next) {
     if (req.user.id !== userId && (!userModel.isAdmin(req.user))) {
         return res.status(403).send();
     }
-    var keys = ['first_name', 'last_name', 'email', 'phone', 'taxpro_id', 'migrated_user'];
+    if (userObj.email) {
+        return userModel.findByEmail(userObj.email).then(function(foundUserObj) {
+            if ((foundUserObj) && (foundUserObj.email)) {
+               return res.status(409).send('Email address already in use');
+            } else {
+                var keys = ['first_name', 'last_name', 'email', 'phone', 'taxpro_id', 'migrated_user'];
 
-    if (userModel.isAdmin(req.user)) {
-        keys.push('role');
-    }
-    if ((userObj.role) && (!userModel.isValidRole(userObj.role))) {
-        return res.status(409).json(new Error('Invalid role'));
-    }
-    var params = _.pick(userObj, keys);
+                if (userModel.isAdmin(req.user)) {
+                    keys.push('role');
+                }
+                if ((userObj.role) && (!userModel.isValidRole(userObj.role))) {
+                    return res.status(409).json(new Error('Invalid role'));
+                }
+                var params = _.pick(userObj, keys);
 
-    return userModel.findById(userId).then(function(foundUserObj) {
-        if ((!foundUserObj) || (foundUserObj.length === 0)) {
-            return res.status(404).send();
-        }
-        _.each(params, function(value, key) {
-            if(key === 'taxpro_id' && value !== null && value !== '') {
-                return userModel.findById(value).then(function (taxpro) {
+                return userModel.findById(userId).then(function(foundUserObj) {
+                    if ((!foundUserObj) || (foundUserObj.length === 0)) {
+                        return res.status(404).send();
+                    }
+                    _.each(params, function(value, key) {
+                        if(key === 'taxpro_id' && value !== null && value !== '') {
+                            return userModel.findById(value).then(function (taxpro) {
 
                     var variables = {
                         name: foundUserObj.first_name,
@@ -583,24 +588,29 @@ exports.update = function(req, res, next) {
                         message: 'Hello, I am your taxpro.' //TODO update with actual copy
                     };
 
-                    return notificationService.sendNotification(foundUserObj, notificationService.NotificationType.TAX_PRO_ASSIGNED, variables);
+                                return notificationService.sendNotification(foundUserObj, notificationService.NotificationType.TAX_PRO_ASSIGNED, variables);
+                            });
+                        }
+                        foundUserObj[key] = value;
+                    });
+
+                    return userModel.updateById(userId, params)
+                    .then(function(userResultObj) {
+                        // update the last User activity of the logged in user
+                        userModel.updateLastUserActivity(req.user);
+
+                        return res.json(cleanUserData(userResultObj));
+                    }).catch(function(err) {
+                        next(err);
+                    });
+                }).catch(function(err) {
+                    next(err);
                 });
             }
-            foundUserObj[key] = value;
         });
+    }
 
-        return userModel.updateById(userId, params)
-        .then(function(userResultObj) {
-            // update the last User activity of the logged in user
-            userModel.updateLastUserActivity(req.user);
 
-            return res.json(cleanUserData(userResultObj));
-        }).catch(function(err) {
-            next(err);
-        });
-    }).catch(function(err) {
-        next(err);
-    });
 };
 
 /*******************************************************************************
