@@ -23,15 +23,30 @@ var Note = {
 
         return db.knex.raw(sql, sqlParams)
           .then(function(results) {
-            return results[0];
+            var id = results[0].insertId;
+            return Note.findById(id, noteObj.user_id);
+          })
+          .then(function(results) {
+            return results;
           });
     },
     findAllByUserId: function(userId) {
         var sql = 'SELECT * FROM notes WHERE user_id = ?';
         var sqlParams = [userId];
 
-        return db.knex.raw(sql, sqlParams).then(function(results) {
+        return db.knex.raw(sql, sqlParams)
+          .then(function(results) {
             return(results[0]);
+        });
+    },
+    findById: function(noteId,userId) {
+        var sql = 'SELECT * FROM notes WHERE id = ? AND user_id = ?';
+        var sqlParams = [noteId, userId];
+        console.log('what',sql);
+
+        return db.knex.raw(sql, sqlParams)
+          .then(function(results) {
+            return(results[0][0]);
         });
     },
     markAsDone: function(noteId,userId,markAsDone) {
@@ -42,7 +57,11 @@ var Note = {
 
       return db.knex.raw(sql,sqlParams)
         .then(function(results) {
-            return results[0].affectedRows;
+            if ( results[0].affectedRows >0) {
+              return Note.findById(noteId,userId);
+            } else {
+              return Promise.resolve(null);
+            }
         });
     },
     deleteById: function(id, userId) {

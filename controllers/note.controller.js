@@ -49,14 +49,14 @@ exports.create = function (req, res, next) {
             permissionError.name='permissionError';
             return Promise.reject(permissionError);
         } else {
-          return noteModel.create(messageObj)
+          return noteModel.create(messageObj);
         }
       })
       .then(function(result) {
         if (!result) {
             return res.status(404).send();
         }
-        return res.status(200).send({id:result.insertId});
+        return res.status(200).send(result);
       })
       .catch(function(err) {
           if(err && err.name=='permissionError') {
@@ -150,13 +150,13 @@ exports.markAsDone = function (req, res, next) {
             permissionError.name='permissionError';
             return Promise.reject(permissionError);
         } else {
-          return noteModel.markAsDone(noteId, userId,done)
+          return noteModel.markAsDone(noteId, userId,done);
         }
       }).then(function(result) {
         if (!result) {
             return res.status(404).send();
         }
-        return res.status(200).json({rowsAffected:result});
+        return res.status(200).json(result);
     }).catch(function(err) {
           if(err && err.name=='permissionError') {
             return res.status(403).send('Forbidden');
