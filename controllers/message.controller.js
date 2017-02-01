@@ -77,8 +77,8 @@ exports.create = function (req, res, next) {
                     name: req.user.first_name,
                     message: messageObj.body,
                     dashboard_url: config.domain + '/dashboard',
-                    taxProName: taxpro.first_name,
-                    taxProPic: config.profilepic + '/' + taxpro.profile_picture
+                    taxpro_name: taxpro.first_name,
+                    taxpro_pic: config.profilepic + '/' + taxpro.profile_picture
                 };
 
                 return userModel.findById(messageObj.client).then(function(targetUserObj) {
