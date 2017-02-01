@@ -8,7 +8,6 @@ var _ = require('lodash');
 var logger = require('../services/logger.service');
 var config = require('../config/config');
 
-
 var User = {
     hasAccess: function(userObj, userId) {
         if ((!userObj) || (userObj.length === 0)) return false;
@@ -379,7 +378,13 @@ var User = {
             return false;
         }
     },
-
+    isAdminOrTaxpro: function(userObj) {
+        if ((userObj.role) && (userObj.role === 'TaxPro' || userObj.role === 'Admin')) {
+            return true;
+        } else {
+            return false;
+        }
+    },
     isValidRole: function(role) {
         if ((role) && ((role === 'Admin') || (role === 'Customer') || (role === 'TaxPro')) ) {
             return true;
@@ -387,6 +392,34 @@ var User = {
             logger.debug('INVALID ROLE: ' + role);
             return false;
         }
+    },
+    isCustomer: function(userObj) {
+        if ((userObj.role) && (userObj.role === 'Customer')) {
+            return true;
+        } else {
+            return false;
+        }
+    },
+
+    hasPermissionsForUserId: function(taxPro, userId) {
+      if(User.isAdmin(taxPro)) {
+        return Promise.resolve(true);
+      }
+
+      if(!isTaxpro(taxPro)) {
+        // taxpro not taxpro
+        return Promise.resolve(false);
+      }
+
+      var userSql = 'SELECT COUNT(*) AS count FROM users WHERE id = ? AND taxpro_id = ?';
+      var knexConnection = trx ? trx : db.knex;
+      var sqlParams = [userId, taxPro.id];
+
+      return knexConnection.raw(userSql, sqlParams).then(function(userSqlResults) {
+            var results = userSqlResults[0][0];
+
+            return results.count > 0;
+        });
     }
 
 //    removeAccount: function(account) {
