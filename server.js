@@ -50,6 +50,7 @@ app.set('title', config.api.title);
 app.disable('x-powered-by');
 app.disable('query parser');
 app.disable('trust proxy'); // CORS
+app.set('etag', false);
 app.enable('strict routing');
 app.set('showStackError', true);
 app.enable('jsonp callback');

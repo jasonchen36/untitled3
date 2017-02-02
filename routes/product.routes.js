@@ -3,8 +3,9 @@
 'use strict';
 
 var productController = require('../controllers/product.controller');
+var noCache = require('connect-nocache')();
 
 module.exports = function(router) {
     router.route('/product/current')
-        .get(productController.getCurrentProduct);
+        .get(noCache, productController.getCurrentProduct);
 };

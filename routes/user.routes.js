@@ -5,12 +5,13 @@
 var passport = require('passport');
 var users = require('../controllers/users.controller');
 var _ = require('underscore');
+var noCache = require('connect-nocache')();
 
 module.exports = function(router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session:false });
 
     router.route('/users/deleteme/:delete_user_key')
-        .get(users.softDeleteUser);
+        .get(noCache, users.softDeleteUser);
     router.route('/users/reset/:reset_key')
         .put(users.resetPassword);
     router.route('/users/reset')
@@ -18,15 +19,15 @@ module.exports = function(router) {
     router.route('/users/:userId/password')
         .put(PassportAuthMiddleware, users.update_password);
     router.route('/users/me')
-        .get(PassportAuthMiddleware, users.me);
+        .get(PassportAuthMiddleware, noCache, users.me);
     router.route('/users/taxpros')
-        .get(PassportAuthMiddleware, users.getAllTaxPros);
+        .get(PassportAuthMiddleware, noCache, users.getAllTaxPros);
     router.route('/users/:userId')
-        .get(PassportAuthMiddleware, users.find)
+        .get(PassportAuthMiddleware, noCache, users.find)
         .put(PassportAuthMiddleware, users.update)
         .delete(PassportAuthMiddleware, users.delete);
     router.route('/users')
-        .get(PassportAuthMiddleware, users.list)
+        .get(PassportAuthMiddleware, noCache, users.list)
         .post(users.create);
 
     router.route('/login')

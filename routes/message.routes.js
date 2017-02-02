@@ -41,7 +41,7 @@ module.exports = function (router) {
 
     // test
     router.route('/messagehub/himom')
-        .get(PassportAuthMiddleware, function (req, res) {
+        .get(PassportAuthMiddleware, noCache, function (req, res) {
           res.send('Hi Mom! it\'s ' + req.user.name);
         });
 
