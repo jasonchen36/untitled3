@@ -605,7 +605,7 @@ exports.createDocument = function (req, res, next) {
                             userModel.updateLastUserActivity(req.user);
 
                             if (thumbFileName !== config.thumbnail.defaultDocIconFileName) {
-                                thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
+                                return thumbnailService.resize(sourcePath, destPath, config.thumbnail.width);
                             } else {
                                 return Promise.resolve();
                             }
