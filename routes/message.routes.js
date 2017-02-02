@@ -11,6 +11,7 @@ var User = require('../models/user.model');
 var logger = require('../services/logger.service');
 var passport = require('passport');
 var message = require('../controllers/message.controller');
+var noCache = require('connect-nocache')();
 
 // v2 of authorization-faking method.
 // TODO: REMOVE when no longer testing email!!
@@ -52,7 +53,7 @@ module.exports = function (router) {
         .post(PassportAuthMiddleware, message.markAllRead);
     router.route('/messages')
         .post(PassportAuthMiddleware, message.create)
-        .get(PassportAuthMiddleware, message.getMessageListForUser);
+        .get(PassportAuthMiddleware, noCache, message.getMessageListForUser);
 
 //    // pages
 //    app.get('/messages/page', function (req, res) {
