@@ -559,7 +559,7 @@ exports.update = function(req, res, next) {
     }
     if (userObj.email) {
         return userModel.findByEmail(userObj.email).then(function(foundUserObj) {
-            if ((foundUserObj) && (foundUserObj.email)) {
+            if (foundUserObj && foundUserObj.email && foundUserObj.id!==userId) {
                return res.status(409).send('Email address already in use');
             } else {
                 var keys = ['first_name', 'last_name', 'email', 'phone', 'taxpro_id', 'migrated_user'];
