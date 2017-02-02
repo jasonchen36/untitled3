@@ -280,7 +280,8 @@ var User = {
             return db.knex.raw(userSql, [userId]).then(function(userObj) {
                 var migratedUser = userObj[0][0].migrated_user;
                 var accountId = userObj[0][0].account_id;
-                if (migratedUser === 'Yes') {
+                // TODO commented out migrated users create this years tax returns to fix front end error. Come back later when there's a better fix?
+                /*if (migratedUser === 'Yes') {
                         // CARRY FORWARD ...
                         var oldProductId = config.api.oldProductId;
                         var newProductId = config.api.currentProductId;
@@ -304,7 +305,7 @@ var User = {
                                 });
                             });
                         });
-                }
+                }*/
             });
         });
     },
