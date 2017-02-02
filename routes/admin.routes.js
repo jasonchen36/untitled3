@@ -11,7 +11,7 @@ var passport = require('passport');
 var message = require('../controllers/message.controller');
 var taxReturn = require('../controllers/tax_return.controller');
 var quote = require('../controllers/quote.controller');
-
+var note = require('../controllers/note.controller');
 
 module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
@@ -24,4 +24,15 @@ module.exports = function (router) {
 
     router.route('/admin/quote/:quoteId/document/:documentId/viewed')
       .put(PassportAuthMiddleware, quote.setDocumentAsViewed);
+
+
+    router.route('/admin/users/:userId/notes')
+      .get(PassportAuthMiddleware, note.list)
+      .post(PassportAuthMiddleware, note.create);
+    
+    router.route('/admin/users/:userId/notes/:noteId') 
+      .delete(PassportAuthMiddleware, note.del);
+
+    router.route('/admin/users/:userId/notes/:noteId/done')
+      .put(PassportAuthMiddleware, note.markAsDone);
 };
