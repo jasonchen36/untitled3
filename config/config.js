@@ -11,7 +11,7 @@ module.exports = {
     api: {
         name: 'TAXplan',
         timezone: 'America/Toronto',
-        dateOutputFormat: 'MM/DD/YY hh:ss A',
+        dateOutputFormat: 'MM/DD/YY hh:mm A',
         dateInputFormat: 'YYYY-MM-DD',
         currentProductId: 10,
         oldProductId: 9
