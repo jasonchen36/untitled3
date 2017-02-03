@@ -822,7 +822,7 @@ exports.getChecklistPDF = function(req, res, next) {
             doc.text('My TAXitem Checklist', {align: 'center'});
             doc.moveDown();
             doc.fontSize(12);
-            doc.text('This checklist is a guide that may apply to you based on your answers from TAXplan. If there are other items you wish to add, please upload them to ADDITIONAL DOCUMENTS.');
+            doc.text('Not sure what to upload? Simply refer to this checklist. It’s a guide that may apply to you based on your answers from TAXplan. If there are other items you wish to add, please upload them to Additional Documents.');
             doc.moveDown();
             var indent = doc.x + 20;
 
