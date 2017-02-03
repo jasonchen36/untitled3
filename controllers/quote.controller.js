@@ -819,6 +819,8 @@ exports.getChecklistPDF = function(req, res, next) {
             doc.pipe(res);
             doc.fontSize(14);
             doc.moveDown();
+            doc.image('pdf_pictures/taxPlanLogo.jpg', (doc.page.width - 417) /2);
+            doc.moveDown();
             doc.text('My TAXitem Checklist', {align: 'center'});
             doc.moveDown();
             doc.fontSize(12);
