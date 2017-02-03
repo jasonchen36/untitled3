@@ -39,7 +39,22 @@ var Quote = {
 
         var quoteSql = 'SELECT * FROM quote WHERE id = ?';
         return db.knex.raw(quoteSql, [id]).then(function(quoteSqlResults) {
-            return(quoteSqlResults[0][0]);
+            var quoteObj = quoteSqlResults[0][0];
+            var productId = quoteObj.product_id;
+            var accountId = quoteObj.account_id;
+            var taxReturnSql = 'SELECT * FROM tax_returns WHERE product_id = ? AND account_id = ?';
+            return db.knex.raw(taxReturnSql, [productId, accountId]).then(function(taxReturnSqlResults) {
+                quoteObj.taxReturns = taxReturnSqlResults[0][0] || [];
+                var quoteLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND NOT ISNULL(tax_return_id)';
+                return db.knex.raw(quoteLineItemsSql, [id]).then(function(quoteLineItemsSqlResults) {
+                    quoteObj.quoteLineItems = quoteLineItemsSqlResults[0][0] || [];
+                    var otherLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND ISNULL(tax_return_id)';
+                    return db.knex.raw(otherLineItemsSql, [id]).then(function(otherLineItemsSqlResults) {
+                        quoteObj.otherLineItems = otherLineItemsSqlResults[0][0] || [];
+                        return quoteObj;
+                    });
+                });
+            });
         });
     },
 
