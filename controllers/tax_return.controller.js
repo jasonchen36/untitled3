@@ -286,7 +286,6 @@ exports.updateTaxReturnById = function (req, res, next) {
           if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
           if (req.body.amountOwing) {taxReturnObj.amount_owing = req.body.amountOwing; }
           if (req.body.details) {taxReturnObj.details = req.body.details; }
-
           return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
               return taxReturnModel.findById(taxReturnId).then(function(taxReturn) {
                   if (!taxReturn) {
