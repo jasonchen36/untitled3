@@ -130,8 +130,10 @@ process.on('uncaughtException', function (err) {
 // @see: https://gist.github.com/benjamingr/0237932cee84712951a2
 process.on('unhandledRejection', function(error, p){
   logger.error('Possibly Unhandled Rejection at: Promise ', p);
-  logger.error('STACK: ' + error.stack);
-  process.exit(2);
+  if(error) {
+    logger.error('STACK: ' + error.stack);
+  }
+//  process.exit(2);
 });
 
 // Start the app by listening on <port>

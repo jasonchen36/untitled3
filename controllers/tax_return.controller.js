@@ -12,6 +12,7 @@ var Promise = require('bluebird');
 var _ = require('underscore');
 var moment = require('moment');
 var validator = require('express-validator');
+var db = require('../services/db');
 var logger = require('../services/logger.service');
 var taxReturnModel = require('../models/tax_return.model');
 var accountModel = require('../models/account.model');
@@ -62,85 +63,84 @@ exports.createTaxReturns = function (req, res, next) {
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
-    var createTaxReturnPromise = function(taxReturn) {
+    var createTaxReturnPromise = function(taxReturn, trx) {
+
         var accountId = parseInt(taxReturn.accountId);
         if (!accountId) {
-            return res.status(404).send({ msg: 'No accountId specified' });
+            return Promise.reject(new Error('No accountId specified'));
         }
         var productId = parseInt(taxReturn.productId);
         if (!productId) {
-            return res.status(404).send({ msg: 'No productId specified' });
+            return Promise.reject(new Error('No productId specified'));
         }
         var firstName = taxReturn.firstName;
         if (!firstName) {
-            return res.status(404).send({ msg: 'No firstName specified' });
+            return Promise.reject(new Error('No firstName specified'));
         }
         var filerType = taxReturn.filerType;
         if (!filerType) {
-            return res.status(404).send({ msg: 'No filerType specified' });
+            return Promise.reject(new Error('No filerType specified'));
         }
         var status = taxReturn.status;
         var sin = taxReturn.sin;
         var prefix = taxReturn.prefix;
         var middleInitial = taxReturn.middleInitial;
 
+        var taxReturnObj = {};
         // check that accountId exists
-        return accountModel.findById(accountId).then(function(accountObj) {
+        return accountModel.findById(accountId)
+        .then(function(accountObj) {
             if ((!accountObj) || (accountObj.length === 0)) {
-                return res.status(404).send({ msg: 'Invalid accountID' });
+                return Promise.reject(new Error('Invalid accountId'));
             }
             // check that productId exists
-            return productModel.findById(productId).then(function(productObj) {
-                if ((!productObj) || (productObj.length === 0)) {
-                    return res.status(404).send({ msg: 'Invalid productID' });
-                }
-                var taxReturnObj = {};
-                taxReturnObj.accountId = accountId;
-                taxReturnObj.productId = productId;
-                taxReturnObj.firstName = firstName;
-                taxReturnObj.filerType = filerType;
-                taxReturnObj.status = status;
-                taxReturnObj.sin = sin;
-                taxReturnObj.prefix = prefix;
-                taxReturnObj.middleInitial = middleInitial;
+            return productModel.findById(productId);
+        }).then(function(productObj) {
+            if ((!productObj) || (productObj.length === 0)) {
+                return Promise.reject(new Error('Invalid productId'));
+            }
 
-                return taxReturnModel.create(taxReturnObj).then(function(taxReturnId) {
-                    var resultObj = taxReturnObj;
-                    resultObj.taxReturnId = taxReturnId;
-                    return Promise.resolve(resultObj);
-                }).catch(function(err) {
-                    next(err);
-                });
-            }).catch(function(err) {
-                next(err);
-            });
-        }).catch(function(err) {
-            next(err);
+            taxReturnObj.accountId = accountId;
+            taxReturnObj.productId = productId;
+            taxReturnObj.firstName = firstName;
+            taxReturnObj.filerType = filerType;
+            taxReturnObj.status = status;
+            taxReturnObj.sin = sin;
+            taxReturnObj.prefix = prefix;
+            taxReturnObj.middleInitial = middleInitial;
+
+            return taxReturnModel.create(taxReturnObj, trx);
+        }).then(function(taxReturnId) {
+            var resultObj = taxReturnObj;
+            resultObj.taxReturnId = taxReturnId;
+            return Promise.resolve(resultObj);
         });
     };
 
 
+
     var resultArr = [];
-    var createTaxReturnPromises = [];
     var accessDenied = false;
-    _.forEach(req.body.taxReturns, function(taxReturnObj) {
-        createTaxReturnPromises.push(createTaxReturnPromise(taxReturnObj));
-    });
-    if (accessDenied) {
-        return res.status(403).send();
-    }
+    return db.knex.transaction(function(trx) {
+        Promise.each(req.body.taxReturns, function(taxReturnObj) {
+            return createTaxReturnPromise(taxReturnObj, trx).then(function(result) {
+                resultArr.push(result);
+            });
+        }).then(function() {
+            trx.commit();
+            res.status(200).json(resultArr);
 
-    return Promise.each(createTaxReturnPromises, function(taxReturnResult) {
-        resultArr.push(taxReturnResult);
-    }).catch(function(err) {
-        logger.error(err.stack);
-        res.status(400).send({ msg: 'create tax return failed' });
-        return Promise.resolve({});
-    }).then(function() {
-        res.status(200).json(resultArr);
-
-        // update the last User activity of the logged in user
-        userModel.updateLastUserActivity(req.user);
+            // update the last User activity of the logged in user
+            userModel.updateLastUserActivity(req.user);
+        }).catch(function(err) {
+            trx.rollback();
+            //logger.error(err);
+            res.status(400).send({ msg: 'create tax return failed' });
+            var proxiedError = new Error();
+            proxiedError.message = err.message;
+            proxiedError.stack = err.stack;
+            return Promise.reject(proxiedError);
+        });
     });
 };
 
@@ -162,6 +162,7 @@ exports.createTaxReturns = function (req, res, next) {
  }
  ******************************************************************************/
 exports.createTaxReturn = function (req, res, next) {
+console.log('createTaxReturn() req.body = ' + JSON.stringify(req.body, null, 2));
     req.checkBody('accountId', 'Please provide a accountId').isInt();
     req.checkBody('productId', 'Please provide a productId').isInt();
     req.checkBody('firstName', 'Please provide a firstName').notEmpty();
