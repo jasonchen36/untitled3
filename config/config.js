@@ -55,7 +55,7 @@ module.exports = {
         },
         submittedMessage: 'This is an automated message to let you know your taxpro will be assigned to you shortly.  In the meantime you can access your customized tax checklist by going to MY DOCUMENTS.  Once you have your documents ready you can easily upload them into MY DOCUMENTS for your taxpro to process.  If at any time you have a question for us simply leave us a message or call 1-855…..to be connected with a TAXplan Customer Service Rep.',
         submittedSubject: 'Tax return submitted',
-        welcomeMessage: "Great job, {{firstName}}!  Now that you’ve completed the questions, it’s time to upload your documents.<br><br>Don’t give up! Simply follow the checklist we’ve provided in MY Documents so you know which documents to upload. Not sure where to start? Help is on the way. You’ll hear from your assigned TAXpro within the next 24 hours (or by the next business day).<br><br>Feel free to leave them a message here on the message board.",
+        welcomeMessage: "Great job, {{firstName}}!  Now that you’ve completed the questions, it’s time to upload your documents.<br><br>Don’t give up! Simply follow the checklist we’ve provided in MY DOCUMENTS so you know which documents to upload. Not sure where to start? Help is on the way. You’ll hear from your assigned TAXpro within the next 24 hours (or by the next business day).<br><br>Feel free to leave them a message here on the message board.",
         welcomeSubject: 'Thank you for choosing TAXplan--welcome to the TAXplanning Revolution!',
         passwordResetMessage: 'To protect your account and confirm your identity we need you to click the link below to confirm your e-mail address.'
     },
