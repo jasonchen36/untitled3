@@ -419,6 +419,50 @@ exports.submit = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
+POST /quote/:id/lineItem
+
+Params:
+quoteId
+
+INPUT BODY:
+{
+  "text":  "sadfdasf",
+  "value":   10
+}
+
+RESPONSE:
+200 OK
+{
+  "quoteLineItemId": 4
+}
+ ******************************************************************************/
+
+ exports.LineItem = function (req, res, next) {
+     req.checkBody('text', 'Please provide a text').notEmpty();
+     req.checkBody('value', 'Please provide a value').notEmpty();
+     req.checkParams('id', 'Please provide a quoteId').isInt();
+     var errors = req.validationErrors();
+     if (errors) { return res.status(400).send(errors); }
+
+     var text = req.body.text;
+     var value = req.body.value;
+     var quoteId = parseInt(req.params.id);
+     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+         if (!allowed) {
+             return res.status(403).send();
+         }
+         return quoteModel.createLineItems(text, value).then(function() {
+             res.status(200).send();
+         }).catch(function(err) {
+             next(err);
+         });
+         }).catch(function(err) {
+             next(err);
+         });
+ };
+
+/*******************************************************************************
+ENDPOINT
 GET /quote/:id
 
 Params:
