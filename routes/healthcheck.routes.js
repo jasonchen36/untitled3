@@ -3,8 +3,9 @@
 'use strict';
 
 var healthcheckController = require('../controllers/healthcheck.controller');
+var noCache = require('connect-nocache')();
 
 module.exports = function(router) {
     router.route('/healthcheck')
-        .get(healthcheckController.checkhealth);
+        .get(noCache, healthcheckController.checkhealth);
 };

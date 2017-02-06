@@ -9,7 +9,7 @@ var _ = require('underscore');
 var logger = require('../services/logger.service');
 var passport = require('passport');
 var question = require('../controllers/question.controller');
-
+var noCache = require('connect-nocache')();
 
 
 
@@ -17,5 +17,5 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/questions/product/:productId/category/:categoryId')
-        .get(question.findByCategoryId);
+        .get(noCache, question.findByCategoryId);
 };

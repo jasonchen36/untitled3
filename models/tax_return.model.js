@@ -44,7 +44,9 @@ var TaxReturn = {
         });
     },
 
-    create: function(taxReturnObj) {
+    create: function(taxReturnObj, trx) {
+        var content = trx ? trx : db.knex;
+
         if ((!taxReturnObj.accountId) || (taxReturnObj.accountId.length === 0)) {
             return Promise.reject(new Error('No accountId specified!'));
         }
@@ -87,7 +89,7 @@ var TaxReturn = {
         }
         var taxReturnInsertSql = 'INSERT INTO tax_returns (' + taxReturnInsertFieldList + ') VALUES(' + taxReturnInsertValues + ')';
 
-        return db.knex.raw(taxReturnInsertSql, taxReturnInsertSqlParams).then(function(taxReturnInsertSqlResults) {
+        return content.raw(taxReturnInsertSql, taxReturnInsertSqlParams).then(function(taxReturnInsertSqlResults) {
             var taxReturnId = taxReturnInsertSqlResults[0].insertId;
             return Promise.resolve(taxReturnId);
         });

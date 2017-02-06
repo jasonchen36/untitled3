@@ -9,7 +9,7 @@ var _ = require('underscore');
 var logger = require('../services/logger.service');
 var passport = require('passport');
 var categories = require('../controllers/categories.controller');
-
+var noCache = require('connect-nocache')();
 
 
 
@@ -17,7 +17,7 @@ module.exports = function (router) {
     var PassportAuthMiddleware = passport.authenticate('bearer', { session: false });
 
     router.route('/categories')
-        .get(categories.list);
+        .get(noCache, categories.list);
     router.route('/categories/:id')
-        .get(categories.getCategoryById);
+        .get(noCache, categories.getCategoryById);
 };
