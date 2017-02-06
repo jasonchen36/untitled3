@@ -51,7 +51,13 @@ var Quote = {
                     var otherLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND ISNULL(tax_return_id)';
                     return db.knex.raw(otherLineItemsSql, [id]).then(function(otherLineItemsSqlResults) {
                         quoteObj.otherLineItems = otherLineItemsSqlResults[0] || [];
-                        return quoteObj;
+                        var subtotalSql = 'SELECT SUM(value) AS subtotal FROM quotes_line_items WHERE quote_id = ?';
+                        return db.knex.raw(subtotalSql, [id]).then(function(subtotalSqlResults){
+                            quoteObj.subtotal = subtotalSqlResults[0][0].subtotal || [];
+                            quoteObj.tax = parseFloat(quoteObj.subtotal * 0.13).toFixed(2);
+                            quoteObj.total = parseFloat(quoteObj.subtotal + quoteObj.tax).toFixed(2);
+                            return quoteObj;
+                        });
                     });
                 });
             });
