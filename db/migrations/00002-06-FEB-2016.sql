@@ -1,0 +1,15 @@
+ALTER TABLE `questions` ADD COLUMN `linked_question_id` INT(11) NULL DEFAULT NULL;
+UPDATE `questions` SET `linked_question_id`=1008 WHERE `id`=115;
+UPDATE `questions` SET `linked_question_id`=115 WHERE `id`=1008;
+UPDATE `questions` SET `linked_question_id`=116 WHERE `id`=1000;
+UPDATE `questions` SET `linked_question_id`=1000 WHERE `id`=116;
+UPDATE `questions` SET `linked_question_id`=117 WHERE `id`=1001;
+UPDATE `questions` SET `linked_question_id`=1001 WHERE `id`=117;
+UPDATE `questions` SET `linked_question_id`=88 WHERE `id`=1002;
+UPDATE `questions` SET `linked_question_id`=1002 WHERE `id`=88;
+UPDATE `questions` SET `linked_question_id`=121 WHERE `id`=1003;
+UPDATE `questions` SET `linked_question_id`=1003 WHERE `id`=121;
+UPDATE `questions` SET `linked_question_id`=108 WHERE `id`=1005;
+UPDATE `questions` SET `linked_question_id`=1005 WHERE `id`=108;
+UPDATE `questions` SET `linked_question_id`=70 WHERE `id`=1006;
+UPDATE `questions` SET `linked_question_id`=1006 WHERE `id`=70;
