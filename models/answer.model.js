@@ -4,6 +4,7 @@
 
 var db = require('../services/db');
 var Promise = require('bluebird');
+var questionModel = require('../models/question.model');
 
 var Answer = {
     findById: function(answerId) {
@@ -27,23 +28,42 @@ var Answer = {
             return Promise.reject(new Error('No answer specified!'));
         }
 
-        var answerInsertSql = 'INSERT INTO answers \
-                               (question_id, tax_return_id, text) \
-                               VALUES(?, ?, ?)\n\
-                               ON DUPLICATE KEY UPDATE \
-                               id=LAST_INSERT_ID(id), question_id = ?, tax_return_id = ?, text = ?';
-        var answerInsertSqlParams = [
-            answerObj.questionId,
-            answerObj.taxReturnId,
-            answerObj.text,
-            answerObj.questionId,
-            answerObj.taxReturnId,
-            answerObj.text
-        ];
-        return db.knex.raw(answerInsertSql, answerInsertSqlParams).then(function(answerInsertSqlResults) {
-            var answerId = answerInsertSqlResults[0].insertId;
-            return Promise.resolve(answerId);
-        });
+        return questionModel.findById(answerObj.questionId)
+            .then(function(question){
+                    var answerInsertSql = 'INSERT INTO answers \
+                             (question_id, tax_return_id, text) \
+                             VALUES(?, ?, ?)\n\
+                             ON DUPLICATE KEY UPDATE \
+                             id=LAST_INSERT_ID(id), question_id = ?, tax_return_id = ?, text = ?';
+                    var answerInsertSqlParams = [
+                        answerObj.questionId,
+                        answerObj.taxReturnId,
+                        answerObj.text,
+                        answerObj.questionId,
+                        answerObj.taxReturnId,
+                        answerObj.text
+                    ];
+
+                    return db.knex.raw(answerInsertSql, answerInsertSqlParams).then(function (answerInsertSqlResults) {
+                        var answerId = answerInsertSqlResults[0].insertId;
+                        if(question.linked_question_id !== null){
+                            var answerInsertLinkedSqlParams = [
+                                question.linked_question_id,
+                                answerObj.taxReturnId,
+                                answerObj.text,
+                                question.linked_question_id,
+                                answerObj.taxReturnId,
+                                answerObj.text
+                            ];
+                            return db.knex.raw(answerInsertSql, answerInsertLinkedSqlParams).then(function() {
+                                return Promise.resolve(answerId);
+                            });
+                        } else {
+                            return Promise.resolve(answerId);
+                        }
+                    });
+                });
+
     },
 
     update: function(id, answerObj) {
