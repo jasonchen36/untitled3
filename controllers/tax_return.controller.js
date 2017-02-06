@@ -268,7 +268,9 @@ exports.updateTaxReturnById = function (req, res, next) {
             (!req.body.status) &&
             (!req.body.sin) &&
             (!req.body.prefix) &&
-            (!req.body.middleInitial)
+            (!req.body.middleInitial) &&
+            (!req.body.amountOwing) &&
+            (!req.body.Details)
         ) {
             return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
         } else {
@@ -283,7 +285,8 @@ exports.updateTaxReturnById = function (req, res, next) {
           if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
           if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
           if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
-
+          if (req.body.amountOwing) {taxReturnObj.amount_owing = req.body.amountOwing; }
+          if (req.body.details) {taxReturnObj.details = req.body.details; }
           return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
               return taxReturnModel.findById(taxReturnId).then(function(taxReturn) {
                   if (!taxReturn) {
