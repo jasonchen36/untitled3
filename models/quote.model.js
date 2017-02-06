@@ -44,14 +44,20 @@ var Quote = {
             var accountId = quoteObj.account_id;
             var taxReturnSql = 'SELECT * FROM tax_returns WHERE product_id = ? AND account_id = ?';
             return db.knex.raw(taxReturnSql, [productId, accountId]).then(function(taxReturnSqlResults) {
-                quoteObj.taxReturns = taxReturnSqlResults[0][0] || [];
+                quoteObj.taxReturns = taxReturnSqlResults[0] || [];
                 var quoteLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND NOT ISNULL(tax_return_id)';
                 return db.knex.raw(quoteLineItemsSql, [id]).then(function(quoteLineItemsSqlResults) {
-                    quoteObj.quoteLineItems = quoteLineItemsSqlResults[0][0] || [];
+                    quoteObj.quoteLineItems = quoteLineItemsSqlResults[0] || [];
                     var otherLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND ISNULL(tax_return_id)';
                     return db.knex.raw(otherLineItemsSql, [id]).then(function(otherLineItemsSqlResults) {
-                        quoteObj.otherLineItems = otherLineItemsSqlResults[0][0] || [];
-                        return quoteObj;
+                        quoteObj.otherLineItems = otherLineItemsSqlResults[0] || [];
+                        var subtotalSql = 'SELECT SUM(value) AS subtotal FROM quotes_line_items WHERE quote_id = ?';
+                        return db.knex.raw(subtotalSql, [id]).then(function(subtotalSqlResults){
+                            quoteObj.subtotal = parseFloat(subtotalSqlResults[0][0].subtotal) || [];
+                            quoteObj.tax = parseFloat(quoteObj.subtotal * 0.13).toFixed(2);
+                            quoteObj.total = parseFloat(subtotalSqlResults[0][0].subtotal + (subtotalSqlResults[0][0].subtotal * 0.13)).toFixed(2);
+                            return quoteObj;
+                        });
                     });
                 });
             });
