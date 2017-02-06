@@ -53,9 +53,9 @@ var Quote = {
                         quoteObj.otherLineItems = otherLineItemsSqlResults[0] || [];
                         var subtotalSql = 'SELECT SUM(value) AS subtotal FROM quotes_line_items WHERE quote_id = ?';
                         return db.knex.raw(subtotalSql, [id]).then(function(subtotalSqlResults){
-                            quoteObj.subtotal = subtotalSqlResults[0][0].subtotal || [];
+                            quoteObj.subtotal = parseFloat(subtotalSqlResults[0][0].subtotal) || [];
                             quoteObj.tax = parseFloat(quoteObj.subtotal * 0.13).toFixed(2);
-                            quoteObj.total = parseFloat(quoteObj.subtotal + quoteObj.tax).toFixed(2);
+                            quoteObj.total = parseFloat(subtotalSqlResults[0][0].subtotal + (subtotalSqlResults[0][0].subtotal * 0.13)).toFixed(2);
                             return quoteObj;
                         });
                     });
