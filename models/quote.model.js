@@ -44,7 +44,7 @@ var Quote = {
             var accountId = quoteObj.account_id;
             var taxReturnSql = 'SELECT * FROM tax_returns WHERE product_id = ? AND account_id = ?';
             return db.knex.raw(taxReturnSql, [productId, accountId]).then(function(taxReturnSqlResults) {
-                quoteObj.taxReturns = taxReturnSqlResults[0][0] || [];
+                quoteObj.taxReturns = taxReturnSqlResults[0] || [];
                 var quoteLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND NOT ISNULL(tax_return_id)';
                 return db.knex.raw(quoteLineItemsSql, [id]).then(function(quoteLineItemsSqlResults) {
                     quoteObj.quoteLineItems = quoteLineItemsSqlResults[0][0] || [];
