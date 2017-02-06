@@ -28,6 +28,16 @@ exports.send = function(user, template, variables, overrideUserPreferences=false
     });
 };
 
+exports.sendToAdmin = function(template, variables) {
+    if (postageapp === null) {
+        logger.warn('mail.service: emails disabled by API config.');
+        return Promise.resolve();
+    }
+
+    var user = {};
+    user.email = config.email.admin
+    return internalSend(user, template, variables);
+};
 
 var internalSend = function(user, template, variables) {
     var recipient = user.email;
