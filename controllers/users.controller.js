@@ -286,7 +286,7 @@ function createUserAndSendEmail(userObj) {
                     name: userObj.first_name,
                     email: userObj.email
                 };
-                return mailService.send(userObj, config.email.templates.profile_created, config.email.admin, variables);
+                return mailService.sendToAdmin(config.email.templates.profile_created, variables);
             };
 
             var productId = userObj.productId;
@@ -303,9 +303,10 @@ function createUserAndSendEmail(userObj) {
                     }
                     userResultObj.quote = quote;
                     return sendWelcomeEmailTo(userResultObj).then(function() {
-    //                  return notifyAdminAbout(user);
-                        var token = createToken(userResultObj);
-                        return token;
+                        return notifyAdminAbout(userResultObj).then(function() {
+                            var token = createToken(userResultObj);
+                            return token;
+                        });
                     });
                 });
             });
