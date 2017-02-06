@@ -17,7 +17,8 @@ exports.resize = function(sourcePath, destinationPath, newWidth) {
             return im.resizeAsync({
                 srcPath: sourcePath,
                 dstPath: destinationPath,
-                width: newWidth
+                width: newWidth,
+                strip: false // preserve rotation
             }).catch(function(err) {
                 return Promise.reject(new Error(err));
             });

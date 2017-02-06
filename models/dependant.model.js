@@ -56,7 +56,7 @@ var dependant = {
                 dependantObj.lastName,
                 dependantObj.dateOfBirth,
                 dependantObj.relationship,
-                dependantObj.isShared
+                parseInt(dependantObj.isShared)
             ];
         } else {
             var dependantInsertSql = 'INSERT INTO dependants (first_name, last_name, date_of_birth, relationship) VALUES(?, ?, ?, ?)';
@@ -77,6 +77,7 @@ var dependant = {
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No dependantId specified!'));
         }
+        dependantObj.is_shared = parseInt(dependantObj.is_shared);
         return db.knex('dependants').update(dependantObj).where('id', id);
     },
     createAssociation: function(dependantTaxReturnObj) {
