@@ -862,6 +862,76 @@ exports.getChecklist = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
+GET /quote/:id/adminChecklist
+
+PARAMS
+quoteId
+
+RESPONSE:
+{
+  checklist: [
+    {
+      checklist_item_id: 93,
+      name: "T4A"
+      documents: [
+      {
+        documentId: 4,
+        taxReturnId: 1,
+        name: "filename.jpg",
+        url: "http://localhost/uploads/taxplan.com",
+        thumbnailUrl: "http://localhost/thumb/taxplan.jpg"
+      },
+      {
+        documentId: 5,
+        taxReturnId: 2,
+        name: "filename2.jpg",
+        url: "http://localhost/uploads/taxplan.com",
+        thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
+      }
+    },
+    {
+      ...
+    },
+  ],
+  additionalDocuments: [ // these have null taxreturnId on the documents table
+    {
+       documentId: 12,
+      name: "filename12.jpg",
+      url: "http://localhost/uploads/taxplan.com",
+      thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
+    }
+  ]
+}
+*******************************************************************************/
+
+exports.getAdminChecklist = function (req, res, next) {
+    req.checkParams('id', 'Please provide an integer quote id').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.id);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        return checklistModel.getAdminCheckListForQuoteId(quoteId).then(function(checklistObj) {
+            if (!checklistObj) {
+                return res.status(404).send();
+            }
+           checklistObj.name = stringHelper.cleanString(checklistObj.name);
+           checklistObj.title = stringHelper.cleanString(checklistObj.title);
+           checklistObj.subtitle = stringHelper.cleanString(checklistObj.subtitle);
+           checklistObj.description = stringHelper.cleanString(checklistObj.description);
+
+           return res.status(200).send(checklistObj);
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
+/*******************************************************************************
+ENDPOINT
 GET /quote/:id/checklist/PDF
 
 PARAMS
