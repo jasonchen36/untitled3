@@ -23,12 +23,12 @@ module.exports = function (router) {
     router.route('/quote')
         .post(quote.create); // Create quote does not requite Auth!
     router.route('/quote/:id/lineItem')
-        .post(quote.createLineItem);
+        .post(PassportAuthMiddleware, quote.createLineItem);
     router.route('/quote/:id/lineItem/:id')
-        .put(quote.updateLineItem)
-        .delete(quote.deleteLineItemById);
+        .put(PassportAuthMiddleware, quote.updateLineItem)
+        .delete(PassportAuthMiddleware, quote.deleteLineItemById);
     router.route('/quote/:id/adminChecklist')
-        .get(quote.getAdminChecklist);
+        .get(PassportAuthMiddleware, quote.getAdminChecklist);
     router.route('/quote/:id/document')
         .post(PassportAuthMiddleware, quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
