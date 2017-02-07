@@ -50,4 +50,6 @@ module.exports = function (router) {
         .put(PassportAuthMiddleware, tax_return.updateDependant)
         .post(PassportAuthMiddleware, tax_return.linkExistingDependants)
         .delete(PassportAuthMiddleware, tax_return.deleteDependant);
+    router.route('/tax_return/:taxReturnId/answerscsv')
+        .get(PassportAuthMiddleware, noCache, tax_return.getAnswersAsCSV);
 };

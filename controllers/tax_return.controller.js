@@ -1147,7 +1147,7 @@ exports.findDependantById = function (req, res, next) {
             return res.status(403).send();
         }
         var dependantId = parseInt(req.params.dependantId);
-        return DependantdependantModelfindById(dependantId).then(function(dependantObj) {
+        return dependantModel.findById(dependantId).then(function(dependantObj) {
             if (!dependantObj) {
                 return res.status(404).send();
             }
@@ -1247,5 +1247,40 @@ exports.getAvailableTaxReturnStatuses = function (req, res, next) {
         return res.status(200).json(resultsArr);
     }).catch(function(err) {
         next(err);
+    });
+};
+
+/*******************************************************************************
+ ENDPOINT
+ GET /tax_return/:id/answerscsv
+
+ Params:
+ taxReturnId
+
+ RESPONSE:
+ CSV download containing all questions and answers for this tax return id
+
+ *******************************************************************************/
+exports.getAnswersAsCSV = function (req, res, next) {
+    req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        return taxReturnModel.getQuestionAnswersCsv(taxReturnId).then(function(resultArr) {
+            if ((!resultArr) || (resultArr.length === 0)) {
+                return res.status(404).send();
+            }
+
+            res.setHeader('Content-disposition', 'attachment; filename=tax_return_' + taxReturnId + '_answers.csv');
+            res.set('Content-Type', 'text/csv');
+            return res.csv(resultArr);
+        }).catch(function(err) {
+            next(err);
+        });
     });
 };
