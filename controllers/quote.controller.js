@@ -435,7 +435,7 @@ RESPONSE:
 200 OK
  ******************************************************************************/
 
- exports.lineItem = function (req, res, next) {
+ exports.createlineItem = function (req, res, next) {
      req.checkBody('text', 'Please provide a text').notEmpty();
      req.checkBody('value', 'Please provide a value').notEmpty();
      req.checkParams('id', 'Please provide a quoteId').isInt();
@@ -725,7 +725,7 @@ quoteId and lineItemId
 RESPONSE:
 200 OK or 404
 *******************************************************************************/
-exports.deleteDocumentById = function (req, res, next) {
+exports.deleteLineItemById = function (req, res, next) {
     req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
     req.checkParams('lineItemId', 'Please provide a lineItemId documentId').isInt();
     var errors = req.validationErrors();
@@ -947,7 +947,7 @@ exports.getChecklistPDF = function(req, res, next) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.updateDependant = function (req, res, next) {
+exports.updateLineItem = function (req, res, next) {
     req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
     req.checkBody('text', 'Please provide a text').notEmpty();
