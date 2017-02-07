@@ -432,9 +432,6 @@ INPUT BODY:
 
 RESPONSE:
 200 OK
-{
-  "quoteLineItemId": 4
-}
  ******************************************************************************/
 
  exports.createLineItem = function (req, res, next) {
@@ -443,22 +440,14 @@ RESPONSE:
      req.checkParams('id', 'Please provide a quoteId').isInt();
      var errors = req.validationErrors();
      if (errors) { return res.status(400).send(errors); }
-
      var text = req.body.text;
      var value = req.body.value;
      var quoteId = parseInt(req.params.id);
-     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
-         if (!allowed) {
-             return res.status(403).send();
-         }
-         return quoteModel.createLineItem(quoteId, text, value).then(function() {
-             res.status(200).send();
-         }).catch(function(err) {
-             next(err);
-         });
-         }).catch(function(err) {
-             next(err);
-         });
+     return quoteModel.createLineItem(quoteId, text, value).then(function() {
+         res.status(200).send();
+     }).catch(function(err) {
+         next(err);
+     });
  };
 
 /*******************************************************************************
