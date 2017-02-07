@@ -23,7 +23,7 @@ module.exports = function (router) {
     router.route('/quote')
         .post(quote.create); // Create quote does not requite Auth!
     router.route('/quote/:id/lineItem')
-        .post(quote.createLineItem);
+        .post(quote.createlineItem);
     router.route('/quote/:id/lineItem/:id')
         .put(quote.updateLineItem)
         .delete(quote.deleteLineItemById);
