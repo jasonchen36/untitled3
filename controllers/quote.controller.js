@@ -931,6 +931,66 @@ exports.getChecklistPDF = function(req, res, next) {
     });
 };
 
+/*******************************************************************************
+ ENDPOINT
+ PUT /quote/:id/lineItem/:id
+
+ Params:
+ taxReturnId and lineItemId
+
+ INPUT BODY:
+ {
+   "text": "adfadsf",
+   "value": 90
+ }
+
+ RESPONSE:
+ 200 OK
+ *******************************************************************************/
+exports.updateDependant = function (req, res, next) {
+    req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+    req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
+    req.checkBody('text', 'Please provide a text').notEmpty();
+    req.checkBody('value', 'Please provide a value').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var text = req.body.text;
+    var value = req.body.value;
+    var lineItemId = parseInt(req.params.lineItemId);
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    return quoteModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        // check that lineItemId exists
+        return quoteLineItemModel.findById(lineItemId).then(function(lineItem) {
+            if ((!lineItem) || (lineItem.length === 0)) {
+                return res.status(404).send({ msg: 'Line item not found' });
+            }
+            var lineItemObj = {};
+            if (req.body.text) { lineItemObj.text= req.body.text; }
+            if (req.body.value) { lineItemObj.value = req.body.value; }
+
+            return quoteLineItemModel.update(lineItemId,lineItemObj).then(function() {
+                var resultObj = {};
+                resultObj.text = text;
+                resultObj.value = value;
+
+                res.status(200).json(resultObj);
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
+
 exports.findByAccountId = function(req, res, next) {
     req.checkParams('productId', 'Please provide a product id').isInt();
     req.checkParams('accountId', 'Please provide a account id').isInt();
