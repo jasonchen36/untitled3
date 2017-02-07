@@ -22,7 +22,7 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, noCache, quote.findById);
     router.route('/quote')
         .post(quote.create); // Create quote does not requite Auth!
-    router.route('/quote/:id/createLineItem')
+    router.route('/quote/:id/lineItem')
         .post(quote.createLineItem);
     router.route('/quote/:id/document')
         .post(PassportAuthMiddleware, quote.createDocument);

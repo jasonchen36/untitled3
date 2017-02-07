@@ -21,6 +21,7 @@ var questionModel = require('../models/question.model');
 var answerModel = require('../models/answer.model');
 var taxReturnModel = require('../models/tax_return.model');
 var checklistModel = require('../models/checklist.model');
+var quoteLineItemModel = require('../models/quote_line_item.model');
 var packageModel = require('../models/package.model');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
@@ -419,7 +420,7 @@ exports.submit = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
-POST /quote/:id/createLineItem
+POST /quote/:id/lineItem
 
 Params:
 quoteId
@@ -434,7 +435,7 @@ RESPONSE:
 200 OK
  ******************************************************************************/
 
- exports.createLineItem = function (req, res, next) {
+ exports.lineItem = function (req, res, next) {
      req.checkBody('text', 'Please provide a text').notEmpty();
      req.checkBody('value', 'Please provide a value').notEmpty();
      req.checkParams('id', 'Please provide a quoteId').isInt();
@@ -696,6 +697,47 @@ exports.deleteDocumentById = function (req, res, next) {
                 return res.status(404).send();
             }
             return documentModel.deleteById(quoteId, documentId).then(function() {
+                res.status(200).send('Ok');
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
+/*******************************************************************************
+ENDPOINT
+DELETE /quote/:id/lineItem/:id
+
+Params:
+quoteId and lineItemId
+
+RESPONSE:
+200 OK or 404
+*******************************************************************************/
+exports.deleteDocumentById = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide a lineItemId documentId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        var lineItemId = parseInt(req.params.documentId);
+        return quoteLineItemModel.findById(lineItemId).then(function(documentObj) {
+            if (!documentObj) {
+                return res.status(404).send();
+            }
+            return quoteLineItemModel.deleteById(quoteId, lineItemId).then(function() {
                 res.status(200).send('Ok');
 
                 // update the last User activity of the logged in user
