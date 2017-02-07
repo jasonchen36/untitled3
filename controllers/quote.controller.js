@@ -444,11 +444,16 @@ RESPONSE:
      var text = req.body.text;
      var value = req.body.value;
      var quoteId = parseInt(req.params.id);
-     return quoteModel.createLineItem(quoteId, text, value).then(function() {
-         res.status(200).send();
-     }).catch(function(err) {
-         next(err);
-     });
+     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+         if (!allowed) {
+             return res.status(403).send();
+         }
+         return quoteModel.createLineItem(quoteId, text, value).then(function() {
+             res.status(200).send();
+         }).catch(function(err) {
+             next(err);
+         });
+    });
  };
 
 /*******************************************************************************
