@@ -435,7 +435,7 @@ RESPONSE:
 200 OK
  ******************************************************************************/
 
- exports.createlineItem = function (req, res, next) {
+ exports.createLineItem = function (req, res, next) {
      req.checkBody('text', 'Please provide a text').notEmpty();
      req.checkBody('value', 'Please provide a value').notEmpty();
      req.checkParams('id', 'Please provide a quoteId').isInt();
