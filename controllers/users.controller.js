@@ -282,7 +282,7 @@ function createUserAndSendEmail(userObj) {
                     total = total + quoteLineItem.value;
                     i = i + 1;
                 });
-                variables.total_value = total;
+                variables.total_value = (Math.round(total * 100) / 100).toFixed(2);;
                 return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
             };
 
