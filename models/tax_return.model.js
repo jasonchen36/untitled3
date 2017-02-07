@@ -6,6 +6,7 @@ var db = require('../services/db');
 var Promise = require('bluebird');
 var userModel = require('./user.model');
 var logger = require('../services/logger.service');
+var csv = require('express-csv');
 
 var TaxReturn = {
     hasAccess: function(userObj, taxReturnId) {
@@ -177,6 +178,32 @@ var TaxReturn = {
         return db.knex.raw(taxReturnInsertSql, [accountId]).then(function(taxReturnSQLResults) {
             var taxReturns = taxReturnSQLResults[0];
             return Promise.resolve(taxReturns);
+        });
+    },
+
+    getQuestionAnswersCsv: function(taxReturnId) {
+        if ((!taxReturnId) || (taxReturnId.length === 0)) {
+            return Promise.reject(new Error('No taxReturnId specified!'));
+        }
+
+        var taxReturnSql = 'SELECT \
+                              u.first_name, \
+                              u.last_name, \
+                              c.name AS catagory, \
+                              quest.text AS question, \
+                              ans.text AS answer \
+                            FROM users AS u \
+                            JOIN accounts AS a ON a.id = u.account_id \
+                            JOIN tax_returns AS tr ON tr.account_id = u.account_id \
+                            JOIN quote AS q ON q.account_id = u.account_id \
+                            JOIN answers AS ans ON ans.tax_return_id = tr.id \
+                            JOIN questions AS quest ON quest.id = ans.question_id \
+                            JOIN categories AS c ON c.id = quest.category_id \
+                            WHERE tr.id = ? \
+                            ORDER BY quest.category_id';
+        return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
+            var taxReturnsArr = taxReturnSqlResults[0];
+            return Promise.resolve(taxReturnsArr);
         });
     }
 };
