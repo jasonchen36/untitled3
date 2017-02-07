@@ -96,7 +96,12 @@ exports.resetPassword = function(req, res, next) {
         userObj.hashed_password = hashed_password;
         userObj.reset_key = null;
         return userModel.updatePassword(userObj.id, hashed_password, new_salt).then(function() {
-            return res.status(200).send();
+            var variables = {
+                name: userObj.first_name
+            };
+            return notificationService.sendNotification(userObj, notificationService.NotificationType.PASSWORD_CHANGED, variables).then(function() {
+                return res.status(200).send();
+            });
         }).catch(function(err) {
             next(err);
         });
@@ -528,7 +533,14 @@ exports.update_password = function(req, res, next) {
     var new_salt = userModel.makeSalt();
     var hashed_password = userModel.encryptPassword(new_salt, password);
     return userModel.updatePassword(userId, hashed_password, new_salt).then(function() {
-        return res.status(200).send();
+        return userModel.findById(userId).then(function(userObj) {
+            var variables = {
+                name: userObj.first_name
+            };
+            return notificationService.sendNotification(userObj, notificationService.NotificationType.PASSWORD_CHANGED, variables).then(function () {
+                return res.status(200).send();
+            });
+        });
     }).catch(function(err) {
         next(err);
     });
