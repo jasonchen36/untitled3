@@ -35,7 +35,7 @@ module.exports = {
     // The secret should be set to a non-guessable string that
     // is used to compute a session hash
     sessionSecret: process.env.TAXPLAN_API_SESSION_SECRET,
-    JWTExpires: '1h',
+    JWTExpires: 90*60, // 90 minutes expressed in seconds
     //We need to think about storage, possibly s3
     uploadDir: path.join(__dirname + '/../uploads'),
     email: {
