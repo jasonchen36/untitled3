@@ -62,7 +62,8 @@ module.exports = {
     },
     onesignal: {
         restApiKey: process.env.TAXPLAN_API_ONSIGNAL_REST_API_KEY,
-        appId: process.env.TAXPLAN_API_ONESIGNAL_APP_ID
+        appId: process.env.TAXPLAN_API_ONESIGNAL_APP_ID,
+        notificationMessage: 'New message from TAXplan'
     },
     stripe: {
         secret: process.env.TAXPLAN_API_STRIPE_SECRET_KEY,

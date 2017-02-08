@@ -6,6 +6,8 @@ var pushService = require('../services/push.notification.service');
 var mailService = require('../services/mail.service');
 var systemMessageService = require('../services/system.message.service');
 
+var notificationMessage = config.onesignal.notificationMessage;
+
 var NotificationType = {
   WELCOME: 1,
   PASSWORD_RESET: 2,
@@ -48,7 +50,7 @@ var sendNotification = function(user, notificationType, data) {
             var message = config.email.passwordResetMessage;
             var overrideUserPreferences = true; // password reset email is sent regardless of user notification settings
             notificationPromises.push(mailService.send(user, emailTemplate, data, overrideUserPreferences));
-            notificationPromises.push(pushService.send(user, message));
+            notificationPromises.push(pushService.send(user, notificationMessage));
             break;
         case NotificationType.TAX_RETURN_SUBMITTED:
             var subject = config.email.submittedSubject;
@@ -59,7 +61,7 @@ var sendNotification = function(user, notificationType, data) {
         case NotificationType.CHAT_MESSAGE_FROM_TAXPRO:
             notificationPromises.push(mailService.send(user, emailTemplate, data));
             var message = data.message;
-            notificationPromises.push(pushService.send(user, message));
+            notificationPromises.push(pushService.send(user, notificationMessage));
             break;
         case NotificationType.TAX_PRO_ASSIGNED:
             notificationPromises.push(mailService.send(user, emailTemplate, data));
