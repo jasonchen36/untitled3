@@ -1018,7 +1018,7 @@ exports.getChecklistPDF = function(req, res, next) {
  200 OK
  *******************************************************************************/
 exports.updateLineItem = function (req, res, next) {
-    req.checkParams('taxReturnId', 'Please provide a taxReturnId').isInt();
+    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
     req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
     req.checkBody('text', 'Please provide a text').notEmpty();
     req.checkBody('value', 'Please provide a value').notEmpty();
