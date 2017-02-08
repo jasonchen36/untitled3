@@ -1027,6 +1027,8 @@ exports.updateLineItem = function (req, res, next) {
 
     var text = req.body.text;
     var value = req.body.value;
+    var checkbox = req.body.checkbox;
+    var originalQuote = req.body.originalQuote;
     var lineItemId = parseInt(req.params.lineItemId);
     var quoteId = parseInt(req.params.quoteId);
     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
@@ -1041,11 +1043,15 @@ exports.updateLineItem = function (req, res, next) {
             var lineItemObj = {};
             if (req.body.text) { lineItemObj.text= req.body.text; }
             if (req.body.value) { lineItemObj.value = req.body.value; }
+            if (req.body.checkbox) { lineItemObj.checkbox = req.body.checkbox; }
+            if (req.body.originalQuote) { lineItemObj.original_quote = req.body.originalQuote; }
 
             return quoteLineItemModel.update(lineItemId,lineItemObj).then(function() {
                 var resultObj = {};
                 resultObj.text = text;
                 resultObj.value = value;
+                resultObj.checkbox = checkbox;
+                resultObj.originalQuote = originalQuote;
 
                 res.status(200).json(resultObj);
 
