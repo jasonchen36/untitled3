@@ -147,7 +147,7 @@ var Quote = {
                                  (quote_id, text, value) \
                                  VALUES (?, ?, ?) \
                                  ON DUPLICATE KEY UPDATE \
-                                 quote_id = ? \
+                                 quote_id = ?, \
                                  text = ?, value = ?';
          var lineItemInsertSqlParams = [quoteId,
                                         text,
