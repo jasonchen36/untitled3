@@ -32,8 +32,9 @@ var Checklist = {
 
         var checklistSQL = 'SELECT DISTINCT cr.checklist_item_id, ci.name, ci.description, ci.subtitle FROM answers AS a \
                             JOIN checklist_rules AS cr \
-                                 ON a.question_id = cr.question_id \
-                                 AND a.text = cr.value \
+                                 ON (a.question_id = cr.question_id \
+                                 AND a.text = cr.value) \
+                                  OR cr.question_id = 0 \
                             JOIN checklist_items AS ci \
                                  ON ci.id = cr.checklist_item_id \
                             WHERE a.tax_return_id IN( \
@@ -94,8 +95,9 @@ var Checklist = {
                                   tr.last_name \
                                 FROM answers AS a \
                                 JOIN checklist_rules AS cr \
-                                  ON a.question_id = cr.question_id \
-                                  AND a.text = cr.value \
+                                  ON (a.question_id = cr.question_id \
+                                  AND a.text = cr.value) \
+                                  OR cr.question_id = 0 \
                                 JOIN checklist_items AS ci \
                                   ON ci.id = cr.checklist_item_id \
                                 JOIN tax_returns AS tr \
