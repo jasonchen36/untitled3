@@ -726,8 +726,8 @@ RESPONSE:
 200 OK or 404
 *******************************************************************************/
 exports.deleteLineItemById = function (req, res, next) {
-    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
-    req.checkParams('lineItemId', 'Please provide a lineItemId documentId').isInt();
+    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
@@ -737,7 +737,7 @@ exports.deleteLineItemById = function (req, res, next) {
             return res.status(403).send();
         }
 
-        var lineItemId = parseInt(req.params.documentId);
+        var lineItemId = parseInt(req.params.lineItemId);
         return quoteLineItemModel.findById(lineItemId).then(function(documentObj) {
             if (!documentObj) {
                 return res.status(404).send();
@@ -1028,8 +1028,8 @@ exports.updateLineItem = function (req, res, next) {
     var text = req.body.text;
     var value = req.body.value;
     var lineItemId = parseInt(req.params.lineItemId);
-    var taxReturnId = parseInt(req.params.taxReturnId);
-    return quoteModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+    var quoteId = parseInt(req.params.quoteId);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
         if (!allowed) {
             return res.status(403).send();
         }
