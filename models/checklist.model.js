@@ -135,6 +135,124 @@ var Checklist = {
         });
     },
 
+    getAdminCheckListForQuoteId: function(quoteId) {
+        if ((!quoteId) || (quoteId.length === 0)) {
+            return Promise.reject(new Error('No quoteId specified!'));
+        }
+
+        var checklistSQL = 'SELECT DISTINCT \
+                                tr.id as tax_return_id, \
+                                ci.id AS checklist_item_id, \
+                                ci.name, \
+                                ci.description, \
+                                ci.subtitle \
+                            FROM tax_returns AS tr \
+                            JOIN checklist_items AS ci \
+                                ON ci.admin_only = 1 \
+                            WHERE tr.id IN( \
+                                SELECT DISTINCT tr.id FROM quote AS q \
+                                JOIN tax_returns AS tr \
+                                ON tr.account_id = q.account_id \
+                                AND tr.product_id = q.product_id \
+                                WHERE q.id = ?)';
+        return db.knex.raw(checklistSQL, [quoteId]).then(function(checklistSQLResults) {
+            var checklistArr = [];
+            if (checklistSQLResults[0]) { // allow for undefined
+                checklistArr = checklistSQLResults[0];
+            } else {
+                checklistArr = [];
+                var resultObj = {};
+                resultObj.checklist = [];
+                resultObj.documents = [];
+            }
+
+            var documentsSql = 'SELECT DISTINCT \
+                                    d.*, \
+                                    tr.product_id, \
+                                    tr.account_id, \
+                                    tr.status_id, \
+                                    tr.first_name, \
+                                    tr.last_name \
+                                FROM documents AS d \
+                                JOIN quote AS q ON d.quote_id = q.id \
+                                JOIN checklist_items AS ci \
+                                    ON ci.id = d.checklist_item_id \
+                                    AND ci.admin_only = 1 \
+                                LEFT JOIN tax_returns AS tr \
+                                    ON tr.id = d.tax_return_id \
+                                WHERE q.id = ? \
+                                AND d.tax_return_id IS NOT NULL';
+            return db.knex.raw(documentsSql, [quoteId]).then(function(documentsSqlResults) {
+                var dbDocs = documentsSqlResults[0];
+                var documents = [];
+                var docObj = {};
+                _.forEach(dbDocs, function(dbDoc) {
+                    docObj = {};
+                    docObj.documentId = dbDoc.id;
+                    docObj.quoteId = dbDoc.quote_id;
+                    docObj.taxReturnId = dbDoc.tax_return_id;
+                    docObj.firstName = dbDoc.first_name;
+                    docObj.lastName = dbDoc.last_name;
+                    docObj.checkListItemId = dbDoc.checklist_item_id;
+                    docObj.name = dbDoc.name;
+                    docObj.viewedByTaxPro = dbDoc.viewed_by_taxpro;
+                    var utcCreatedAt = dbDoc.created_at;
+                    docObj.createdAt = momentTz(utcCreatedAt, API_TIMEZONE).format(API_DATE_OUTPUT_FORMAT);
+                    docObj.url = config.thumbnail.baseUploadUrl + dbDoc.url;
+                    if (dbDoc.thumbnail_url != config.thumbnail.defaultDocIconFileName) {
+                        docObj.thumbnailUrl = config.thumbnail.baseThumbnailUrl + dbDoc.thumbnail_url;
+                    } else {
+                        docObj.thumbnailUrl = config.domain + '/default_icons/' + dbDoc.thumbnail_url
+                    }
+                    documents.push(docObj);
+                });
+                var filerSql = 'SELECT DISTINCT \
+         			  d.checklist_item_id AS checkListItemId, \
+                                  ci.name, \
+                                  ci.description, \
+                                  tr.id AS taxReturnId, \
+                                  ci.subtitle, \
+                                  tr.first_name, \
+                                  tr.last_name \
+                                FROM documents AS d \
+                                JOIN quote AS q \
+                                    ON d.quote_id = q.id \
+                                JOIN checklist_items AS ci \
+                                    ON ci.id = d.checklist_item_id \
+                                    AND ci.admin_only = 1 \
+                                LEFT JOIN tax_returns AS tr \
+                                    ON tr.id = d.tax_return_id \
+                                WHERE q.id = ? \
+                                AND d.tax_return_id IS NOT NULL';
+                return db.knex.raw(filerSql, [quoteId]).then(function(filerSqlResults) {
+                    var dbFilers = filerSqlResults[0];
+
+                    _.forEach(checklistArr, function(checklistItem) {
+                        checklistItem.documents = _.filter(documents, function(o) {
+                            return ((o.checkListItemId === checklistItem.checklist_item_id) &&
+                                    (o.taxReturnId === checklistItem.tax_return_id));
+                        });
+                        checklistItem.filers = _.filter(dbFilers, function(o) {
+                            return ((o.checkListItemId === checklistItem.checklist_item_id) &&
+                                    (o.taxReturnId === checklistItem.tax_return_id));
+                        });
+                        _.forEach(checklistItem.filers, function(filerObj) {
+                            delete filerObj.checklist_item_id;
+                            delete filerObj.name;
+                            delete filerObj.id;
+                        });
+                    });
+
+                    resultObj = {};
+                    resultObj.checklistitems = checklistArr;
+                    resultObj.documents = documents;
+
+                    return(resultObj);
+                });
+            });
+        });
+    },
+
     checkIdExists: function(id) {
         if (!id) {
             return Promise.resolve(false);

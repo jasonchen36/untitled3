@@ -21,6 +21,7 @@ var questionModel = require('../models/question.model');
 var answerModel = require('../models/answer.model');
 var taxReturnModel = require('../models/tax_return.model');
 var checklistModel = require('../models/checklist.model');
+var quoteLineItemModel = require('../models/quote_line_item.model');
 var packageModel = require('../models/package.model');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
@@ -416,6 +417,7 @@ exports.submit = function (req, res, next) {
     });
 };
 
+
 /*******************************************************************************
 ENDPOINT
 POST /quote/:id/lineItem
@@ -431,11 +433,28 @@ INPUT BODY:
 
 RESPONSE:
 200 OK
-{
-  "quoteLineItemId": 4
-}
  ******************************************************************************/
 
+ exports.createLineItem = function (req, res, next) {
+     req.checkBody('text', 'Please provide a text').notEmpty();
+     req.checkBody('value', 'Please provide a value').notEmpty();
+     req.checkParams('id', 'Please provide a quoteId').isInt();
+     var errors = req.validationErrors();
+     if (errors) { return res.status(400).send(errors); }
+     var text = req.body.text;
+     var value = req.body.value;
+     var quoteId = parseInt(req.params.id);
+     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+         if (!allowed) {
+             return res.status(403).send();
+         }
+         return quoteModel.createLineItem(quoteId, text, value).then(function() {
+             res.status(200).send();
+         }).catch(function(err) {
+             next(err);
+         });
+    });
+ };
 
 /*******************************************************************************
 ENDPOINT
@@ -698,6 +717,47 @@ exports.deleteDocumentById = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
+DELETE /quote/:id/lineItem/:id
+
+Params:
+quoteId and lineItemId
+
+RESPONSE:
+200 OK or 404
+*******************************************************************************/
+exports.deleteLineItemById = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        var lineItemId = parseInt(req.params.lineItemId);
+        return quoteLineItemModel.findById(lineItemId).then(function(documentObj) {
+            if (!documentObj) {
+                return res.status(404).send();
+            }
+            return quoteLineItemModel.deleteById(quoteId, lineItemId).then(function() {
+                res.status(200).send('Ok');
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
+/*******************************************************************************
+ENDPOINT
 GET /quote/:quoteId/document/documentId
 
 PARAMS
@@ -802,6 +862,76 @@ exports.getChecklist = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
+GET /quote/:id/adminChecklist
+
+PARAMS
+quoteId
+
+RESPONSE:
+{
+  checklist: [
+    {
+      checklist_item_id: 93,
+      name: "T4A"
+      documents: [
+      {
+        documentId: 4,
+        taxReturnId: 1,
+        name: "filename.jpg",
+        url: "http://localhost/uploads/taxplan.com",
+        thumbnailUrl: "http://localhost/thumb/taxplan.jpg"
+      },
+      {
+        documentId: 5,
+        taxReturnId: 2,
+        name: "filename2.jpg",
+        url: "http://localhost/uploads/taxplan.com",
+        thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
+      }
+    },
+    {
+      ...
+    },
+  ],
+  additionalDocuments: [ // these have null taxreturnId on the documents table
+    {
+       documentId: 12,
+      name: "filename12.jpg",
+      url: "http://localhost/uploads/taxplan.com",
+      thumbnailUrl: "http://localhost/thumb/taxplan2.jpg"
+    }
+  ]
+}
+*******************************************************************************/
+
+exports.getAdminChecklist = function (req, res, next) {
+    req.checkParams('id', 'Please provide an integer quote id').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.id);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        return checklistModel.getAdminCheckListForQuoteId(quoteId).then(function(checklistObj) {
+            if (!checklistObj) {
+                return res.status(404).send();
+            }
+           checklistObj.name = stringHelper.cleanString(checklistObj.name);
+           checklistObj.title = stringHelper.cleanString(checklistObj.title);
+           checklistObj.subtitle = stringHelper.cleanString(checklistObj.subtitle);
+           checklistObj.description = stringHelper.cleanString(checklistObj.description);
+
+           return res.status(200).send(checklistObj);
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
+/*******************************************************************************
+ENDPOINT
 GET /quote/:id/checklist/PDF
 
 PARAMS
@@ -870,6 +1000,70 @@ exports.getChecklistPDF = function(req, res, next) {
         });
     });
 };
+
+/*******************************************************************************
+ ENDPOINT
+ PUT /quote/:id/lineItem/:id
+
+ Params:
+ taxReturnId and lineItemId
+
+ INPUT BODY:
+ {
+   "text": "adfadsf",
+   "value": 90
+ }
+
+ RESPONSE:
+ 200 OK
+ *******************************************************************************/
+exports.updateLineItem = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var text = req.body.text;
+    var value = req.body.value;
+    var checkbox = req.body.checkbox;
+    var originalQuote = req.body.originalQuote;
+    var lineItemId = parseInt(req.params.lineItemId);
+    var quoteId = parseInt(req.params.quoteId);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+        // check that lineItemId exists
+        return quoteLineItemModel.findById(lineItemId).then(function(lineItem) {
+            if ((!lineItem) || (lineItem.length === 0)) {
+                return res.status(404).send({ msg: 'Line item not found' });
+            }
+            var lineItemObj = {};
+            if (req.body.text) { lineItemObj.text= req.body.text; }
+            if (req.body.value) { lineItemObj.value = req.body.value; }
+            if (req.body.checkbox) { lineItemObj.checkbox = req.body.checkbox; }
+            if (req.body.originalQuote) { lineItemObj.original_quote = req.body.originalQuote; }
+
+            return quoteLineItemModel.update(lineItemId,lineItemObj).then(function() {
+                var resultObj = {};
+                resultObj.text = text;
+                resultObj.value = value;
+                resultObj.checkbox = checkbox;
+                resultObj.originalQuote = originalQuote;
+
+                res.status(200).json(resultObj);
+
+                // update the last User activity of the logged in user
+                userModel.updateLastUserActivity(req.user);
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
 
 exports.findByAccountId = function(req, res, next) {
     req.checkParams('productId', 'Please provide a product id').isInt();

@@ -22,6 +22,13 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, noCache, quote.findById);
     router.route('/quote')
         .post(quote.create); // Create quote does not requite Auth!
+    router.route('/quote/:id/lineItem')
+        .post(PassportAuthMiddleware, quote.createLineItem);
+    router.route('/quote/:quoteId/lineItem/:lineItemId')
+        .put(PassportAuthMiddleware, quote.updateLineItem)
+        .delete(PassportAuthMiddleware, quote.deleteLineItemById);
+    router.route('/quote/:id/adminChecklist')
+        .get(PassportAuthMiddleware, quote.getAdminChecklist);
     router.route('/quote/:id/document')
         .post(PassportAuthMiddleware, quote.createDocument);
     router.route('/quote/:quoteId/document/:documentId')
