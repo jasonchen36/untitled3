@@ -133,7 +133,7 @@ var TaxReturn = {
             id: data.id,
             product_id: data.product_id,
             account_id: data.account_id,
-            amount_owing: data.amount_owing,
+            refund: data.refund,
             details: data.details,
             first_name: data.first_name,
             middle_initial: data.middle_initial,
