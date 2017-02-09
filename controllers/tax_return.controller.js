@@ -270,7 +270,7 @@ exports.updateTaxReturnById = function (req, res, next) {
             (!req.body.prefix) &&
             (!req.body.middleInitial) &&
             (!req.body.amountOwing) &&
-            (!req.body.Details)
+            (!req.body.details)
         ) {
             return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
         } else {
