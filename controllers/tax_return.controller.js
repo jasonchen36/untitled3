@@ -269,7 +269,7 @@ exports.updateTaxReturnById = function (req, res, next) {
             (!req.body.sin) &&
             (!req.body.prefix) &&
             (!req.body.middleInitial) &&
-            (!req.body.amountOwing) &&
+            (!req.body.refund) &&
             (!req.body.details)
         ) {
             return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
@@ -285,7 +285,7 @@ exports.updateTaxReturnById = function (req, res, next) {
           if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
           if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
           if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
-          if (req.body.amountOwing) {taxReturnObj.amount_owing = req.body.amountOwing; }
+          if (req.body.refund) {taxReturnObj.refund = req.body.refund; }
           if (req.body.details) {taxReturnObj.details = req.body.details; }
           return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
               return taxReturnModel.findById(taxReturnId).then(function(taxReturn) {
