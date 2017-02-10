@@ -93,86 +93,53 @@ var Quote = {
         if ((!quoteObj.lineItems) || (quoteObj.lineItems.length === 0)) {
             return Promise.reject(new Error('No lineItems specified!'));
         }
-
-        return this.findByProductIdAccountId(quoteObj.productId, quoteObj.accountId).then(function(existingQuote) {
-            if ((existingQuote) && (existingQuote.length !== 0)) {
-                return Promise.reject(new Error('You are calling POST when a quote already exists for this accountId/productId. Use PUT /quote/:quoteId/lineItem/:lineItemId instead.'));
-            }
-            return db.knex.transaction(function(trx) {
-                var quoteInsertSql = 'INSERT INTO quote \
-                                      (account_id, product_id) \
-                                      VALUES(?, ?)';
-                var quoteInsertSqlParams = [quoteObj.accountId,
-                                            quoteObj.productId];
-                return trx.raw(quoteInsertSql, quoteInsertSqlParams).then(function(messageInsertSqlResults) {
-                    var quoteId = messageInsertSqlResults[0].insertId;
-                    var lineItemPromises = [];
-                    _.forEach(quoteObj.lineItems, function(lineItem) {
-                        var lineItemInsertSql = 'INSERT INTO quotes_line_items \
-                                                 (quote_id, tax_return_id, text, value, notes) \
-                                                 VALUES (?, ?, ?, ?, ?)';
-                        var lineItemInsertSqlParams = [quoteId,
-                                                       lineItem.taxReturnId,
-                                                       'Tax Prep.',
-                                                       lineItem.price,
-                                                       lineItem.notes];
-                        lineItemPromises.push(db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams));
-                    });
-                    return Promise.all(lineItemPromises)
-                    .then(function() {
-                        trx.commit;
-                        return quoteId;
-                    })
-                    .catch(trx.rollback);
-                });
-            });
-        });
-    },
-
-    // this code updates lineitems for the quote where the lineitems
-    // were on the original quote. This is NOT the code for the admin
-    // interface to add lineitems. Instead use quote_line_item.model for that.
-    // No auth is required becuase we are not updating Admin quote line items
-    update: function(id, quoteObj) {
-        if ((!id) || (id.length === 0)) {
-            return Promise.reject(new Error('No quoteId specified!'));
-        }
-        if ((!quoteObj.accountId) || (quoteObj.accountId.length === 0)) {
-            return Promise.reject(new Error('No accountId specified!'));
-        }
-        if ((!quoteObj.productId) || (quoteObj.productId.length === 0)) {
-            return Promise.reject(new Error('No productId specified!'));
-        }
-        if ((!quoteObj.lineItems) || (quoteObj.lineItems.length === 0)) {
-            return Promise.reject(new Error('No lineItems specified!'));
-        }
-
-        return this.findByProductIdAccountId(quoteObj.productId, quoteObj.accountId).then(function(existingQuote) {
-            if (!(existingQuote) && (existingQuote.length === 0)) {
-                return Promise.reject(new Error('quoteId does not exist!'));
-            }
-            return db.knex.transaction(function(trx) {
-                var quoteId = id;
+        return db.knex.transaction(function(trx) {
+            // NOTE:
+            // If a table contains an AUTO_INCREMENT column and INSERT ... ON DUPLICATE KEY UPDATE
+            // inserts or updates a row, the LAST_INSERT_ID() function returns the AUTO_INCREMENT value.
+            // LAST_INSERT_ID(expr) on the other hand returns:
+            // a) insertId in the case of insert
+            // b) the id of the updated row in the case of update
+            // @see: http://dev.mysql.com/doc/refman/5.7/en/insert-on-duplicate.html
+            //       http://dev.mysql.com/doc/refman/5.7/en/information-functions.html#function_last-insert-id
+            var quoteInsertSql = 'INSERT INTO quote \
+                                  (account_id, product_id) \
+                                  VALUES(?, ?) \
+                                  ON DUPLICATE KEY UPDATE \
+                                  id=LAST_INSERT_ID(id), account_id = ?, product_id = ?';
+            var quoteInsertSqlParams = [quoteObj.accountId,
+                                        quoteObj.productId,
+                                        quoteObj.accountId,
+                                        quoteObj.productId];
+            return trx.raw(quoteInsertSql, quoteInsertSqlParams).then(function(messageInsertSqlResults) {
+                var quoteId = messageInsertSqlResults[0].insertId;
                 var lineItemPromises = [];
                 _.forEach(quoteObj.lineItems, function(lineItem) {
-                    var lineItemUpdateSql = 'UPDATE quotes_line_items \
-                                             SET text = ?, value = ?, notes = ? \
-                                             WHERE (quote_id = ? AND tax_return_id = ? AND original_quote = 1)';
-                    var lineItemUpdateSqlParams = ['Tax Prep.',
+                    var lineItemInsertSql = 'INSERT INTO quotes_line_items \
+                                             (quote_id, tax_return_id, text, value, notes) \
+                                             VALUES (?, ?, ?, ?, ?) \
+                                             ON DUPLICATE KEY UPDATE \
+                                             quote_id = ?, tax_return_id = ?, \
+                                             text = ?, value = ?, notes = ?';
+                    var lineItemInsertSqlParams = [quoteId,
+                                                   lineItem.taxReturnId,
+                                                   'Tax Prep.',
                                                    lineItem.price,
                                                    lineItem.notes,
                                                    quoteId,
-                                                   lineItem.taxReturnId
-                                                  ];
-                    lineItemPromises.push(db.knex.raw(lineItemUpdateSql, lineItemUpdateSqlParams));
+                                                   lineItem.taxReturnId,
+                                                   'Tax Prep.',
+                                                   lineItem.price,
+                                                   lineItem.notes];
+                    lineItemPromises.push(db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams));
                 });
                 return Promise.all(lineItemPromises)
                 .then(function() {
                     trx.commit;
                     return quoteId;
-                }).catch(trx.rollback);
+                })
+                .catch(trx.rollback);
             });
-
         });
     },
 
@@ -188,8 +155,14 @@ var Quote = {
         }
         var lineItemInsertSql = 'INSERT INTO quotes_line_items \
                                  (quote_id, text, value) \
-                                 VALUES (?, ?, ?)';
+                                 VALUES (?, ?, ?) \
+                                 ON DUPLICATE KEY UPDATE \
+                                 quote_id = ?, \
+                                 text = ?, value = ?';
          var lineItemInsertSqlParams = [quoteId,
+                                        text,
+                                        value,
+                                        quoteId,
                                         text,
                                         value];
         return db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams).then(function(lineItemInsertSqlResults) {

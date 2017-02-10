@@ -1,1 +1,0 @@
-ALTER TABLE quotes_line_items DROP INDEX UNIQUE_ROW;
