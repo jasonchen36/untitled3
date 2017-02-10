@@ -19,9 +19,10 @@ module.exports = function (router) {
     router.route('/quote/:id/submit')
         .post(PassportAuthMiddleware, quote.submit);
     router.route('/quote/:id')
-        .get(PassportAuthMiddleware, noCache, quote.findById);
+        .get(PassportAuthMiddleware, noCache, quote.findById)
+        .put(noCache, quote.updateQuote); // update quote does not require Auth!
     router.route('/quote')
-        .post(quote.create); // Create quote does not requite Auth!
+        .post(quote.create); // Create quote does not require Auth!
     router.route('/quote/:id/lineItem')
         .post(PassportAuthMiddleware, quote.createLineItem);
     router.route('/quote/:quoteId/lineItem/:lineItemId')

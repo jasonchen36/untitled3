@@ -129,6 +129,53 @@ var Quote = {
         });
     },
 
+    // this code updates lineitems for the quote where the lineitems
+    // were on the original quote. This is NOT the code for the admin
+    // interface to add lineitems. Instead use quote_line_item.model for that.
+    // No auth is required becuase we are not updating Admin quote line items
+    update: function(id, quoteObj) {
+        if ((!id) || (id.length === 0)) {
+            return Promise.reject(new Error('No quoteId specified!'));
+        }
+        if ((!quoteObj.accountId) || (quoteObj.accountId.length === 0)) {
+            return Promise.reject(new Error('No accountId specified!'));
+        }
+        if ((!quoteObj.productId) || (quoteObj.productId.length === 0)) {
+            return Promise.reject(new Error('No productId specified!'));
+        }
+        if ((!quoteObj.lineItems) || (quoteObj.lineItems.length === 0)) {
+            return Promise.reject(new Error('No lineItems specified!'));
+        }
+
+        return this.findByProductIdAccountId(quoteObj.productId, quoteObj.accountId).then(function(existingQuote) {
+            if (!(existingQuote) && (existingQuote.length === 0)) {
+                return Promise.reject(new Error('quoteId does not exist!'));
+            }
+            return db.knex.transaction(function(trx) {
+                var quoteId = id;
+                var lineItemPromises = [];
+                _.forEach(quoteObj.lineItems, function(lineItem) {
+                    var lineItemUpdateSql = 'UPDATE quotes_line_items \
+                                             SET text = ?, value = ?, notes = ? \
+                                             WHERE (quote_id = ? AND tax_return_id = ? AND original_quote = 1)';
+                    var lineItemUpdateSqlParams = ['Tax Prep.',
+                                                   lineItem.price,
+                                                   lineItem.notes,
+                                                   quoteId,
+                                                   lineItem.taxReturnId
+                                                  ];
+                    lineItemPromises.push(db.knex.raw(lineItemUpdateSql, lineItemUpdateSqlParams));
+                });
+                return Promise.all(lineItemPromises)
+                .then(function() {
+                    trx.commit;
+                    return quoteId;
+                }).catch(trx.rollback);
+            });
+
+        });
+    },
+
     createLineItem: function(quoteId, text, value) {
         if ((!text) || (text.length === 0)) {
             return Promise.reject(new Error('No text specified!'));
@@ -141,14 +188,8 @@ var Quote = {
         }
         var lineItemInsertSql = 'INSERT INTO quotes_line_items \
                                  (quote_id, text, value) \
-                                 VALUES (?, ?, ?) \
-                                 ON DUPLICATE KEY UPDATE \
-                                 quote_id = ?, \
-                                 text = ?, value = ?';
+                                 VALUES (?, ?, ?)';
          var lineItemInsertSqlParams = [quoteId,
-                                        text,
-                                        value,
-                                        quoteId,
                                         text,
                                         value];
         return db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams).then(function(lineItemInsertSqlResults) {

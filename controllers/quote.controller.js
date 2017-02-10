@@ -272,6 +272,139 @@ exports.create = function (req, res, next) {
     });
 };
 
+exports.updateQuote = function (req, res, next) {
+    req.checkParams('id', 'Please provide a quote Id').isInt();
+    req.checkBody('accountId', 'Please provide a accountId').isInt();
+    req.checkBody('productId', 'Please provide a productId').isInt();
+    req.checkBody('taxReturns', 'Please provide an taxReturns array').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = req.params.id;
+    var accountId = parseInt(req.body.accountId);
+    var productId = parseInt(req.body.productId);
+    var taxReturnsArr = req.body.taxReturns;
+
+    // check that accountId exists
+    return accountModel.findById(accountId).then(function(accountObj) {
+        if ((!accountObj) || (accountObj.length === 0)) {
+            return res.status(404).send({msg: 'Invalid account id'});
+        }
+        // check that productId exists
+        return productModel.findById(productId).then(function(productObj) {
+            if ((!productObj) || (productObj.length === 0)) {
+                return res.status(404).send({ msg: 'Invalid product id' });
+            }
+            var answerErrors = [];
+            var validateQuestionIdPromises = [];
+            _.forEach(taxReturnsArr, function(taxReturnObj) {
+                var taxReturnId = taxReturnObj.taxReturnId;
+                // Validate Answers
+                _.forEach(taxReturnObj.answers, function(answerObj) {
+                    if ((!answerObj.text) ||
+                        ((answerObj.text !== 'No') && (answerObj.text !== 'Yes'))) {
+                          // Invalid text value for answer
+                          var questionId = answerObj.questionId;
+                          answerErrors.push({taxReturnId: taxReturnId,
+                                             questionID: questionId,
+                                             error: 'Invalid text value for answer (questionId = ' + questionId + ')'});
+                    }
+                });
+
+                var validateQuestionId = function(questionId) {
+                    return questionModel.checkIdExists(questionId).then(function(isValid) {
+                        if (!isValid) {
+                            answerErrors.push({taxReturnId: taxReturnId,
+                                               questionID: questionId,
+                                               error: 'questionId = ' + questionId + ' not found on questions table'});
+                        }
+                    }).catch(function(err) {
+                        next(err);
+                    });
+                };
+                _.forEach(taxReturnObj.answers, function(answerObj) {
+                    validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
+                });
+            });
+            return Promise.all(validateQuestionIdPromises).then(function(result) {
+                if (answerErrors.length > 0) {
+                    return res.status(400).send(answerErrors);
+                }
+
+                // save question answers
+                var saveAnswer = function(answerObj) {
+                    return answerModel.create(answerObj);
+                };
+                var saveAnswersPromises = [];
+                _.forEach(taxReturnsArr, function(taxReturnObj) {
+                    _.forEach(taxReturnObj.answers, function(answerObj) {
+                        var taxReturnId = taxReturnObj.taxReturnId;
+                        answerObj.taxReturnId = taxReturnId;
+                        saveAnswersPromises.push(saveAnswer(answerObj));
+                    });
+                });
+                return Promise.all(saveAnswersPromises).then(function(result) {
+                    var quoteObj = {};
+                    quoteObj.accountId = accountId;
+                    quoteObj.productId = productId;
+                    quoteObj.quoteId = 0; // initialize to 0 (aka 'undefined')
+                    quoteObj.totalPrice = 0;
+                    quoteObj.lineItems = [];
+                    var getPackagePromises = [];
+
+
+
+                    _.forEach(taxReturnsArr, function(taxReturnObj) {
+                        var tmpLineItemObj = {};
+                        tmpLineItemObj.taxReturnId = taxReturnObj.taxReturnId;
+                        tmpLineItemObj.packageId = getPackageId(taxReturnObj.answers);
+                        getPackagePromises.push(packageModel.findById(tmpLineItemObj.packageId));
+                        quoteObj.lineItems.push(tmpLineItemObj);
+                    });
+
+                    return Promise.all(getPackagePromises).then(function(packageResultsArr) {
+                        _.forEach(packageResultsArr, function(packageResultObj) {
+                            var lineItemArr = _.where(quoteObj.lineItems, {packageId: packageResultObj.id});
+                            _.forEach(lineItemArr, function(lineItemObj) {
+                                lineItemObj.price = packageResultObj.price;
+                                lineItemObj.name = stringHelper.cleanString(packageResultObj.name);
+                                lineItemObj.description = stringHelper.cleanString(packageResultObj.description);
+                                lineItemObj.notes = stringHelper.cleanString(packageResultObj.notes);
+                                if (!lineItemObj.notes) {
+                                    lineItemObj.notes = ''; // fix undefined
+                                }
+                            });
+                        });
+console.log('quoteObj = ' + JSON.stringify(quoteObj, null, 2));
+
+
+                        return quoteModel.update(quoteId, quoteObj).then(function(quoteId) {
+                            quoteObj.quoteId = quoteId;
+                            _.forEach(quoteObj.lineItems, function(lineItemObj) {
+                                quoteObj.totalPrice = quoteObj.totalPrice + lineItemObj.price;
+                            });
+                            quoteObj.totalPrice = (Math.round(quoteObj.totalPrice * 100) / 100).toFixed(2);
+                            return res.status(200).json(quoteObj);
+                        }).catch(function(err) {
+                            next(err);
+                        });
+                    }).catch(function(err) {
+                        next(err);
+                    });
+                }).catch(function(err) {
+                    next(err);
+                });
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+            next(err);
+        });
+    }).catch(function(err) {
+        next(err);
+    });
+};
+
 var getPackageId = function(answers) {
     var isSelfEmployed = false;
     var hasRentalProperty = false;
