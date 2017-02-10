@@ -95,7 +95,7 @@ var Quote = {
         }
 
         return this.findByProductIdAccountId(quoteObj.productId, quoteObj.accountId).then(function(existingQuote) {
-            if (existingQuote) {
+            if ((existingQuote) && (existingQuote.length !== 0)) {
                 return Promise.reject(new Error('You are calling POST when a quote already exists for this accountId/productId. Use PUT /quote/:quoteId/lineItem/:lineItemId instead.'));
             }
             return db.knex.transaction(function(trx) {
