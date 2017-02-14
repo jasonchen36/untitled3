@@ -265,7 +265,7 @@ exports.updateTaxReturnById = function (req, res, next) {
             (!req.body.canadianCitizen) &&
             (!req.body.authorizeCra) &&
             (!req.body.filerType) &&
-            (!req.body.status) &&
+            (!req.body.statusId) &&
             (!req.body.sin) &&
             (!req.body.prefix) &&
             (!req.body.middleInitial) &&
@@ -281,12 +281,19 @@ exports.updateTaxReturnById = function (req, res, next) {
           if (typeof req.body.canadianCitizen !== "undefined") { taxReturnObj.canadian_citizen = req.body.canadianCitizen; }
           if (typeof req.body.authorizeCra !== "undefined") { taxReturnObj.authorize_cra = req.body.authorizeCra; }
           if (req.body.filerType) { taxReturnObj.filer_type = req.body.filerType; }
-          if (req.body.status) {taxReturnObj.status = req.body.status; }
           if (req.body.middleInitial) {taxReturnObj.middle_initial = req.body.middleInitial; }
           if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
           if (req.body.prefix) {taxReturnObj.prefix = req.body.prefix; }
-          if (req.body.refund) {taxReturnObj.refund = req.body.refund; }
-          if (req.body.details) {taxReturnObj.details = req.body.details; }
+
+          // only allow admin or taxpro to change these
+          if(userModel.isAdminOrTaxpro(req.user)) {
+            if (req.body.sin) {taxReturnObj.SIN = req.body.sin; }
+            if (req.body.statusId) {taxReturnObj.status_id = req.body.statusId; }
+            if (req.body.refund) {taxReturnObj.refund = req.body.refund; }
+            if (req.body.details) {taxReturnObj.details = req.body.details; }
+          }
+
+
           return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
               return taxReturnModel.findById(taxReturnId).then(function(taxReturn) {
                   if (!taxReturn) {
