@@ -28,6 +28,8 @@ var cacheService = require('../services/cache.service');
 var notificationService = require('../services/notification.service');
 var thumbnailService = require('../services/thumbnailService');
 var stringHelper = require('../helpers/stringHelper');
+// var stripe = require("stripe")(config.strip.secret); // TODO change to this when we have stipe key
+var stripe = require("stripe")("sk_test_3mBHxfjUosUc8FA6Pvxl2bOb"); // TESTING KEY ONLY
 
 var SMALL_BUSINESS_PACKAGE_ID = 1;
 var LANDLORD_PACKAGE_ID = 2;
@@ -1111,4 +1113,56 @@ exports.setDocumentAsViewed = function(req, res, next) {
       }).catch(function(err) {
         next(err);
       });
+};
+
+/*******************************************************************************
+ ENDPOINT
+ PUT /quote/:id/checkout
+
+ Params:
+ id (Quote Id)
+
+ INPUT BODY:
+ {
+  "stripeToken": "thisIsMyTokenFromStripe",
+  "email": "mymail@test.com"
+ }
+
+ RESPONSE:
+ 200 OK / 400 ERR
+ *******************************************************************************/
+exports.chargeStripe = function(req, res, next){
+    req.checkParams('id', 'Please provide a quote id').isInt();
+    req.checkBody('stripeToken', 'Please provide a Stripe Token').notEmpty();
+    req.checkBody('email', 'Please provide an email').notEmpty();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.id);
+    var stripeToken = req.body.stripeToken;
+    var email = req.body.email;
+
+    // Get Amount from quote id and then try charging
+    quoteModel.findById(quoteId)
+        .then(function(quote){
+            logger.debug("Found quote, charging Stripe.");
+            stripe.charges.create({
+                amount: quote.total * 100, // amount in cents
+                currency: "cad",
+                source: stripeToken,
+                description: "TAXplan Preparation Cost"
+            }).then(function(err, charge) {
+                logger.debug("Stripe err = " + JSON.stringify(err, null, 2));
+                // Errors?
+                if (err && err.outcome.type === 'authorized') {
+                    res.status(200).send();
+                } else {
+                    res.status(400).send(err.outcome.type);
+                }
+            }).catch(function(err) {
+                next(err);
+            });
+        }).catch(function(err) {
+        next(err);
+    });
 };
