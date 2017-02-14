@@ -40,6 +40,8 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, noCache, quote.getChecklistPDF);
     router.route('/quote/product/:productId/account/:accountId')
         .get(PassportAuthMiddleware, noCache, quote.findByAccountId);
-    router.route('/quote/:quoteId/taxReturn/:taxReturnId/setDirectDeposit')
-        .put(PassportAuthMiddleware, noCache, quote.setDirectDeposit);
+    router.route('/quote/:quoteId/lineItem/:lineItemId/enabled')
+        .put(PassportAuthMiddleware, noCache, quote.setLineItemEnabled);
+    router.route('/quote/:quoteId/lineItem/:lineItemId/disabled')
+        .put(PassportAuthMiddleware, noCache, quote.setLineItemDisabled);
 };

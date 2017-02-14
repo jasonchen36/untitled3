@@ -433,36 +433,34 @@ exports.submit = function (req, res, next) {
 
 /*******************************************************************************
 ENDPOINT
-PUT /quote/:quoteId/taxReturn/:taxReturnId/setDirectDeposit
+PUT /quote/:quoteId/lineItem/:lineItemId/enabled
 
 Params:
 quoteId
-taxReturnId
+lineItemId
 
 INPUT BODY:
-{
-  "enabled":  1
-}
+NONE
 
 RESPONSE:
 200 OK
 
 *******************************************************************************/
-exports.setDirectDeposit = function (req, res, next) {
+exports.setLineItemEnabled = function (req, res, next) {
     req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
-    req.checkParams('taxReturnId', 'Please provide an integer taxReturnId').isInt();
+    req.checkParams('lineItemId', 'Please provide an integer lineItemId').isInt();
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
     var quoteId = parseInt(req.params.quoteId);
-    var taxReturnId = parseInt(req.params.taxReturnId);
-    var enabled = parseInt(req.body.enabled);
+    var lineItemId = parseInt(req.params.lineItemId);
+    var enabled = 1;
     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
         if (!allowed) {
             return res.status(403).send();
         }
 
-        return quoteModel.setDirectDeposit(quoteId, taxReturnId, enabled).then(function() {
+        return quoteModel.setLineItemEnabled(quoteId, lineItemId, enabled).then(function() {
             return res.status(200).send();
         }).catch(function(err) {
             next(err);
@@ -470,6 +468,42 @@ exports.setDirectDeposit = function (req, res, next) {
     });
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /quote/:quoteId/lineItem/:lineItemId/disabled
+
+Params:
+quoteId
+lineItemId
+
+INPUT BODY:
+NONE
+
+RESPONSE:
+200 OK
+
+*******************************************************************************/
+exports.setLineItemDisabled = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide an integer lineItemId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var lineItemId = parseInt(req.params.lineItemId);
+    var enabled = 0;
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        return quoteModel.setLineItemEnabled(quoteId, lineItemId, enabled).then(function() {
+            return res.status(200).send();
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
 
 /*******************************************************************************
 ENDPOINT

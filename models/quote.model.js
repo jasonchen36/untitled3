@@ -314,9 +314,9 @@ var Quote = {
         });
     },
 
-    setDirectDeposit: function (quoteId, taxReturnId, enabled) {
-        var updateSql = 'UPDATE quotes_line_items SET enabled = ? WHERE quote_id = ? AND tax_return_id = ?';
-        var updateSqlParams = [enabled, quoteId, taxReturnId]
+    setLineItemEnabled: function (quoteId, lineItemId, enabled) {
+        var updateSql = 'UPDATE quotes_line_items SET enabled = ? WHERE quote_id = ? AND id = ?';
+        var updateSqlParams = [enabled, quoteId, lineItemId]
         return db.knex.raw(updateSql, updateSqlParams).then(function(updateSqlResults) {
             var affectedRows = updateSqlResults[0].affectedRows;
             return Promise.resolve(affectedRows);
