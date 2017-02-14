@@ -30,4 +30,5 @@ require('./quote.routes')(router);
 require('./question.routes')(router);
 require('./categories.routes')(router);
 require('./admin.routes')(router);
+require('./adminQuoteLineItem.routes')(router);
 exports.router = router;

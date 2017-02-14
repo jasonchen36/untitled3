@@ -208,33 +208,6 @@ var Quote = {
         });
     },
 
-//    createLineItem: function(quoteId, text, value) {
-//        if ((!text) || (text.length === 0)) {
-//            return Promise.reject(new Error('No text specified!'));
-//        }
-//        if ((!value) || (value.length === 0)) {
-//            return Promise.reject(new Error('No value specified!'));
-//        }
-//        if ((!quoteId) || (quoteId.length === 0)) {
-//            return Promise.reject(new Error('No quoteId specified!'));
-//        }
-//        var lineItemInsertSql = 'INSERT INTO quotes_line_items \
-//                                 (quote_id, text, value) \
-//                                 VALUES (?, ?, ?) \
-//                                 ON DUPLICATE KEY UPDATE \
-//                                 quote_id = ?, \
-//                                 text = ?, value = ?';
-//         var lineItemInsertSqlParams = [quoteId,
-//                                        text,
-//                                        value,
-//                                        quoteId,
-//                                        text,
-//                                        value];
-//        return db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams).then(function(lineItemInsertSqlResults) {
-//            return lineItemInsertSqlResults[0];
-//        });
-//    },
-
     checkIdExists: function(id) {
         if (!id) {
             return Promise.resolve(false);
