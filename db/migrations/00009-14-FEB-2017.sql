@@ -1,6 +1,5 @@
 ALTER TABLE `quotes_line_items` 
-DROP COLUMN `original_quote`,
-CHANGE COLUMN `checkbox` `enabled` TINYINT(1) UNSIGNED NULL DEFAULT '1' ;
+DROP COLUMN `original_quote`;
 
 ALTER TABLE `quotes_line_items` 
 DROP INDEX `UNIQUE_ROW` ,
@@ -21,3 +20,6 @@ CREATE TABLE `admin_quotes_line_items` (
   KEY `ndx_quote_id` (`quote_id`),
   KEY `ndx_tax_return_id` (`tax_return_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2028 DEFAULT CHARSET=utf8;
+
+INSERT INTO `taxplan_dev_api`.`checklist_items` (`name`, `subtitle`, `description`, `admin_only`) VALUES ('Documents to be Signed', 'Documents to be Signed', 'Documents to be Signed for this filer', 1);
+INSERT INTO `taxplan_dev_api`.`checklist_items` (`name`, `subtitle`, `description`, `admin_only`) VALUES ('Tax Return document', 'Tax Return document', 'Tax Return document for this filer', 1);
