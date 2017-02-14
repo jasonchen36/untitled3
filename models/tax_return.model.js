@@ -189,8 +189,8 @@ var TaxReturn = {
         }
 
         var taxReturnSql = 'SELECT \
-                              u.first_name, \
-                              u.last_name, \
+                              tr.first_name, \
+                              tr.last_name, \
                               c.name AS catagory, \
                               quest.text AS question, \
                               ans.text AS answer \
@@ -201,7 +201,7 @@ var TaxReturn = {
                             JOIN answers AS ans ON ans.tax_return_id = tr.id \
                             JOIN questions AS quest ON quest.id = ans.question_id \
                             JOIN categories AS c ON c.id = quest.category_id \
-                            WHERE tr.id = ? \
+                            WHERE tr.id = ? AND ans.text != "No" \
                             ORDER BY quest.category_id';
         return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturnsArr = taxReturnSqlResults[0];
