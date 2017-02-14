@@ -63,18 +63,20 @@ var Quote = {
                         var tax = 0;
                         _.forEach(quoteObj.quoteLineItems, function(lineItem) {
                             var taxReturn = _.find(quoteObj.taxReturns, {id: lineItem.tax_return_id});
-                            if (typeof(taxReturn) !== 'undefined') {
-                                if (taxReturn.province_of_residence === 'ON' ||
-                                    taxReturn.province_of_residence === 'PE' ||
-                                    taxReturn.province_of_residence === 'NB' ||
-                                    taxReturn.province_of_residence === 'NL' ||
-                                    taxReturn.province_of_residence === 'NS') {
-                                    tax += lineItem.value * 0.13;
-                                } else {
-                                    tax += 0;
+                            if (lineItem.enabled === 1)  {
+                                if (typeof(taxReturn) !== 'undefined') {
+                                    if (taxReturn.province_of_residence === 'ON' ||
+                                        taxReturn.province_of_residence === 'PE' ||
+                                        taxReturn.province_of_residence === 'NB' ||
+                                        taxReturn.province_of_residence === 'NL' ||
+                                        taxReturn.province_of_residence === 'NS') {
+                                        tax += lineItem.value * 0.13;
+                                    } else {
+                                        tax += 0;
+                                    }
                                 }
+                                subtotal = subtotal + lineItem.value;
                             }
-                            subtotal = subtotal + lineItem.value;
                         });
                         _.forEach(quoteObj.adminLineitems, function(adminLineItem) {
                             var taxReturn = _.find(quoteObj.taxReturns, {id: adminLineItem.tax_return_id});
