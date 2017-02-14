@@ -46,7 +46,7 @@ var AdminQuoteLineItem = {
         if ((!adminQuoteLineItemObj.quoteId) || (adminQuoteLineItemObj.quoteId.length === 0)) {
             return Promise.reject(new Error('No quoteId specified!'));
         }
-        if ((!adminQuoteLineItemObj.taxReturnId) || (adminQuoteLineItemObj.taxReturnId.length === 0)) {
+        if ((adminQuoteLineItemObj.taxReturnId) && (adminQuoteLineItemObj.taxReturnId.length === 0)) {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
         if ((!adminQuoteLineItemObj.text) || (adminQuoteLineItemObj.text.length === 0)) {
@@ -56,22 +56,31 @@ var AdminQuoteLineItem = {
             return Promise.reject(new Error('No value specified!'));
         }
 
-        var fieldnames = 'quote_id, tax_return_id, text, value';
-        var params = '?, ?, ?, ?';
+        var fieldnames = 'quote_id, text, value';
+        var params = '?, ?, ?';
         if ((adminQuoteLineItemObj.notes) && (adminQuoteLineItemObj.notes.length !== 0)) {
             fieldnames = fieldnames + ', notes';
+            params = params + ', ?';
+        }
+
+        if ((adminQuoteLineItemObj.taxReturnId) && (adminQuoteLineItemObj.taxReturnId.length !== 0)) {
+            fieldnames = fieldnames + ', tax_return_id';
             params = params + ', ?';
         }
 
         var adminQuoteLineItemInsertSql = 'INSERT INTO admin_quotes_line_items (' + fieldnames + ') VALUES(' + params + ')';
         var adminQuoteLineItemISqlParams = [
             adminQuoteLineItemObj.quoteId,
-            adminQuoteLineItemObj.taxReturnId,
             adminQuoteLineItemObj.text,
             adminQuoteLineItemObj.value
         ];
+
         if ((adminQuoteLineItemObj.notes) && (adminQuoteLineItemObj.notes.length !== 0)) {
             adminQuoteLineItemISqlParams.push(adminQuoteLineItemObj.notes);
+        }
+
+        if ((adminQuoteLineItemObj.taxReturnId) && (adminQuoteLineItemObj.taxReturnId.length !== 0)) {
+            adminQuoteLineItemISqlParams.push(adminQuoteLineItemObj.taxReturnId);
         }
 
         return db.knex.raw(adminQuoteLineItemInsertSql, adminQuoteLineItemISqlParams).then(function(adminQuoteLineItemInsertSqlResults) {

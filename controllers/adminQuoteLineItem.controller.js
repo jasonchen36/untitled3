@@ -51,7 +51,7 @@ RESPONSE:
  ******************************************************************************/
  exports.create = function (req, res, next) {
     req.checkParams('quoteId', 'Please provide a quoteId').isInt();
-    req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
+ //   req.checkBody('taxReturnId', 'Please provide a taxReturnId').isInt();
     req.checkBody('text', 'Please provide a text description').notEmpty();
     req.checkBody('value', 'Please provide a value').notEmpty();
     var errors = req.validationErrors();
@@ -59,7 +59,7 @@ RESPONSE:
 
     var adminQuoteLineItemObj = {};
     adminQuoteLineItemObj.quoteId = parseInt(req.params.quoteId);
-    adminQuoteLineItemObj.taxReturnId = parseInt(req.body.taxReturnId);
+    
     adminQuoteLineItemObj.text = req.body.text;
     adminQuoteLineItemObj.value = req.body.value;
     if ((req.body.notes) && (req.body.notes.length !==0)) {
@@ -68,9 +68,14 @@ RESPONSE:
 
     var validationPromises = [];
     var validationErrors = [];
-    validationPromises.push(validateTaxReturnId(adminQuoteLineItemObj.taxReturnId, validationErrors));
+
+    if(req.body.taxReturnId) {
+      adminQuoteLineItemObj.taxReturnId = parseInt(req.body.taxReturnId);
+          validationPromises.push(validateTaxReturnId(adminQuoteLineItemObj.taxReturnId, validationErrors));
+    }
+
     Promise.all(validationPromises).then(function() {
-       if (validationErrors.length > 0) {
+       if (validationErrors && validationErrors.length > 0) {
            return res.status(400).send(validationErrors);
        }
 
