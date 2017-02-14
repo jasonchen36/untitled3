@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var _ = require('lodash');
 var userModel = require('./user.model');
 var logger = require('../services/logger.service');
+var cacheService = require('../services/cache.service');
 
 var Quote = {
     hasAccess: function(userObj, quoteId) {
@@ -32,9 +33,12 @@ var Quote = {
         });
     },
 
-    findById: function(id) {
+    findById: function(id, includeDisabledLineitems) {
         if ((!id) || (id.length === 0)) {
             return Promise.reject(new Error('No id specified!'));
+        }
+        if ((typeof(includeDisabledLineitems) === 'undefined') || (includeDisabledLineitems.length === 0)) {
+            return Promise.reject(new Error('includeDisabledLineitems not specified!'));
         }
 
         var quoteSql = 'SELECT * FROM quote WHERE id = ?';
@@ -45,29 +49,55 @@ var Quote = {
             var taxReturnSql = 'SELECT * FROM tax_returns WHERE product_id = ? AND account_id = ?';
             return db.knex.raw(taxReturnSql, [productId, accountId]).then(function(taxReturnSqlResults) {
                 quoteObj.taxReturns = taxReturnSqlResults[0] || [];
-                var quoteLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND NOT ISNULL(tax_return_id)';
+                var quoteLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ?';
+                if (includeDisabledLineitems === 0) {
+                    quoteLineItemsSql = quoteLineItemsSql + ' AND enabled = 1';
+                }
+                quoteLineItemsSql = quoteLineItemsSql + ' ORDER BY tax_return_id ASC, value DESC';
                 return db.knex.raw(quoteLineItemsSql, [id]).then(function(quoteLineItemsSqlResults) {
                     quoteObj.quoteLineItems = quoteLineItemsSqlResults[0] || [];
-                    var otherLineItemsSql = 'SELECT * FROM quotes_line_items WHERE quote_id = ? AND ISNULL(tax_return_id)';
-                    return db.knex.raw(otherLineItemsSql, [id]).then(function(otherLineItemsSqlResults) {
-                        quoteObj.otherLineItems = otherLineItemsSqlResults[0] || [];
-                        var subtotalSql = 'SELECT SUM(value) AS subtotal FROM quotes_line_items WHERE quote_id = ?';
-                        return db.knex.raw(subtotalSql, [id]).then(function(subtotalSqlResults){
-                            quoteObj.subtotal = parseFloat(subtotalSqlResults[0][0].subtotal).toFixed(2) || [];
-                            var tax = 0;
-                            _.forEach(quoteObj.taxReturns, function(taxReturn){
-                                _.forEach(quoteObj.quoteLineItems, function(lineItem){
-                                    if (taxReturn.province_of_residence === "ON" || taxReturn.province_of_residence === "PE" || taxReturn.province_of_residence === "NB" || taxReturn.province_of_residence === "NL" || taxReturn.province_of_residence === "NS"){
+                    var adminLineitemsSql = 'SELECT * FROM admin_quotes_line_items WHERE quote_id = ?';
+                    return db.knex.raw(adminLineitemsSql, [id]).then(function(adminLineitemsSqlResults) {
+                        quoteObj.adminLineitems = adminLineitemsSqlResults[0] || [];
+                        var subtotal = 0;
+                        var tax = 0;
+                        _.forEach(quoteObj.quoteLineItems, function(lineItem) {
+                            var taxReturn = _.find(quoteObj.taxReturns, {id: lineItem.tax_return_id});
+                            if (lineItem.enabled === 1)  {
+                                if (typeof(taxReturn) !== 'undefined') {
+                                    if (taxReturn.province_of_residence === 'ON' ||
+                                        taxReturn.province_of_residence === 'PE' ||
+                                        taxReturn.province_of_residence === 'NB' ||
+                                        taxReturn.province_of_residence === 'NL' ||
+                                        taxReturn.province_of_residence === 'NS') {
                                         tax += lineItem.value * 0.13;
                                     } else {
                                         tax += 0;
                                     }
-                                });
-                            });
-                            quoteObj.tax = tax.toFixed(2);
-                            quoteObj.total = parseFloat(subtotalSqlResults[0][0].subtotal + (subtotalSqlResults[0][0].subtotal * 0.13)).toFixed(2);
-                            return quoteObj;
+                                }
+                                subtotal = subtotal + lineItem.value;
+                            }
                         });
+                        _.forEach(quoteObj.adminLineitems, function(adminLineItem) {
+                            var taxReturn = _.find(quoteObj.taxReturns, {id: adminLineItem.tax_return_id});
+                            if (typeof(taxReturn) !== 'undefined') {
+                                if (taxReturn.province_of_residence === 'ON' ||
+                                    taxReturn.province_of_residence === 'PE' ||
+                                    taxReturn.province_of_residence === 'NB' ||
+                                    taxReturn.province_of_residence === 'NL' ||
+                                    taxReturn.province_of_residence === 'NS') {
+                                    tax += adminLineItem.value * 0.13;
+                                } else {
+                                    tax += 0;
+                                }
+                            }
+                            subtotal = subtotal + adminLineItem.value;
+                        });
+                        quoteObj.subtotal = subtotal.toFixed(2);
+                        quoteObj.tax = tax.toFixed(2);
+                        quoteObj.total = (tax + subtotal).toFixed(2);
+                        return quoteObj;
+
                     });
                 });
             });
@@ -93,80 +123,88 @@ var Quote = {
         if ((!quoteObj.lineItems) || (quoteObj.lineItems.length === 0)) {
             return Promise.reject(new Error('No lineItems specified!'));
         }
-        return db.knex.transaction(function(trx) {
-            // NOTE:
-            // If a table contains an AUTO_INCREMENT column and INSERT ... ON DUPLICATE KEY UPDATE
-            // inserts or updates a row, the LAST_INSERT_ID() function returns the AUTO_INCREMENT value.
-            // LAST_INSERT_ID(expr) on the other hand returns:
-            // a) insertId in the case of insert
-            // b) the id of the updated row in the case of update
-            // @see: http://dev.mysql.com/doc/refman/5.7/en/insert-on-duplicate.html
-            //       http://dev.mysql.com/doc/refman/5.7/en/information-functions.html#function_last-insert-id
-            var quoteInsertSql = 'INSERT INTO quote \
-                                  (account_id, product_id) \
-                                  VALUES(?, ?) \
-                                  ON DUPLICATE KEY UPDATE \
-                                  id=LAST_INSERT_ID(id), account_id = ?, product_id = ?';
-            var quoteInsertSqlParams = [quoteObj.accountId,
-                                        quoteObj.productId,
-                                        quoteObj.accountId,
-                                        quoteObj.productId];
-            return trx.raw(quoteInsertSql, quoteInsertSqlParams).then(function(messageInsertSqlResults) {
-                var quoteId = messageInsertSqlResults[0].insertId;
-                var lineItemPromises = [];
-                _.forEach(quoteObj.lineItems, function(lineItem) {
-                    var lineItemInsertSql = 'INSERT INTO quotes_line_items \
-                                             (quote_id, tax_return_id, text, value, notes) \
-                                             VALUES (?, ?, ?, ?, ?) \
-                                             ON DUPLICATE KEY UPDATE \
-                                             quote_id = ?, tax_return_id = ?, \
-                                             text = ?, value = ?, notes = ?';
-                    var lineItemInsertSqlParams = [quoteId,
-                                                   lineItem.taxReturnId,
-                                                   'Tax Prep.',
-                                                   lineItem.price,
-                                                   lineItem.notes,
-                                                   quoteId,
-                                                   lineItem.taxReturnId,
-                                                   'Tax Prep.',
-                                                   lineItem.price,
-                                                   lineItem.notes];
-                    lineItemPromises.push(db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams));
-                });
-                return Promise.all(lineItemPromises)
-                .then(function() {
-                    trx.commit;
-                    return quoteId;
-                })
-                .catch(trx.rollback);
-            });
-        });
-    },
 
-    createLineItem: function(quoteId, text, value) {
-        if ((!text) || (text.length === 0)) {
-            return Promise.reject(new Error('No text specified!'));
-        }
-        if ((!value) || (value.length === 0)) {
-            return Promise.reject(new Error('No value specified!'));
-        }
-        if ((!quoteId) || (quoteId.length === 0)) {
-            return Promise.reject(new Error('No quoteId specified!'));
-        }
-        var lineItemInsertSql = 'INSERT INTO quotes_line_items \
-                                 (quote_id, text, value) \
-                                 VALUES (?, ?, ?) \
-                                 ON DUPLICATE KEY UPDATE \
-                                 quote_id = ?, \
-                                 text = ?, value = ?';
-         var lineItemInsertSqlParams = [quoteId,
-                                        text,
-                                        value,
-                                        quoteId,
-                                        text,
-                                        value];
-        return db.knex.raw(lineItemInsertSql, lineItemInsertSqlParams).then(function(lineItemInsertSqlResults) {
-            return lineItemInsertSqlResults[0];
+        return cacheService.get('values', this.getDirectDepositAmounts()).then(function(depositAmountsCache) {
+            var directDepositRec = _.find(depositAmountsCache, {product_id: quoteObj.productId});
+            if ((!directDepositRec) || (directDepositRec.length === 0)) {
+                return Promise.reject(new Error('Failed to get direct deposit amount. Is there missing config?'));
+            }
+            var directDepositAmount = directDepositRec.amount.toFixed(2);
+            return db.knex.transaction(function(trx) {
+                // NOTE:
+                // If a table contains an AUTO_INCREMENT column and INSERT ... ON DUPLICATE KEY UPDATE
+                // inserts or updates a row, the LAST_INSERT_ID() function returns the AUTO_INCREMENT value.
+                // LAST_INSERT_ID(expr) on the other hand returns:
+                // a) insertId in the case of insert
+                // b) the id of the updated row in the case of update
+                // @see: http://dev.mysql.com/doc/refman/5.7/en/insert-on-duplicate.html
+                //       http://dev.mysql.com/doc/refman/5.7/en/information-functions.html#function_last-insert-id
+                var quoteInsertSql = 'INSERT INTO quote \
+                                      (account_id, product_id) \
+                                      VALUES(?, ?) \
+                                      ON DUPLICATE KEY UPDATE \
+                                      id=LAST_INSERT_ID(id), account_id = ?, product_id = ?';
+                var quoteInsertSqlParams = [quoteObj.accountId,
+                                            quoteObj.productId,
+                                            quoteObj.accountId,
+                                            quoteObj.productId];
+                return trx.raw(quoteInsertSql, quoteInsertSqlParams).then(function(messageInsertSqlResults) {
+                    var quoteId = messageInsertSqlResults[0].insertId;
+                    var lineItemPromises = [];
+                    _.forEach(quoteObj.lineItems, function(lineItem) {
+                        var taxprepInsertSql = 'INSERT INTO quotes_line_items \
+                                                (quote_id, tax_return_id, text, value, notes, enabled) \
+                                                VALUES (?, ?, ?, ?, ?, ?) \
+                                                ON DUPLICATE KEY UPDATE \
+                                                quote_id = ?, tax_return_id = ?, \
+                                                text = ?, value = ?, notes = ?, enabled = ?';
+                        var taxprepInsertSqlParams = [
+                                                      quoteId,
+                                                      lineItem.taxReturnId,
+                                                      'Tax Prep.',
+                                                      lineItem.price,
+                                                      lineItem.notes,
+                                                      1,
+                                                      quoteId,
+                                                      lineItem.taxReturnId,
+                                                      'Tax Prep.',
+                                                      lineItem.price,
+                                                      lineItem.notes,
+                                                      1
+                                                    ];
+                        lineItemPromises.push(db.knex.raw(taxprepInsertSql, taxprepInsertSqlParams));
+
+                        var directDepositInsertSql = 'INSERT INTO quotes_line_items \
+                                                      (quote_id, tax_return_id, text, value, notes, enabled) \
+                                                      VALUES (?, ?, ?, ?, ?, ?) \
+                                                      ON DUPLICATE KEY UPDATE \
+                                                      quote_id = ?, tax_return_id = ?, \
+                                                      text = ?, value = ?, notes = ?, enabled = ?';
+                        var directDepositInsertSqlParams = [
+                                                            quoteId,
+                                                            lineItem.taxReturnId,
+                                                            'Direct Deposit',
+                                                            directDepositAmount,
+                                                            lineItem.notes,
+                                                            0,
+                                                            quoteId,
+                                                            lineItem.taxReturnId,
+                                                            'Direct Deposit',
+                                                            directDepositAmount,
+                                                            lineItem.notes,
+                                                            0
+                                                          ];
+                        lineItemPromises.push(db.knex.raw(directDepositInsertSql, directDepositInsertSqlParams));
+                    });
+                    return Promise.each(lineItemPromises, function() { // .each to avoid ER_LOCK_DEADLOCK
+
+                    }).then(function() {
+                        trx.commit;
+                        return quoteId;
+                    })
+                    .catch(trx.rollback);
+                });
+            });
         });
     },
 
@@ -241,6 +279,22 @@ var Quote = {
             return db.knex.raw(questionsSql, questionsSqlParams).then(function(questionsSqlResults) {
                return questionsSqlResults[0];
             });
+        });
+    },
+
+    getDirectDepositAmounts: function () {
+        var directDepositAmountSql = 'SELECT * FROM direct_deposit_amount';
+        return db.knex.raw(directDepositAmountSql, []).then(function(directDepositAmountSqlResults) {
+            return directDepositAmountSqlResults[0];
+        });
+    },
+
+    setLineItemEnabled: function (quoteId, lineItemId, enabled) {
+        var updateSql = 'UPDATE quotes_line_items SET enabled = ? WHERE quote_id = ? AND id = ?';
+        var updateSqlParams = [enabled, quoteId, lineItemId]
+        return db.knex.raw(updateSql, updateSqlParams).then(function(updateSqlResults) {
+            var affectedRows = updateSqlResults[0].affectedRows;
+            return Promise.resolve(affectedRows);
         });
     }
 

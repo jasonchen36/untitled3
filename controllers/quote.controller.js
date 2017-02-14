@@ -21,7 +21,6 @@ var questionModel = require('../models/question.model');
 var answerModel = require('../models/answer.model');
 var taxReturnModel = require('../models/tax_return.model');
 var checklistModel = require('../models/checklist.model');
-var quoteLineItemModel = require('../models/quote_line_item.model');
 var packageModel = require('../models/package.model');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
@@ -39,6 +38,28 @@ var STUDENT_PACKAGE_ID = 6;
 var SMALL_BUSINESS_PLUS_LANDLORD_PACKAGE_ID = 7;
 
 
+var validateTaxReturnId = function(taxReturnId) {
+    return taxReturnModel.checkIdExists(taxReturnId).then(function(isValid) {
+        if (!isValid) {
+            answerErrors.push({taxReturnId: taxReturnId,
+                               error: 'taxReturnId = ' + taxReturnId + ' does not exist'});
+        }
+    }).catch(function(err) {
+        next(err);
+    });
+};
+
+var validateQuestionId = function(questionId) {
+    return questionModel.checkIdExists(questionId).then(function(isValid) {
+        if (!isValid) {
+            answerErrors.push({taxReturnId: taxReturnId,
+                               questionID: questionId,
+                               error: 'questionId = ' + questionId + ' not found on questions table'});
+        }
+    }).catch(function(err) {
+        next(err);
+    });
+};
 
 /*******************************************************************************
 ENDPOINT
@@ -166,9 +187,11 @@ exports.create = function (req, res, next) {
                 return res.status(404).send({ msg: 'Invalid product id' });
             }
             var answerErrors = [];
-            var validateQuestionIdPromises = [];
+            var validationPromises = [];
+
             _.forEach(taxReturnsArr, function(taxReturnObj) {
                 var taxReturnId = taxReturnObj.taxReturnId;
+                validationPromises.push(validateTaxReturnId(taxReturnId));
                 // Validate Answers
                 _.forEach(taxReturnObj.answers, function(answerObj) {
                     if ((!answerObj.text) ||
@@ -181,22 +204,12 @@ exports.create = function (req, res, next) {
                     }
                 });
 
-                var validateQuestionId = function(questionId) {
-                    return questionModel.checkIdExists(questionId).then(function(isValid) {
-                        if (!isValid) {
-                            answerErrors.push({taxReturnId: taxReturnId,
-                                               questionID: questionId,
-                                               error: 'questionId = ' + questionId + ' not found on questions table'});
-                        }
-                    }).catch(function(err) {
-                        next(err);
-                    });
-                };
+
                 _.forEach(taxReturnObj.answers, function(answerObj) {
-                    validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
+                    validationPromises.push(validateQuestionId(answerObj.questionId));
                 });
             });
-            return Promise.all(validateQuestionIdPromises).then(function(result) {
+            return Promise.all(validationPromises).then(function(result) {
                 if (answerErrors.length > 0) {
                     return res.status(400).send(answerErrors);
                 }
@@ -419,44 +432,80 @@ exports.submit = function (req, res, next) {
     });
 };
 
-
 /*******************************************************************************
 ENDPOINT
-POST /quote/:id/lineItem
+PUT /quote/:quoteId/lineItem/:lineItemId/enabled
 
 Params:
 quoteId
+lineItemId
 
 INPUT BODY:
-{
-  "text":  "sadfdasf",
-  "value":   10
-}
+NONE
 
 RESPONSE:
 200 OK
- ******************************************************************************/
 
- exports.createLineItem = function (req, res, next) {
-     req.checkBody('text', 'Please provide a text').notEmpty();
-     req.checkBody('value', 'Please provide a value').notEmpty();
-     req.checkParams('id', 'Please provide a quoteId').isInt();
-     var errors = req.validationErrors();
-     if (errors) { return res.status(400).send(errors); }
-     var text = req.body.text;
-     var value = req.body.value;
-     var quoteId = parseInt(req.params.id);
-     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
-         if (!allowed) {
-             return res.status(403).send();
-         }
-         return quoteModel.createLineItem(quoteId, text, value).then(function() {
-             res.status(200).send();
-         }).catch(function(err) {
-             next(err);
-         });
+*******************************************************************************/
+exports.setLineItemEnabled = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide an integer lineItemId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var lineItemId = parseInt(req.params.lineItemId);
+    var enabled = 1;
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        return quoteModel.setLineItemEnabled(quoteId, lineItemId, enabled).then(function() {
+            return res.status(200).send();
+        }).catch(function(err) {
+            next(err);
+        });
     });
- };
+};
+
+/*******************************************************************************
+ENDPOINT
+PUT /quote/:quoteId/lineItem/:lineItemId/disabled
+
+Params:
+quoteId
+lineItemId
+
+INPUT BODY:
+NONE
+
+RESPONSE:
+200 OK
+
+*******************************************************************************/
+exports.setLineItemDisabled = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
+    req.checkParams('lineItemId', 'Please provide an integer lineItemId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var lineItemId = parseInt(req.params.lineItemId);
+    var enabled = 0;
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        return quoteModel.setLineItemEnabled(quoteId, lineItemId, enabled).then(function() {
+            return res.status(200).send();
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
 
 /*******************************************************************************
 ENDPOINT
@@ -532,15 +581,22 @@ RESPONSE:
 *******************************************************************************/
 exports.findById = function (req, res, next) {
     req.checkParams('id', 'Please provide a quoteId').isInt();
+    if (req.query.includeDisabledLineitems) {
+        req.checkQuery('includeDisabledLineitems', 'includeDisabledLineitems should be an integer').isInt();
+    }
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
     var quoteId = parseInt(req.params.id);
+    var includeDisabledLineitems = 0; // dcefault is do not include
+    if (req.query.includeDisabledLineitems) {
+        includeDisabledLineitems = parseInt(req.query.includeDisabledLineitems);
+    }
     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
         if (!allowed) {
             return res.status(403).send();
         }
-        return quoteModel.findById(quoteId).then(function(quoteQbj) {
+        return quoteModel.findById(quoteId, includeDisabledLineitems).then(function(quoteQbj) {
             if (!quoteQbj) {
                 return res.status(404).send();
             }
@@ -704,47 +760,6 @@ exports.deleteDocumentById = function (req, res, next) {
                 return res.status(404).send();
             }
             return documentModel.deleteById(quoteId, documentId).then(function() {
-                res.status(200).send('Ok');
-
-                // update the last User activity of the logged in user
-                userModel.updateLastUserActivity(req.user);
-            }).catch(function(err) {
-                next(err);
-            });
-        }).catch(function(err) {
-            next(err);
-        });
-    });
-};
-
-/*******************************************************************************
-ENDPOINT
-DELETE /quote/:id/lineItem/:id
-
-Params:
-quoteId and lineItemId
-
-RESPONSE:
-200 OK or 404
-*******************************************************************************/
-exports.deleteLineItemById = function (req, res, next) {
-    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
-    req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
-    var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); }
-
-    var quoteId = parseInt(req.params.quoteId);
-    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
-        if (!allowed) {
-            return res.status(403).send();
-        }
-
-        var lineItemId = parseInt(req.params.lineItemId);
-        return quoteLineItemModel.findById(lineItemId).then(function(documentObj) {
-            if (!documentObj) {
-                return res.status(404).send();
-            }
-            return quoteLineItemModel.deleteById(quoteId, lineItemId).then(function() {
                 res.status(200).send('Ok');
 
                 // update the last User activity of the logged in user
@@ -997,69 +1012,6 @@ exports.getChecklistPDF = function(req, res, next) {
 
 
             doc.end();
-        }).catch(function(err) {
-            next(err);
-        });
-    });
-};
-
-/*******************************************************************************
- ENDPOINT
- PUT /quote/:id/lineItem/:id
-
- Params:
- taxReturnId and lineItemId
-
- INPUT BODY:
- {
-   "text": "adfadsf",
-   "value": 90
- }
-
- RESPONSE:
- 200 OK
- *******************************************************************************/
-exports.updateLineItem = function (req, res, next) {
-    req.checkParams('quoteId', 'Please provide a quoteId').isInt();
-    req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
-    var errors = req.validationErrors();
-    if (errors) { return res.status(400).send(errors); }
-
-    var text = req.body.text;
-    var value = req.body.value;
-    var checkbox = req.body.checkbox;
-    var originalQuote = req.body.originalQuote;
-    var lineItemId = parseInt(req.params.lineItemId);
-    var quoteId = parseInt(req.params.quoteId);
-    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
-        if (!allowed) {
-            return res.status(403).send();
-        }
-        // check that lineItemId exists
-        return quoteLineItemModel.findById(lineItemId).then(function(lineItem) {
-            if ((!lineItem) || (lineItem.length === 0)) {
-                return res.status(404).send({ msg: 'Line item not found' });
-            }
-            var lineItemObj = {};
-            if (req.body.text) { lineItemObj.text= req.body.text; }
-            if (req.body.value) { lineItemObj.value = req.body.value; }
-            if (req.body.checkbox) { lineItemObj.checkbox = req.body.checkbox; }
-            if (req.body.originalQuote) { lineItemObj.original_quote = req.body.originalQuote; }
-
-            return quoteLineItemModel.update(lineItemId,lineItemObj).then(function() {
-                var resultObj = {};
-                resultObj.text = text;
-                resultObj.value = value;
-                resultObj.checkbox = checkbox;
-                resultObj.originalQuote = originalQuote;
-
-                res.status(200).json(resultObj);
-
-                // update the last User activity of the logged in user
-                userModel.updateLastUserActivity(req.user);
-            }).catch(function(err) {
-                next(err);
-            });
         }).catch(function(err) {
             next(err);
         });
