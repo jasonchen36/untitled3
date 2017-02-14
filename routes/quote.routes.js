@@ -40,4 +40,6 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, noCache, quote.getChecklistPDF);
     router.route('/quote/product/:productId/account/:accountId')
         .get(PassportAuthMiddleware, noCache, quote.findByAccountId);
+    router.route('/quote/:id/checkout')
+        .post(PassportAuthMiddleware, quote.chargeStripe);
 };
