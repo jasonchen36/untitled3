@@ -22,11 +22,11 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, noCache, quote.findById);
     router.route('/quote')
         .post(quote.create); // Create quote does not requite Auth!
-    router.route('/quote/:id/lineItem')
-        .post(PassportAuthMiddleware, quote.createLineItem);
-    router.route('/quote/:quoteId/lineItem/:lineItemId')
-        .put(PassportAuthMiddleware, quote.updateLineItem)
-        .delete(PassportAuthMiddleware, quote.deleteLineItemById);
+//    router.route('/quote/:id/lineItem')
+//        .post(PassportAuthMiddleware, quote.createLineItem);
+//    router.route('/quote/:quoteId/lineItem/:lineItemId')
+//        .put(PassportAuthMiddleware, quote.updateLineItem)
+//        .delete(PassportAuthMiddleware, quote.deleteLineItemById);
     router.route('/quote/:id/adminChecklist')
         .get(PassportAuthMiddleware, quote.getAdminChecklist);
     router.route('/quote/:id/document')
@@ -40,4 +40,6 @@ module.exports = function (router) {
         .get(PassportAuthMiddleware, noCache, quote.getChecklistPDF);
     router.route('/quote/product/:productId/account/:accountId')
         .get(PassportAuthMiddleware, noCache, quote.findByAccountId);
+    router.route('/quote/:quoteId/taxReturn/:taxReturnId/setDirectDeposit')
+        .put(PassportAuthMiddleware, noCache, quote.setDirectDeposit);
 };

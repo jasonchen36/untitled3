@@ -21,7 +21,7 @@ var questionModel = require('../models/question.model');
 var answerModel = require('../models/answer.model');
 var taxReturnModel = require('../models/tax_return.model');
 var checklistModel = require('../models/checklist.model');
-var quoteLineItemModel = require('../models/quote_line_item.model');
+//var quoteLineItemModel = require('../models/quote_line_item.model');
 var packageModel = require('../models/package.model');
 var logger = require('../services/logger.service');
 var cacheService = require('../services/cache.service');
@@ -37,6 +37,28 @@ var STUDENT_PACKAGE_ID = 6;
 var SMALL_BUSINESS_PLUS_LANDLORD_PACKAGE_ID = 7;
 
 
+var validateTaxReturnId = function(taxReturnId) {
+    return taxReturnModel.checkIdExists(taxReturnId).then(function(isValid) {
+        if (!isValid) {
+            answerErrors.push({taxReturnId: taxReturnId,
+                               error: 'taxReturnId = ' + taxReturnId + ' does not exist'});
+        }
+    }).catch(function(err) {
+        next(err);
+    });
+};
+
+var validateQuestionId = function(questionId) {
+    return questionModel.checkIdExists(questionId).then(function(isValid) {
+        if (!isValid) {
+            answerErrors.push({taxReturnId: taxReturnId,
+                               questionID: questionId,
+                               error: 'questionId = ' + questionId + ' not found on questions table'});
+        }
+    }).catch(function(err) {
+        next(err);
+    });
+};
 
 /*******************************************************************************
 ENDPOINT
@@ -164,9 +186,11 @@ exports.create = function (req, res, next) {
                 return res.status(404).send({ msg: 'Invalid product id' });
             }
             var answerErrors = [];
-            var validateQuestionIdPromises = [];
+            var validationPromises = [];
+
             _.forEach(taxReturnsArr, function(taxReturnObj) {
                 var taxReturnId = taxReturnObj.taxReturnId;
+                validationPromises.push(validateTaxReturnId(taxReturnId));
                 // Validate Answers
                 _.forEach(taxReturnObj.answers, function(answerObj) {
                     if ((!answerObj.text) ||
@@ -179,22 +203,12 @@ exports.create = function (req, res, next) {
                     }
                 });
 
-                var validateQuestionId = function(questionId) {
-                    return questionModel.checkIdExists(questionId).then(function(isValid) {
-                        if (!isValid) {
-                            answerErrors.push({taxReturnId: taxReturnId,
-                                               questionID: questionId,
-                                               error: 'questionId = ' + questionId + ' not found on questions table'});
-                        }
-                    }).catch(function(err) {
-                        next(err);
-                    });
-                };
+
                 _.forEach(taxReturnObj.answers, function(answerObj) {
-                    validateQuestionIdPromises.push(validateQuestionId(answerObj.questionId));
+                    validationPromises.push(validateQuestionId(answerObj.questionId));
                 });
             });
-            return Promise.all(validateQuestionIdPromises).then(function(result) {
+            return Promise.all(validationPromises).then(function(result) {
                 if (answerErrors.length > 0) {
                     return res.status(400).send(answerErrors);
                 }
@@ -417,6 +431,45 @@ exports.submit = function (req, res, next) {
     });
 };
 
+/*******************************************************************************
+ENDPOINT
+PUT /quote/:quoteId/taxReturn/:taxReturnId/setDirectDeposit
+
+Params:
+quoteId
+taxReturnId
+
+INPUT BODY:
+{
+  "enabled":  1
+}
+
+RESPONSE:
+200 OK
+
+*******************************************************************************/
+exports.setDirectDeposit = function (req, res, next) {
+    req.checkParams('quoteId', 'Please provide an integer quoteId').isInt();
+    req.checkParams('taxReturnId', 'Please provide an integer taxReturnId').isInt();
+    var errors = req.validationErrors();
+    if (errors) { return res.status(400).send(errors); }
+
+    var quoteId = parseInt(req.params.quoteId);
+    var taxReturnId = parseInt(req.params.taxReturnId);
+    var enabled = parseInt(req.body.enabled);
+    return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        return quoteModel.setDirectDeposit(quoteId, taxReturnId, enabled).then(function() {
+            return res.status(200).send();
+        }).catch(function(err) {
+            next(err);
+        });
+    });
+};
+
 
 /*******************************************************************************
 ENDPOINT
@@ -434,7 +487,7 @@ INPUT BODY:
 RESPONSE:
 200 OK
  ******************************************************************************/
-
+/*
  exports.createLineItem = function (req, res, next) {
      req.checkBody('text', 'Please provide a text').notEmpty();
      req.checkBody('value', 'Please provide a value').notEmpty();
@@ -454,7 +507,7 @@ RESPONSE:
              next(err);
          });
     });
- };
+ };*/
 
 /*******************************************************************************
 ENDPOINT
@@ -530,15 +583,23 @@ RESPONSE:
 *******************************************************************************/
 exports.findById = function (req, res, next) {
     req.checkParams('id', 'Please provide a quoteId').isInt();
+    if (req.query.includeDisabledLineitems) {
+        req.checkQuery('includeDisabledLineitems', 'includeDisabledLineitems should be an integer').isInt();
+    }
     var errors = req.validationErrors();
     if (errors) { return res.status(400).send(errors); }
 
     var quoteId = parseInt(req.params.id);
+    var includeDisabledLineitems = 0; // dcefault is do not include
+    if (req.query.includeDisabledLineitems) {
+        includeDisabledLineitems = parseInt(req.query.includeDisabledLineitems);
+    }
+console.log('includeDisabledLineitems: ' + includeDisabledLineitems);
     return quoteModel.hasAccess(req.user, quoteId).then(function(allowed) {
         if (!allowed) {
             return res.status(403).send();
         }
-        return quoteModel.findById(quoteId).then(function(quoteQbj) {
+        return quoteModel.findById(quoteId, includeDisabledLineitems).then(function(quoteQbj) {
             if (!quoteQbj) {
                 return res.status(404).send();
             }
@@ -725,7 +786,7 @@ quoteId and lineItemId
 RESPONSE:
 200 OK or 404
 *******************************************************************************/
-exports.deleteLineItemById = function (req, res, next) {
+/*exports.deleteLineItemById = function (req, res, next) {
     req.checkParams('quoteId', 'Please provide a quoteId').isInt();
     req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
     var errors = req.validationErrors();
@@ -755,7 +816,7 @@ exports.deleteLineItemById = function (req, res, next) {
         });
     });
 };
-
+*/
 /*******************************************************************************
 ENDPOINT
 GET /quote/:quoteId/document/documentId
@@ -1017,7 +1078,7 @@ exports.getChecklistPDF = function(req, res, next) {
  RESPONSE:
  200 OK
  *******************************************************************************/
-exports.updateLineItem = function (req, res, next) {
+/*exports.updateLineItem = function (req, res, next) {
     req.checkParams('quoteId', 'Please provide a quoteId').isInt();
     req.checkParams('lineItemId', 'Please provide a lineItemId').isInt();
     var errors = req.validationErrors();
@@ -1062,7 +1123,7 @@ exports.updateLineItem = function (req, res, next) {
             next(err);
         });
     });
-};
+};*/
 
 
 exports.findByAccountId = function(req, res, next) {
