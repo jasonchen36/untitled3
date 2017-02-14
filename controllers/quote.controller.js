@@ -1155,7 +1155,7 @@ exports.chargeStripe = function(req, res, next){
                 logger.debug("Stripe err = " + JSON.stringify(err, null, 2));
                 // Errors?
                 if (err && err.outcome.type === 'authorized') {
-                    res.status(200).send();
+                    res.status(200).send(err.outcome.type);
                 } else {
                     res.status(400).send(err.outcome.type);
                 }
