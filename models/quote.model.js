@@ -124,7 +124,7 @@ var Quote = {
             return Promise.reject(new Error('No lineItems specified!'));
         }
 
-        return cacheService.get('values', this.getDirectDepositAmounts()).then(function(depositAmountsCache) {
+        return cacheService.get('depositAmounts', this.getDirectDepositAmounts()).then(function(depositAmountsCache) {
             var directDepositRec = _.find(depositAmountsCache, {product_id: quoteObj.productId});
             if ((!directDepositRec) || (directDepositRec.length === 0)) {
                 return Promise.reject(new Error('Failed to get direct deposit amount. Is there missing config?'));
