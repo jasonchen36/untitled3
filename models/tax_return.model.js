@@ -188,12 +188,15 @@ var TaxReturn = {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
 
-        var taxReturnSql = 'SELECT \
+        var taxReturnSql = 'SELECT * FROM (SELECT \
                               tr.first_name, \
                               tr.last_name, \
                               c.name AS catagory, \
                               quest.text AS question, \
-                              ans.text AS answer \
+                              ans.text AS answer, \
+                              NULL AS relationship, \
+                              NULL as birthdate, \
+                              NULL as isShared \
                             FROM users AS u \
                             JOIN accounts AS a ON a.id = u.account_id \
                             JOIN tax_returns AS tr ON tr.account_id = u.account_id \
@@ -202,8 +205,28 @@ var TaxReturn = {
                             JOIN questions AS quest ON quest.id = ans.question_id \
                             JOIN categories AS c ON c.id = quest.category_id \
                             WHERE tr.id = ? AND ans.text != "No" \
-                            ORDER BY quest.category_id';
-        return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
+                            UNION ALL \
+                            SELECT \
+                                                  tr.first_name, \
+                                                  tr.last_name, \
+                                                  c.name AS catagory, \
+                                                  quest.text AS question, \
+                                                  ans.text AS answer, \
+                                                  d.relationship AS relationship, \
+                                                  DATE_FORMAT(d.date_of_birth, "%m-%d-%Y") as birthdate, \
+                                                  d.is_shared as isShared \
+                                                FROM users AS u \
+                                                JOIN accounts AS a ON a.id = u.account_id \
+                                                JOIN tax_returns AS tr ON tr.account_id = u.account_id \
+                                                JOIN quote AS q ON q.account_id = u.account_id \
+                                                JOIN answers AS ans ON ans.tax_return_id = tr.id \
+                                                JOIN questions AS quest ON quest.id = ans.question_id \
+                                                JOIN categories AS c ON c.id = quest.category_id \
+                                                JOIN tax_returns_dependants as trd ON trd.tax_return_id = tr.id \
+						                        JOIN dependants as d ON d.id = trd.dependant_id and c.name = "Dependants" \
+                                                WHERE tr.id = ? AND ans.text != "No") dum\
+                                                ORDER BY catagory'
+        return db.knex.raw(taxReturnSql, [taxReturnId, taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturnsArr = taxReturnSqlResults[0];
             return Promise.resolve(taxReturnsArr);
         });
