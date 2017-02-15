@@ -194,6 +194,8 @@ var TaxReturn = {
                               c.name AS catagory, \
                               quest.text AS question, \
                               ans.text AS answer, \
+                              NULL as dependant_first_name, \
+                              NULL as dependant_last_name, \
                               NULL AS relationship, \
                               NULL as birthdate, \
                               NULL as isShared \
@@ -212,6 +214,8 @@ var TaxReturn = {
                                                   c.name AS catagory, \
                                                   quest.text AS question, \
                                                   ans.text AS answer, \
+                                                  d.first_name AS dependant_first_name, \
+                                                  d.last_name AS dependant_last_name, \
                                                   d.relationship AS relationship, \
                                                   DATE_FORMAT(d.date_of_birth, "%m-%d-%Y") as birthdate, \
                                                   d.is_shared as isShared \
