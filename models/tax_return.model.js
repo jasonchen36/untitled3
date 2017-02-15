@@ -188,7 +188,7 @@ var TaxReturn = {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
 
-        var taxReturnSql = 'SELECT \
+        var taxReturnSql = 'SELECT * FROM (SELECT \
                               tr.first_name, \
                               tr.last_name, \
                               c.name AS catagory, \
@@ -224,7 +224,8 @@ var TaxReturn = {
                                                 JOIN categories AS c ON c.id = quest.category_id \
                                                 JOIN tax_returns_dependants as trd ON trd.tax_return_id = tr.id \
 						                        JOIN dependants as d ON d.id = trd.dependant_id and c.name = "Dependants" \
-                                                WHERE tr.id = ? AND ans.text != "No"'
+                                                WHERE tr.id = ? AND ans.text != "No") dum\
+                                                ORDER BY catagory'
         return db.knex.raw(taxReturnSql, [taxReturnId, taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturnsArr = taxReturnSqlResults[0];
             return Promise.resolve(taxReturnsArr);
