@@ -194,6 +194,8 @@ var TaxReturn = {
                               c.name AS catagory, \
                               quest.text AS question, \
                               ans.text AS answer, \
+                              NULL as dependant_first_name, \
+                              NULL as dependant_last_name, \
                               NULL AS relationship, \
                               NULL as birthdate, \
                               NULL as isShared \
@@ -204,7 +206,7 @@ var TaxReturn = {
                             JOIN answers AS ans ON ans.tax_return_id = tr.id \
                             JOIN questions AS quest ON quest.id = ans.question_id \
                             JOIN categories AS c ON c.id = quest.category_id \
-                            WHERE tr.id = ? AND ans.text != "No" \
+                            WHERE tr.id = ? AND ans.text != "No" AND c.name != "Dependants"\
                             UNION ALL \
                             SELECT \
                                                   tr.first_name, \
@@ -212,6 +214,8 @@ var TaxReturn = {
                                                   c.name AS catagory, \
                                                   quest.text AS question, \
                                                   ans.text AS answer, \
+                                                  d.first_name AS dependant_first_name, \
+                                                  d.last_name AS dependant_last_name, \
                                                   d.relationship AS relationship, \
                                                   DATE_FORMAT(d.date_of_birth, "%m-%d-%Y") as birthdate, \
                                                   d.is_shared as isShared \
