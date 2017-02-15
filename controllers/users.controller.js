@@ -276,7 +276,13 @@ function createUserAndSendEmail(userObj) {
                 var i = 1;
                 var total = 0;
                 _.forEach(userObj.quote, function(quoteLineItem) {
-                    variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + taxReturns[i-1].first_name;
+                    var firstName = '';
+                    _.forEach(taxReturns, function(taxReturn){
+                       if(quoteLineItem.tax_return_id === taxReturn.id){
+                           firstName = taxReturn.firstName;
+                       }
+                    });
+                    variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + firstName;
                     variables['quote_value' + i] = quoteLineItem.value;
                     variables['notes' + i] = quoteLineItem.notes;
                     total = total + quoteLineItem.value;
