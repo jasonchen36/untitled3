@@ -204,7 +204,7 @@ var TaxReturn = {
                             JOIN answers AS ans ON ans.tax_return_id = tr.id \
                             JOIN questions AS quest ON quest.id = ans.question_id \
                             JOIN categories AS c ON c.id = quest.category_id \
-                            WHERE tr.id = ? AND ans.text != "No" \
+                            WHERE tr.id = ? AND ans.text != "No" AND c.name != "dependants"\
                             UNION ALL \
                             SELECT \
                                                   tr.first_name, \
