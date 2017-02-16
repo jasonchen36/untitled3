@@ -289,7 +289,6 @@ function createUserAndSendEmail(userObj) {
                     }
                 });
                 variables.total_value = (Math.round(total * 100) / 100).toFixed(2);
-console.log('variables = ' + JSON.stringify(variables, null, 2));
                 return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
             };
 
@@ -310,7 +309,6 @@ console.log('variables = ' + JSON.stringify(variables, null, 2));
                 // update the last User activity of the logged in user
                 userModel.updateLastUserActivity(userResultObj);
                 return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
-console.log('quote = ' + JSON.stringify(quote, null, 2));
                     if (!quote) {
                         return promise.reject(new Error('error getting quote for user with email: ' + userObj.email));
                     }
