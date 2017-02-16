@@ -23,7 +23,7 @@ var answerModel = require('../models/answer.model');
 var addressModel = require('../models/address.model');
 var dependantModel = require('../models/dependant.model');
 var cacheService = require('../services/cache.service');
-
+var statusChangesModel = require('../models/statusChanges.model');
 
 
 /*******************************************************************************
@@ -295,10 +295,17 @@ exports.updateTaxReturnById = function (req, res, next) {
 
 
           return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
-              return taxReturnModel.findById(taxReturnId).then(function(taxReturn) {
+              return taxReturnModel.findById(taxReturnId)
+                .then(function(taxReturnResults) {
+                  var taxReturn = taxReturnResults;
+
+                  // insert state changes
                   if (!taxReturn) {
                     return res.status(404).send();
                   }
+
+                  return statusChangesModel.addStatusChangesToTaxReturn(taxReturn,req.user.role);
+                }).then(function(taxReturn) {
                   res.status(200).send(taxReturn);
 
                   // update the last User activity of the logged in user
@@ -383,11 +390,20 @@ exports.findTaxReturnById = function (req, res, next) {
         if (!allowed) {
             return res.status(403).send();
         }
-        return taxReturnModel.findById(taxReturnId, userModel.isAdmin(req.user) || userModel.isTaxpro(req.user)).then(function(taxReturnObj) {
-            if (!taxReturnObj) {
-                return res.status(404).send();
+        return taxReturnModel.findById(taxReturnId, userModel.isAdmin(req.user) || userModel.isTaxpro(req.user))
+        .then(function(taxReturnResults) {
+            var taxReturn = taxReturnResults;
+
+            // insert state changes
+            if (!taxReturn) {
+              return res.status(404).send();
             }
-            return res.status(200).send(taxReturnObj);
+
+          return statusChangesModel.addStatusChangesToTaxReturn(taxReturn,req.user.role);
+
+        })
+        .then(function(taxReturn) {
+            res.status(200).send(taxReturn);
         }).catch(function(err) {
             next(err);
         });

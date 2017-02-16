@@ -101,7 +101,11 @@ var TaxReturn = {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
 
-        return db.knex('tax_returns').update(taxReturnObj).where('id', id);
+        if(!Array.isArray(id)) {
+          id = [id];
+        }
+
+        return db.knex('tax_returns').update(taxReturnObj).whereIn('id',id);
     },
 
     setAllsubmittedForAccountId: function(accountId, productId) {
@@ -208,6 +212,6 @@ var TaxReturn = {
             return Promise.resolve(taxReturnsArr);
         });
     }
-};
+   };
 
 module.exports = TaxReturn;
