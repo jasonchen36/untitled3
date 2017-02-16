@@ -38,7 +38,7 @@ var Quote = {
             return Promise.reject(new Error('No id specified!'));
         }
         if ((typeof(includeDisabledLineitems) === 'undefined') || (includeDisabledLineitems.length === 0)) {
-            return Promise.reject(new Error('includeDisabledLineitems not specified!'));
+            includeDisabledLineitems = 1;
         }
 
         var quoteSql = 'SELECT * FROM quote WHERE id = ?';
@@ -212,7 +212,8 @@ var Quote = {
         if (!id) {
             return Promise.resolve(false);
         }
-        return this.findById(id).then(function(row) {
+        var includeDisabledLineitems = 1;
+        return this.findById(id, includeDisabledLineitems).then(function(row) {
             if (row) {
                 return true;
             } else {

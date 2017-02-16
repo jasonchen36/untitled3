@@ -588,7 +588,7 @@ exports.findById = function (req, res, next) {
     if (errors) { return res.status(400).send(errors); }
 
     var quoteId = parseInt(req.params.id);
-    var includeDisabledLineitems = 0; // dcefault is do not include
+    var includeDisabledLineitems = 0; // default is do not include
     if (req.query.includeDisabledLineitems) {
         includeDisabledLineitems = parseInt(req.query.includeDisabledLineitems);
     }
