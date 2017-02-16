@@ -255,10 +255,12 @@ var Quote = {
                           q.product_id, \
                           qli.tax_return_id, \
                           qli.text, \
-                          qli.value \
+                          qli.value, \
+                          qli.enabled \
                         FROM quote AS q \
                         RIGHT JOIN quotes_line_items AS qli ON qli.quote_id = q.id \
-                        WHERE q.account_id = ? AND q.product_id = ?';
+                        WHERE q.account_id = ? AND q.product_id = ? \
+                        ORDER BY qli.tax_return_id ASC, qli.value DESC';
       return db.knex.raw(quoteSql, [accountId, productId]).then(function(quoteSqlResults) {
           return quoteSqlResults[0];
       });

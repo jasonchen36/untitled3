@@ -273,22 +273,23 @@ function createUserAndSendEmail(userObj) {
                     name: userObj.first_name,
                     delete_me_url: config.domain + '/deleteme/' + userObj.delete_user_key
                 };
-                var i = 1;
                 var total = 0;
-                _.forEach(userObj.quote, function(quoteLineItem) {
+                _.forEach(userObj.quote, function(quoteLineItem, i) {
                     var firstName = '';
                     _.forEach(taxReturns, function(taxReturn){
                        if(quoteLineItem.tax_return_id === taxReturn.id){
-                           firstName = taxReturn.firstName;
+                           firstName = taxReturn.first_name;
                        }
                     });
-                    variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + firstName;
-                    variables['quote_value' + i] = quoteLineItem.value;
+                    variables['quote_text' + i] = quoteLineItem.text + ' - ' + firstName;
+                    variables['quote_value' + i] = (quoteLineItem.value).toFixed(2);
                     variables['notes' + i] = quoteLineItem.notes;
-                    total = total + quoteLineItem.value;
-                    i = i + 1;
+                    if (quoteLineItem.enabled === 1) {
+                        total = total + quoteLineItem.value;
+                    }
                 });
-                variables.total_value = (Math.round(total * 100) / 100).toFixed(2);;
+                variables.total_value = (Math.round(total * 100) / 100).toFixed(2);
+console.log('variables = ' + JSON.stringify(variables, null, 2));
                 return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
             };
 
@@ -309,6 +310,7 @@ function createUserAndSendEmail(userObj) {
                 // update the last User activity of the logged in user
                 userModel.updateLastUserActivity(userResultObj);
                 return quoteModel.getEmailFieldsByProductIdAccountId(productId, accountId).then(function(quote) {
+console.log('quote = ' + JSON.stringify(quote, null, 2));
                     if (!quote) {
                         return promise.reject(new Error('error getting quote for user with email: ' + userObj.email));
                     }
