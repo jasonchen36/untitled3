@@ -108,7 +108,7 @@ var TaxReturn = {
         if ((!accountId) || (accountId.length === 0)) {
             return Promise.reject(new Error('No accountId specified!'));
         }
-        var updateStatusSql = 'UPDATE tax_returns SET status_id = 5 WHERE account_id = ? AND product_id = ?';
+        var updateStatusSql = 'UPDATE tax_returns SET status_id = 3 WHERE account_id = ? AND product_id = ?';
         return db.knex.raw(updateStatusSql, [accountId, productId]).then(function(updateStatusSqlResults) {
             var affectedRows = updateStatusSqlResults[0].affectedRows;
             return Promise.resolve(affectedRows);
