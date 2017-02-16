@@ -49,7 +49,18 @@ var StatusChanges = {
 
           return account;
         });
-    }
+    },
+    allowableStatusChangeForTaxReturn: function(initialStatusId, endStatusId, role,includeAPIOnlyOptions) {
+      var statusId = taxReturn.status.id;
+
+      return this.list()
+        .then(function(statusList) {
+
+          const statusChanges = filterStateChangesForState(statusList, initialStatusId, role, includeAPIOnlyOptions);
+
+          return _.some(statusChanges,(sc) => { return sc.end_status_id === endStatusId   }) ;
+        });
+    },
 };
 
 var getStatusChanges = function() {

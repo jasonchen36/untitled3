@@ -253,7 +253,11 @@ exports.updateTaxReturnById = function (req, res, next) {
     var productId = req.body.productId;
     var taxReturnObj = {};
 
-    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+    return Promise.all([taxReturnModel.hasAccess(req.user, taxReturnId), taxReturnModel.findById(taxReturnId)]).then(function(results) {
+
+        var allowed = results[0];
+        var taxReturn = results[1];
+
         if (!allowed) {
             return res.status(403).send();
         }
@@ -274,6 +278,19 @@ exports.updateTaxReturnById = function (req, res, next) {
         ) {
             return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
         } else {
+          if(userModel.isAdminOrTaxpro(req.user) && req.body.statusId) {
+            return statusChangesModel.allowableStatusChangeForTaxReturn( taxReturn.status.id,req.body.statusId,req.user.role);
+          } else {
+            return Promise.resolve(true);
+          }
+        }
+      })
+    .then(function(allowableStatusChange) {
+        
+        if(allowableStatusChange) {
+                return res.status(403).json({message:"status changed from current satus not allowed"});
+        } else {
+
           if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
           if (req.body.lastName) { taxReturnObj.last_name = req.body.lastName; }
           if (req.body.provinceOfResidence) { taxReturnObj.province_of_residence = req.body.provinceOfResidence; }
@@ -346,10 +363,24 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
         taxReturnObj = {
             status_id: parseInt(req.body.statusId)
         };
-    return taxReturnModel.hasAccess(req.user, taxReturnId).then(function(allowed) {
+    return Promise.all([taxReturnModel.hasAccess(req.user, taxReturnId), taxReturnModel.findById(taxReturnId)]).then(function(results) {
+      var allowed = results[0];
         if (!allowed) {
             return res.status(403).send();
         }
+
+      var taxReturn = results[1];
+
+
+      return statusChangesModel.allowableStatusChangeForTaxReturn( taxReturn.status.id,taxReturnObj.status_id,req.user.role);
+
+    })
+    .then(function(allowableStatusChange) {
+        
+        if(allowableStatusChange) {
+            return res.status(403).json({message:"status changed from current satus not allowed"});
+        }
+
         return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
             res.status(200).send('OK');
 
