@@ -201,7 +201,7 @@ var TaxReturn = {
                            CASE\
                                 WHEN tr.canadian_citizen = "1"\
                                     THEN "Canadian Citizen"\
-                                WHEN tr.canadian_citizen = "1"\
+                                WHEN tr.canadian_citizen = "0"\
                                     THEN "Not A Canadian Citizen"\
                             END\
                            AS CanadianCitizen,\
