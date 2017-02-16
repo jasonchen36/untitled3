@@ -212,7 +212,7 @@ var TaxReturn = {
                                     THEN "CRA authorized"\
                             END\
                            AS AuthorizeCRA,\
-                           tr.date_of_birth as birthdate,\
+                           DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate,\
                               NULL as isShared \
                             FROM users AS u \
                             JOIN accounts AS a ON a.id = u.account_id \
