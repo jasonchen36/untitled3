@@ -1095,18 +1095,26 @@ exports.chargeStripe = function(req, res, next){
     var email = req.body.email;
 
     // Get Amount from quote id and then try charging
-    quoteModel.findById(quoteId)
+    quoteModel.findById(quoteId, false)
         .then(function(quote){
-            logger.debug("Found quote, charging Stripe.");
+            logger.debug("Found quote, charging Stripe.", JSON.stringify(quote, null, 2));
             stripe.charges.create({
                 amount: quote.total * 100, // amount in cents
                 currency: "cad",
                 source: stripeToken,
-                description: "TAXplan Preparation Cost"
+                description: "TAXplan Preparation Cost",
+                receipt_email: email
             }).then(function(err, charge) {
-                logger.debug("Stripe err = " + JSON.stringify(err, null, 2));
+                logger.debug("Stripe response = " + JSON.stringify(err, null, 2));
                 // Errors?
                 if (err && err.outcome.type === 'authorized') {
+                    _.each(quote.taxReturns, function(taxReturn) {
+                            var taxReturnObj = {
+                                status_id: 8
+                            };
+                            taxReturnModel.update(taxReturn.id, taxReturnObj).then(function () {
+                        });
+                    });
                     res.status(200).send(err.outcome.type);
                 } else {
                     res.status(400).send(err.outcome.type);
