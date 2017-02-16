@@ -35,8 +35,8 @@ var User = {
       taxProId = taxProId ? taxProId : filters['taxPro'];
 
       var productId = productId ? productId : filters['product'];
-      // TODO: this is a hotfix.  should be removed to require passing product.
-      productId = productId ? productId : 10;
+      // TODO: this is a hotfix.  should think about removing and instead require passing product.
+      productId = productId ? productId : config.api.currentProductId;
 
       if(!filters) {
         return findAllCustomers();
