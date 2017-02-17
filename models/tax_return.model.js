@@ -112,7 +112,7 @@ var TaxReturn = {
         if ((!accountId) || (accountId.length === 0)) {
             return Promise.reject(new Error('No accountId specified!'));
         }
-        var updateStatusSql = 'UPDATE tax_returns SET status_id = 5 WHERE account_id = ? AND product_id = ?';
+        var updateStatusSql = 'UPDATE tax_returns SET status_id = 3 WHERE account_id = ? AND product_id = ?';
         return db.knex.raw(updateStatusSql, [accountId, productId]).then(function(updateStatusSqlResults) {
             var affectedRows = updateStatusSqlResults[0].affectedRows;
             return Promise.resolve(affectedRows);
@@ -192,12 +192,32 @@ var TaxReturn = {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
 
-        var taxReturnSql = 'SELECT \
+        var taxReturnSql = 'SELECT * FROM (SELECT \
                               tr.first_name, \
                               tr.last_name, \
                               c.name AS catagory, \
                               quest.text AS question, \
-                              ans.text AS answer \
+                              ans.text AS answer, \
+                              NULL as dependant_first_name, \
+                              NULL as dependant_last_name, \
+                              NULL AS relationship, \
+                              NULL as dependant_birthdate, \
+                           CASE\
+                                WHEN tr.canadian_citizen = "1"\
+                                    THEN "Canadian Citizen"\
+                                WHEN tr.canadian_citizen = "0"\
+                                    THEN "Not A Canadian Citizen"\
+                            END\
+                           AS CanadianCitizen,\
+                           CASE\
+                                WHEN tr.authorize_cra = "0"\
+                                    THEN "Not CRA authorized"\
+                                WHEN tr.authorize_cra = "1"\
+                                    THEN "CRA authorized"\
+                            END\
+                           AS AuthorizeCRA,\
+                           DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate,\
+                              NULL as isShared \
                             FROM users AS u \
                             JOIN accounts AS a ON a.id = u.account_id \
                             JOIN tax_returns AS tr ON tr.account_id = u.account_id \
@@ -205,9 +225,59 @@ var TaxReturn = {
                             JOIN answers AS ans ON ans.tax_return_id = tr.id \
                             JOIN questions AS quest ON quest.id = ans.question_id \
                             JOIN categories AS c ON c.id = quest.category_id \
-                            WHERE tr.id = ? AND ans.text != "No" \
-                            ORDER BY quest.category_id';
-        return db.knex.raw(taxReturnSql, [taxReturnId]).then(function(taxReturnSqlResults) {
+                            WHERE tr.id = ? AND ans.text != "No" AND c.name != "Dependants"\
+                            UNION ALL \
+                            SELECT \
+                                                  tr.first_name, \
+                                                  tr.last_name, \
+                                                  c.name AS catagory, \
+                                                  quest.text AS question, \
+                                                  ans.text AS answer, \
+                                                  d.first_name AS dependant_first_name, \
+                                                  d.last_name AS dependant_last_name, \
+                                                  d.relationship AS relationship, \
+                                                  DATE_FORMAT(d.date_of_birth, "%m-%d-%Y") as dependant_birthdate, \
+                                                  NULL AS CanadianCitizen,\
+                                                  NULL AS AuthorizeCRA,\
+                                                  NULL as birthdate,\
+                                                  CASE \
+							                      WHEN d.is_shared = "0" THEN "Not shared" \
+								                  WHEN d.is_shared = "1" THEN "Shared" \
+							                      END \
+                                                  AS isShared \
+                                                FROM users AS u \
+                                                JOIN accounts AS a ON a.id = u.account_id \
+                                                JOIN tax_returns AS tr ON tr.account_id = u.account_id \
+                                                JOIN quote AS q ON q.account_id = u.account_id \
+                                                JOIN answers AS ans ON ans.tax_return_id = tr.id \
+                                                JOIN questions AS quest ON quest.id = ans.question_id \
+                                                JOIN categories AS c ON c.id = quest.category_id \
+                                                JOIN tax_returns_dependants as trd ON trd.tax_return_id = tr.id \
+						                        JOIN dependants as d ON d.id = trd.dependant_id and c.name = "Dependants" \
+                                                WHERE tr.id = ? AND ans.text != "No" \
+                                            UNION ALL \
+                                            SELECT \
+                                tr.first_name, \
+                                tr.last_name, \
+                                addr.address_line1, \
+                                addr.address_line2,\
+                                addr.city,\
+                                addr.providence,\
+                                addr.postal_code,\
+                                addr.country,\
+                                NULL AS CanadianCitizen,\
+                                NULL AS AuthorizeCRA,\
+                                NULL as birthdate,\
+                                NULL as dependant_first_name, \
+                                NULL as dependant_last_name \
+                              FROM users AS u\
+                              JOIN accounts AS a ON a.id = u.account_id\
+                              JOIN tax_returns AS tr ON tr.account_id = u.account_id\
+                              JOIN tax_returns_addresses AS tra ON tra.tax_return_id = tr.id\
+                              JOIN addresses AS addr ON addr.id = tra.addresses_id\
+                              WHERE tr.id = ?) dum\
+                                                ORDER BY catagory'
+        return db.knex.raw(taxReturnSql, [taxReturnId, taxReturnId, taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturnsArr = taxReturnSqlResults[0];
             return Promise.resolve(taxReturnsArr);
         });

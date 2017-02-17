@@ -38,7 +38,7 @@ var Quote = {
             return Promise.reject(new Error('No id specified!'));
         }
         if ((typeof(includeDisabledLineitems) === 'undefined') || (includeDisabledLineitems.length === 0)) {
-            return Promise.reject(new Error('includeDisabledLineitems not specified!'));
+            includeDisabledLineitems = 1;
         }
 
         var quoteSql = 'SELECT * FROM quote WHERE id = ?';
@@ -124,7 +124,7 @@ var Quote = {
             return Promise.reject(new Error('No lineItems specified!'));
         }
 
-        return cacheService.get('values', this.getDirectDepositAmounts()).then(function(depositAmountsCache) {
+        return cacheService.get('depositAmounts', this.getDirectDepositAmounts()).then(function(depositAmountsCache) {
             var directDepositRec = _.find(depositAmountsCache, {product_id: quoteObj.productId});
             if ((!directDepositRec) || (directDepositRec.length === 0)) {
                 return Promise.reject(new Error('Failed to get direct deposit amount. Is there missing config?'));
@@ -212,7 +212,8 @@ var Quote = {
         if (!id) {
             return Promise.resolve(false);
         }
-        return this.findById(id).then(function(row) {
+        var includeDisabledLineitems = 1;
+        return this.findById(id, includeDisabledLineitems).then(function(row) {
             if (row) {
                 return true;
             } else {
@@ -255,10 +256,12 @@ var Quote = {
                           q.product_id, \
                           qli.tax_return_id, \
                           qli.text, \
-                          qli.value \
+                          qli.value, \
+                          qli.enabled \
                         FROM quote AS q \
                         RIGHT JOIN quotes_line_items AS qli ON qli.quote_id = q.id \
-                        WHERE q.account_id = ? AND q.product_id = ?';
+                        WHERE q.account_id = ? AND q.product_id = ? \
+                        ORDER BY qli.tax_return_id ASC, qli.value DESC';
       return db.knex.raw(quoteSql, [accountId, productId]).then(function(quoteSqlResults) {
           return quoteSqlResults[0];
       });

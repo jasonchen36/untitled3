@@ -273,16 +273,22 @@ function createUserAndSendEmail(userObj) {
                     name: userObj.first_name,
                     delete_me_url: config.domain + '/deleteme/' + userObj.delete_user_key
                 };
-                var i = 1;
                 var total = 0;
-                _.forEach(userObj.quote, function(quoteLineItem) {
-                    variables['quote_text' + i] = quoteLineItem.text.slice(0, -1) + ' - ' + taxReturns[i-1].first_name;
-                    variables['quote_value' + i] = quoteLineItem.value;
+                _.forEach(userObj.quote, function(quoteLineItem, i) {
+                    var firstName = '';
+                    _.forEach(taxReturns, function(taxReturn){
+                       if(quoteLineItem.tax_return_id === taxReturn.id){
+                           firstName = taxReturn.first_name;
+                       }
+                    });
+                    variables['quote_text' + i] = quoteLineItem.text + ' - ' + firstName;
+                    variables['quote_value' + i] = (quoteLineItem.value).toFixed(2);
                     variables['notes' + i] = quoteLineItem.notes;
-                    total = total + quoteLineItem.value;
-                    i = i + 1;
+                    if (quoteLineItem.enabled === 1) {
+                        total = total + quoteLineItem.value;
+                    }
                 });
-                variables.total_value = (Math.round(total * 100) / 100).toFixed(2);;
+                variables.total_value = (Math.round(total * 100) / 100).toFixed(2);
                 return notificationService.sendNotification(userObj, notificationService.NotificationType.WELCOME, variables);
             };
 

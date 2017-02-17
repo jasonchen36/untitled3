@@ -27,12 +27,16 @@ var User = {
         });
     },
 
-    findAllCustomersFiltered: function(filters, taxProId, trx) {
+    findAllCustomersFiltered: function(filters, taxProId, productId, trx) {
       // if taxpro not included, take from filter
       var connection = trx ? trx : db.knex;
       var users=null;
 
       taxProId = taxProId ? taxProId : filters['taxPro'];
+
+      var productId = productId ? productId : filters['product'];
+      // TODO: this is a hotfix.  should think about removing and instead require passing product.
+      productId = productId ? productId : config.api.currentProductId;
 
       if(!filters) {
         return findAllCustomers();
@@ -60,7 +64,7 @@ var User = {
         return(usersSqlResults[0]);
       }).then(function(results) {
         users = results;
-        return getUsersStatuses(results, connection);
+        return getUsersStatuses(results, productId, connection);
       }).then(function(statusResults) {
         return _.map(users, function(u) {
           var curU = _.cloneDeep(u);
@@ -536,6 +540,7 @@ var filterUserPermissions = function(taxProId) {
     return result;
 };
 
+
 var filterbyEmailAndName = function(filters) {
     var result = { sql:'',params:[]};
 
@@ -580,7 +585,7 @@ var concatenateSql = function(initial,second) {
     return result;
 };
 
-var getUsersStatuses = function(users,trx) {
+var getUsersStatuses = function(users,productId, trx) {
   if(users.length>5000) {
     return Promise.reject(new Error("Too many users to get statuses for. Please page your data"));
   } else if (users.length ===0) {
@@ -590,10 +595,15 @@ var getUsersStatuses = function(users,trx) {
   var connection = trx ? trx : db.knex;
   var userIds = _.map(users,function(u) { return u.id });
 
-  var sql = 'SELECT u.id as user_id, tR.account_id, tR.id as tax_return_id, s.id as status_id, s.name, s.display_text, tR.account_id, tR.first_name, tR.last_name';
+  var sql = 'SELECT u.id as user_id, tR.account_id, tR.id as tax_return_id, s.id as status_id, tR.product_id as product_id, s.name, s.display_text, tR.account_id, tR.first_name, tR.last_name';
   sql+=' FROM tax_returns as tR JOIN status as s ON tR.status_id=s.id JOIN users as u ON u.account_id=tR.account_id WHERE u.role="Customer" AND u.id IN ('+userIds.join(',')+')';
 
   var sqlParams=[];
+
+  if(productId) {
+    sql+=' AND tR.product_id=?';
+    sqlParams.push(productId);
+  }
 
   return connection.raw(sql, sqlParams)
     .then(function(results) {
