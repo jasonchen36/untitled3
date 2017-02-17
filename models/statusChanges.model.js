@@ -51,8 +51,6 @@ var StatusChanges = {
         });
     },
     allowableStatusChangeForTaxReturn: function(initialStatusId, endStatusId, role,includeAPIOnlyOptions) {
-      var statusId = taxReturn.status.id;
-
       return this.list()
         .then(function(statusList) {
 
