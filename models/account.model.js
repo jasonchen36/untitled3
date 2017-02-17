@@ -54,7 +54,7 @@ var Account = {
             resultObj.pushNotifications = pushNotifications;
             resultObj.emailNotifications = emailNotifications;
 
-            var taxReturnsSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.account_id = ?';
+            var taxReturnsSql = 'SELECT tax_returns.*, status.name as status_name,status.display_text as status_display_text, status.flow as status_flow FROM tax_returns JOIN status ON tax_returns.status_id = status.id WHERE tax_returns.account_id = ?';
             return db.knex.raw(taxReturnsSql, [accountId]).then(function(taxReturnSqlResults) {
                 var taxReturnsArr = taxReturnSqlResults[0];
                 resultObj.taxReturns = [];

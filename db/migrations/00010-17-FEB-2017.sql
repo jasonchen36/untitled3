@@ -1,0 +1,12 @@
+ALTER TABLE `status` ADD COLUMN `flow` ENUM('Profile In Progress','Pre-Submit','Taxpro Reviewing','Results Received') NOT NULL DEFAULT 'Profile In Progress';
+UPDATE `status` SET `flow`= 'Profile In Progress' WHERE `id`=2;
+UPDATE `status` SET `flow`= 'Taxpro Reviewing' WHERE `id`=3;
+UPDATE `status` SET `flow`= 'Taxpro Reviewing' WHERE `id`=4;
+UPDATE `status` SET `flow`= 'Taxpro Reviewing' WHERE `id`=5;
+UPDATE `status` SET `flow`= 'Taxpro Reviewing' WHERE `id`=6;
+UPDATE `status` SET `flow`= 'Results Received' WHERE `id`=7;
+UPDATE `status` SET `flow`= 'Results Received' WHERE `id`=8;
+UPDATE `status` SET `flow`= 'Results Received' WHERE `id`=9;
+UPDATE `status` SET `flow`= 'Results Received' WHERE `id`=10;
+UPDATE `status` SET `flow`= 'Pre-Submit' WHERE `id`=11;
+UPDATE `status` SET `flow`= 'Results Received' WHERE `id`=12;

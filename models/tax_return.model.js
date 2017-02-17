@@ -145,7 +145,8 @@ var TaxReturn = {
             status: {
                 id: data.status_id,
                 name: data.status_name,
-                display_text: data.status_display_text
+                display_text: data.status_display_text,
+                flow: data.status_flow
             },
             created_at: data.created_at,
             updated_at: data.updated_at,
