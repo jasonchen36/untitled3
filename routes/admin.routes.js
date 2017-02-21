@@ -10,6 +10,7 @@ var logger = require('../services/logger.service');
 var passport = require('passport');
 var message = require('../controllers/message.controller');
 var taxReturn = require('../controllers/tax_return.controller');
+var account = require('../controllers/account.controller');
 var quote = require('../controllers/quote.controller');
 var note = require('../controllers/note.controller');
 var noCache = require('connect-nocache')();
@@ -26,6 +27,8 @@ module.exports = function (router) {
     router.route('/admin/quote/:quoteId/document/:documentId/viewed')
       .put(PassportAuthMiddleware, quote.setDocumentAsViewed);
 
+    router.route('/admin/quote/:id/sendBillToClient')
+      .post(PassportAuthMiddleware, noCache, quote.sendBillToClient);
 
     router.route('/admin/users/:userId/notes')
       .get(PassportAuthMiddleware, noCache, note.list)
@@ -36,4 +39,8 @@ module.exports = function (router) {
 
     router.route('/admin/users/:userId/notes/:noteId/done')
       .put(PassportAuthMiddleware, note.markAsDone);
+
+    router.route('/admin/account/:id')
+      .get(PassportAuthMiddleware, noCache, account.adminFindById)
+      .put(PassportAuthMiddleware, account.adminUpdate);
 };

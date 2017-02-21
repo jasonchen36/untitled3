@@ -1041,6 +1041,17 @@ exports.findByAccountId = function(req, res, next) {
     });
 };
 
+/*******************************************************************************
+ENDPOINT
+GET /admin/quote/:quoteId/document/:documentId/viewed
+
+PARAMS
+quoteId
+
+RESPONSE:
+Set document as viewed
+
+*******************************************************************************/
 
 exports.setDocumentAsViewed = function(req, res, next) {
     req.checkParams('quoteId', 'Please provide a product id').isInt();
@@ -1065,6 +1076,78 @@ exports.setDocumentAsViewed = function(req, res, next) {
         next(err);
       });
 };
+
+
+
+
+
+
+
+
+/*******************************************************************************
+ENDPOINT
+GET /quote/:quoteId/checklist/PDF
+
+PARAMS
+quoteId
+
+RESPONSE:
+send Bill To client
+
+*******************************************************************************/
+
+exports.sendBillToClient = function (req, res, next) {
+    req.checkParams('id', 'Please provide an integer quote id').isInt();
+    var errors = req.validationErrors();
+ 
+    if (errors) { 
+        return res.status(400).send(errors); 
+    }
+  
+    if(!userModel.isAdmin(req.user)) {
+        return res.status(403).send();
+    }
+   
+    var quoteId = parseInt(req.params.id);
+  
+    return quoteModel.hasAccess(req.user, quoteId)
+    .then(function(allowed) {
+        if (!allowed) {
+            return res.status(403).send();
+        }
+
+        return quoteModel.findById(quoteId,1);
+    })
+    .then(function(quote) {
+        //TODO: How do we specify the status this logic hooks into?
+        var resultStatus = {id:7, name:'Results, Forms, Invoice'};
+        var initialStatus = {id:5, name:'Data Entry Complete'};
+        var notAllTaxReturnsHaveInitialStatus = _.some(quote.taxReturns,(tr) => {
+          return tr.status_id !== initialStatus.id;
+        });
+        
+        if(notAllTaxReturnsHaveInitialStatus) {
+          return res.status(400).json({message:"Not all statuses are set to 'Data Entry Complete'"});
+        } else {
+          var quoteIds = _.map(quote.taxReturns, (tr) => {
+            return tr.id;
+          });
+
+          var trObj = {
+            status_id:resultStatus.id
+          };
+
+          return taxReturnModel.update(quoteIds,trObj)
+            .then(function(results) {
+              return res.status(200).json(results);
+            });
+        }
+    }).catch(function(err) {
+      next(err);
+    });
+};
+
+
 
 /*******************************************************************************
  ENDPOINT

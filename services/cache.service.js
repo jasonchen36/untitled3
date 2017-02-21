@@ -57,6 +57,23 @@ exports.get = function(key,getKeyPromise) {
   });
 };
 
+// gets cached.
+// key is cache key
+// callOnMissFunc is function to call
+// paramsArray (optional) is params for callOnMissFunc
+// thisForFunc (optional) is the this obj for function call;
+exports.getCachedOrCall = function(key,callOnMissFunc,paramsArray,thisForFunc) {
+  paramsArray = paramsArray? paramsArray:[];
+  thisForFunc = thisForFunc? thisForFunc: this;
+
+  var callback = function() {
+      return callOnMissFunc.apply(thisForFunc,paramsArray);
+  };
+
+  return exports.getCachedOrCallbackOnMiss(key,callback);
+
+};
+
 exports.getCachedOrCallbackOnMiss = function(key,promiseCallback) {
   return exports.getCached(key).then(function(result) {
     if(result== undefined) {
