@@ -101,7 +101,11 @@ var TaxReturn = {
             return Promise.reject(new Error('No taxReturnId specified!'));
         }
 
-        return db.knex('tax_returns').update(taxReturnObj).where('id', id);
+        if(!Array.isArray(id)) {
+          id = [id];
+        }
+
+        return db.knex('tax_returns').update(taxReturnObj).whereIn('id',id);
     },
 
     setAllsubmittedForAccountId: function(accountId, productId) {
@@ -253,9 +257,9 @@ var TaxReturn = {
                               JOIN addresses AS addr ON addr.id = tra.addresses_id\
                               WHERE tr.id = ?\
                           UNION ALL \
-                          SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
+                          SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Birthdate" END AS name, NULL, DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
                                 UNION ALL\
-                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, \
+                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Canadian Citizen" END AS name, NULL, \
                                 CASE\
                                     WHEN tr.canadian_citizen = "1"\
                                         THEN "Yes"\
@@ -263,7 +267,7 @@ var TaxReturn = {
                                         THEN "No"\
                                 END AS CanadianCitizen, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
                                 UNION ALL\
-                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, \
+                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Authorize CRA" END AS name, NULL, \
                                 CASE\
                                     WHEN tr.authorize_cra = "0"\
                                         THEN "No"\
@@ -277,6 +281,6 @@ var TaxReturn = {
             return Promise.resolve(taxReturnsArr);
         });
     }
-};
+   };
 
 module.exports = TaxReturn;
