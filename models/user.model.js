@@ -126,6 +126,18 @@ var User = {
         });
     },
 
+    findByAccountId: function(id, trx) {
+        if ((!id) || (id.length === 0)) {
+          return Promise.reject(new Error('findByAccountId() No id specified!'));
+        }
+        var userSql = 'SELECT users.* FROM users WHERE account_id = ?';
+        var knexConnection = trx ? trx : db.knex;
+
+        return knexConnection.raw(userSql, [id]).then(function(userSqlResults) {
+            return(userSqlResults[0][0]);
+        });
+    },
+
     deleteById: function(id) {
         if ((!id) || (id.length === 0)) {
           return Promise.reject(new Error('deleteById() No id specified!'));
