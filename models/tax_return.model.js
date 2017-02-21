@@ -255,7 +255,7 @@ var TaxReturn = {
                           UNION ALL \
                           SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
                                 UNION ALL\
-                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, \
+                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Canadian Citizen" END AS name, NULL, \
                                 CASE\
                                     WHEN tr.canadian_citizen = "1"\
                                         THEN "Yes"\
@@ -263,7 +263,7 @@ var TaxReturn = {
                                         THEN "No"\
                                 END AS CanadianCitizen, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
                                 UNION ALL\
-                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, \
+                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Authorize CRA" END AS name, NULL, \
                                 CASE\
                                     WHEN tr.authorize_cra = "0"\
                                         THEN "No"\

@@ -80,5 +80,5 @@ module.exports = {
         defaultDocIconFileName: 'default_document.png'
     },
     profilepic: process.env.TAXPLAN_API_BASE_PROFILE_PIC_URL,
-    accessControlAllowOrigin: process.env.TAXPLAN_API_CORS_ALLOW_ORIGIN
+    accessControlAllowOrigin: "http://localhost:8080"
 };
