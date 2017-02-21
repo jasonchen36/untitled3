@@ -149,7 +149,8 @@ var TaxReturn = {
             status: {
                 id: data.status_id,
                 name: data.status_name,
-                display_text: data.status_display_text
+                display_text: data.status_display_text,
+                flow: data.status_flow
             },
             created_at: data.created_at,
             updated_at: data.updated_at,
@@ -202,21 +203,6 @@ var TaxReturn = {
                               NULL as dependant_last_name, \
                               NULL AS relationship, \
                               NULL as dependant_birthdate, \
-                           CASE\
-                                WHEN tr.canadian_citizen = "1"\
-                                    THEN "Canadian Citizen"\
-                                WHEN tr.canadian_citizen = "0"\
-                                    THEN "Not A Canadian Citizen"\
-                            END\
-                           AS CanadianCitizen,\
-                           CASE\
-                                WHEN tr.authorize_cra = "0"\
-                                    THEN "Not CRA authorized"\
-                                WHEN tr.authorize_cra = "1"\
-                                    THEN "CRA authorized"\
-                            END\
-                           AS AuthorizeCRA,\
-                           DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate,\
                               NULL as isShared \
                             FROM users AS u \
                             JOIN accounts AS a ON a.id = u.account_id \
@@ -237,9 +223,6 @@ var TaxReturn = {
                                                   d.last_name AS dependant_last_name, \
                                                   d.relationship AS relationship, \
                                                   DATE_FORMAT(d.date_of_birth, "%m-%d-%Y") as dependant_birthdate, \
-                                                  NULL AS CanadianCitizen,\
-                                                  NULL AS AuthorizeCRA,\
-                                                  NULL as birthdate,\
                                                   CASE \
 							                      WHEN d.is_shared = "0" THEN "Not shared" \
 								                  WHEN d.is_shared = "1" THEN "Shared" \
@@ -265,9 +248,6 @@ var TaxReturn = {
                                 addr.providence,\
                                 addr.postal_code,\
                                 addr.country,\
-                                NULL AS CanadianCitizen,\
-                                NULL AS AuthorizeCRA,\
-                                NULL as birthdate,\
                                 NULL as dependant_first_name, \
                                 NULL as dependant_last_name \
                               FROM users AS u\
@@ -275,9 +255,28 @@ var TaxReturn = {
                               JOIN tax_returns AS tr ON tr.account_id = u.account_id\
                               JOIN tax_returns_addresses AS tra ON tra.tax_return_id = tr.id\
                               JOIN addresses AS addr ON addr.id = tra.addresses_id\
-                              WHERE tr.id = ?) dum\
+                              WHERE tr.id = ?\
+                          UNION ALL \
+                          SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
+                                UNION ALL\
+                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Canadian Citizen" END AS name, NULL, \
+                                CASE\
+                                    WHEN tr.canadian_citizen = "1"\
+                                        THEN "Yes"\
+                                    WHEN tr.canadian_citizen = "0"\
+                                        THEN "No"\
+                                END AS CanadianCitizen, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
+                                UNION ALL\
+                                SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Authorize CRA" END AS name, NULL, \
+                                CASE\
+                                    WHEN tr.authorize_cra = "0"\
+                                        THEN "No"\
+                                    WHEN tr.authorize_cra = "1"\
+                                        THEN "Yes"\
+                                END AS authorize_cra, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
+                                ) dum\
                                                 ORDER BY catagory'
-        return db.knex.raw(taxReturnSql, [taxReturnId, taxReturnId, taxReturnId]).then(function(taxReturnSqlResults) {
+        return db.knex.raw(taxReturnSql, [taxReturnId, taxReturnId, taxReturnId, taxReturnId, taxReturnId, taxReturnId]).then(function(taxReturnSqlResults) {
             var taxReturnsArr = taxReturnSqlResults[0];
             return Promise.resolve(taxReturnsArr);
         });
