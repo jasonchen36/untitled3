@@ -253,7 +253,7 @@ var TaxReturn = {
                               JOIN addresses AS addr ON addr.id = tra.addresses_id\
                               WHERE tr.id = ?\
                           UNION ALL \
-                          SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "birthdate" END AS name, NULL, DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
+                          SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Birthdate" END AS name, NULL, DATE_FORMAT(tr.date_of_birth, "%m-%d-%Y") as birthdate, NULL, NULL, NULL, NULL, NULL FROM tax_returns AS tr JOIN categories AS cat ON tr.id = ? AND cat.name = "income"\
                                 UNION ALL\
                                 SELECT tr.first_name, tr.last_name, CASE WHEN cat.name = "income" THEN "Canadian Citizen" END AS name, NULL, \
                                 CASE\
