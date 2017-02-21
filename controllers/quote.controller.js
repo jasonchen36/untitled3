@@ -1119,7 +1119,8 @@ exports.chargeStripe = function(req, res, next){
                     res.status(400).send(err.outcome.type);
                 }
             }).catch(function(err) {
-                next(err);
+                logger.debug("STRIPE ERROR:", JSON.stringify(err, null, 2));
+                res.status(400).send(err);
             });
         }).catch(function(err) {
         next(err);
