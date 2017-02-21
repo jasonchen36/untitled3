@@ -27,8 +27,7 @@ var cacheService = require('../services/cache.service');
 var notificationService = require('../services/notification.service');
 var thumbnailService = require('../services/thumbnailService');
 var stringHelper = require('../helpers/stringHelper');
-// var stripe = require("stripe")(config.strip.secret); // TODO change to this when we have stipe key
-var stripe = require("stripe")("sk_test_3mBHxfjUosUc8FA6Pvxl2bOb"); // TESTING KEY ONLY
+var stripe = require("stripe")(config.stripeKey);
 
 var SMALL_BUSINESS_PACKAGE_ID = 1;
 var LANDLORD_PACKAGE_ID = 2;
