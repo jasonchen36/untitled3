@@ -181,6 +181,7 @@ CREATE TABLE `status` (
   `display_text` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `paid` INT(1) NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -264,4 +265,15 @@ CREATE TABLE `notes` (
   `done` int(1) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `status_changes` (
+  `initial_status_id` INT(11) NOT NULL,
+  `end_status_id` INT(11) NOT NULL,
+  `role` VARCHAR(45) NOT NULL,
+  `through_api_only` TINYINT NULL DEFAULT 0,
+  `name` VARCHAR(255) NULL,
+  `display_text` VARCHAR(255) NULL,
+  `create_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`initial_status_id`, `end_status_id`, `role`));
 
