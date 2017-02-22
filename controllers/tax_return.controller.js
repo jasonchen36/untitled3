@@ -286,7 +286,7 @@ exports.updateTaxReturnById = function (req, res, next) {
         }
       })
     .then(function(allowableStatusChange) {
-        
+
         if(allowableStatusChange) {
                 return res.status(403).json({message:"status changed from current satus not allowed"});
         } else {
@@ -376,9 +376,9 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
 
     })
     .then(function(allowableStatusChange) {
-        
+
         if(allowableStatusChange) {
-            return res.status(403).json({message:"status changed from current satus not allowed"});
+            return res.status(403).json({message:"status changed from current status not allowed"});
         }
 
         return taxReturnModel.update(taxReturnId, taxReturnObj).then(function() {
