@@ -279,7 +279,8 @@ exports.updateTaxReturnById = function (req, res, next) {
             return res.status(400).send({ msg: 'Invalid request: no fields specified for update?' });
         } else {
           if(userModel.isAdminOrTaxpro(req.user) && req.body.statusId) {
-            return statusChangesModel.allowableStatusChangeForTaxReturn( taxReturn.status.id,req.body.statusId,req.user.role);
+
+            return statusChangesModel.allowableStatusChangeForTaxReturn( taxReturn.status.id,parseInt(req.body.statusId),req.user.role);
           } else {
             return Promise.resolve(true);
           }
@@ -287,8 +288,9 @@ exports.updateTaxReturnById = function (req, res, next) {
       })
     .then(function(allowableStatusChange) {
 
-        if(allowableStatusChange) {
-                return res.status(403).json({message:"status changed from current satus not allowed"});
+        if(!allowableStatusChange) {
+
+                return res.status(403).json({message:"status changed from current status not allowed"});
         } else {
 
           if (req.body.firstName) { taxReturnObj.first_name = req.body.firstName; }
@@ -371,13 +373,12 @@ exports.updateTaxReturnStatusById = function (req, res, next) {
 
       var taxReturn = results[1];
 
-
       return statusChangesModel.allowableStatusChangeForTaxReturn( taxReturn.status.id,taxReturnObj.status_id,req.user.role);
 
     })
     .then(function(allowableStatusChange) {
 
-        if(allowableStatusChange) {
+        if(!allowableStatusChange) {
             return res.status(403).json({message:"status changed from current status not allowed"});
         }
 
