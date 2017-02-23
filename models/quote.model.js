@@ -65,15 +65,7 @@ var Quote = {
                             var taxReturn = _.find(quoteObj.taxReturns, {id: lineItem.tax_return_id});
                             if (lineItem.enabled === 1)  {
                                 if (typeof(taxReturn) !== 'undefined') {
-                                    if (taxReturn.province_of_residence === 'ON' ||
-                                        taxReturn.province_of_residence === 'PE' ||
-                                        taxReturn.province_of_residence === 'NB' ||
-                                        taxReturn.province_of_residence === 'NL' ||
-                                        taxReturn.province_of_residence === 'NS') {
                                         tax += lineItem.value * 0.13;
-                                    } else {
-                                        tax += 0;
-                                    }
                                 }
                                 subtotal = subtotal + lineItem.value;
                             }
@@ -81,15 +73,7 @@ var Quote = {
                         _.forEach(quoteObj.adminLineitems, function(adminLineItem) {
                             var taxReturn = _.find(quoteObj.taxReturns, {id: adminLineItem.tax_return_id});
                             if (typeof(taxReturn) !== 'undefined') {
-                                if (taxReturn.province_of_residence === 'ON' ||
-                                    taxReturn.province_of_residence === 'PE' ||
-                                    taxReturn.province_of_residence === 'NB' ||
-                                    taxReturn.province_of_residence === 'NL' ||
-                                    taxReturn.province_of_residence === 'NS') {
                                     tax += adminLineItem.value * 0.13;
-                                } else {
-                                    tax += 0;
-                                }
                             }
                             subtotal = subtotal + adminLineItem.value;
                         });
