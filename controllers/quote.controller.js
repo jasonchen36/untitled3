@@ -11,6 +11,7 @@ var expressValidator = require('express-validator');
 var util = require('util');
 var path = require('path');
 var _ = require('underscore');
+var fs = require('fs');
 var PDFDocument = require('pdfkit');
 var documentModel = require('../models/document.model');
 var quoteModel = require('../models/quote.model');
@@ -832,10 +833,19 @@ exports.getDocumentThumbnailById = function(req, res, next) {
         }
 
         return documentModel.findById(documentId).then(function(documentObj) {
-            var file = config.uploadDir + '/' + documentObj.thumbnail_url;
-            return res.download(file, documentObj.name); // Set disposition and send it
+            var file = config.thumbnail.destPath + '/' + documentObj.thumbnail_url;
+            fs.stat(file, function(err, stat) {
+                if(err == null) {
+                    return res.download(file, documentObj.name); // Set disposition and send it
+                } else {
+                    return res.download(path.join(__dirname + '/../default_icons/' +
+                                        config.thumbnail.defaultDocIconFileName),
+                                        documentObj.name); // Set disposition and send it
+                }
+            });
+
+
         }).catch(function(err) {
-          console.log('error?',err);
             next(err);
         });
     });
@@ -1134,17 +1144,17 @@ send Bill To client
 exports.sendBillToClient = function (req, res, next) {
     req.checkParams('id', 'Please provide an integer quote id').isInt();
     var errors = req.validationErrors();
- 
-    if (errors) { 
-        return res.status(400).send(errors); 
+
+    if (errors) {
+        return res.status(400).send(errors);
     }
-  
+
     if(!userModel.isAdmin(req.user)) {
         return res.status(403).send();
     }
-   
+
     var quoteId = parseInt(req.params.id);
-  
+
     return quoteModel.hasAccess(req.user, quoteId)
     .then(function(allowed) {
         if (!allowed) {
@@ -1160,7 +1170,7 @@ exports.sendBillToClient = function (req, res, next) {
         var notAllTaxReturnsHaveInitialStatus = _.some(quote.taxReturns,(tr) => {
           return tr.status_id !== initialStatus.id;
         });
-        
+
         if(notAllTaxReturnsHaveInitialStatus) {
           return res.status(400).json({message:"Not all statuses are set to 'Data Entry Complete'"});
         } else {
