@@ -29,6 +29,8 @@ module.exports = function (router) {
     router.route('/quote/:quoteId/document/:documentId')
         .delete(PassportAuthMiddleware, quote.deleteDocumentById)
         .get(PassportAuthMiddleware, noCache, quote.getDocumentById);
+    router.route('/quote/:quoteId/document/:documentId/thumbnail')
+        .get(PassportAuthMiddleware, noCache, quote.getDocumentThumbnailById);
     router.route('/quote/:id/checklist')
         .get(PassportAuthMiddleware, noCache, quote.getChecklist);
     router.route('/quote/:id/checklist/PDF')
