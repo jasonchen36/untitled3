@@ -72,9 +72,7 @@ var Quote = {
                         });
                         _.forEach(quoteObj.adminLineitems, function(adminLineItem) {
                             var taxReturn = _.find(quoteObj.taxReturns, {id: adminLineItem.tax_return_id});
-                            if (typeof(taxReturn) !== 'undefined') {
-                                    tax += adminLineItem.value * 0.13;
-                            }
+                            tax += adminLineItem.value * 0.13;
                             subtotal = subtotal + adminLineItem.value;
                         });
                         quoteObj.subtotal = subtotal.toFixed(2);
