@@ -275,17 +275,24 @@ function createUserAndSendEmail(userObj) {
                 };
                 var total = 0;
                 _.forEach(userObj.quote, function(quoteLineItem, i) {
-                    var firstName = '';
-                    _.forEach(taxReturns, function(taxReturn){
-                       if(quoteLineItem.tax_return_id === taxReturn.id){
-                           firstName = taxReturn.first_name;
-                       }
-                    });
-                    variables['quote_text' + i] = quoteLineItem.text + ' - ' + firstName;
-                    variables['quote_value' + i] = (quoteLineItem.value).toFixed(2);
-                    variables['notes' + i] = quoteLineItem.notes;
-                    if (quoteLineItem.enabled === 1) {
-                        total = total + quoteLineItem.value;
+                    var isDirectDeposit = false;
+                    var lineText = quoteLineItem.text;
+                    if(lineText.includes('Direct Deposit')){
+                        isDirectDeposit = true;
+                    }
+                    if(!isDirectDeposit) {
+                        var firstName = '';
+                        _.forEach(taxReturns, function (taxReturn) {
+                            if (quoteLineItem.tax_return_id === taxReturn.id) {
+                                firstName = taxReturn.first_name;
+                            }
+                        });
+                        variables['quote_text' + i] = quoteLineItem.text + ' - ' + firstName;
+                        variables['quote_value' + i] = (quoteLineItem.value).toFixed(2);
+                        variables['notes' + i] = quoteLineItem.notes;
+                        if (quoteLineItem.enabled === 1) {
+                            total = total + quoteLineItem.value;
+                        }
                     }
                 });
                 variables.total_value = (Math.round(total * 100) / 100).toFixed(2);
